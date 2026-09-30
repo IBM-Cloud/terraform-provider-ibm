@@ -1069,6 +1069,58 @@ func TestAccIBMPIInstanceVPMEM(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMPIInstanceVPMEMUpdate(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pvm-vpmem-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceVPMEMUpdateConfigCreate(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "1"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.size", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceVPMEMUpdateConfigRename(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "1"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1r"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.size", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceVPMEMUpdateConfigAdd(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1r"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-v2"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-v3"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceVPMEMUpdateConfigMixed(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1f"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-v3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-v4"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPIInstanceVPMEMConfig(name, instanceHealthStatus string) string {
 	return fmt.Sprintf(`
 	  data "ibm_pi_image" "power_image" {
@@ -1113,6 +1165,379 @@ func testAccCheckIBMPIInstanceVPMEMConfig(name, instanceHealthStatus string) str
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
 }
+
+func testAccCheckIBMPIInstanceVPMEMUpdateConfigCreate(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	  data "ibm_pi_image" "power_image" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_volume_name       = "%[2]s-vol"
+	 pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_volume_shareable  = true
+	 pi_volume_size       = 20
+	 pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+	 pi_cloud_instance_id  = "%[1]s"
+	 pi_health_status      = "%[5]s"
+	 pi_image_id           = data.ibm_pi_image.power_image.id
+	 pi_instance_name      = "%[2]s"
+	 pi_memory             = "2"
+	 pi_proc_type          = "shared"
+	 pi_processors         = "0.25"
+	 pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_storage_type       = "%[6]s"
+	 pi_sys_type           = "s1022"
+	 pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	 pi_network {
+	  network_id = data.ibm_pi_network.power_networks.id
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v1"
+	  size = 2
+	 }
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
+
+func testAccCheckIBMPIInstanceVPMEMUpdateConfigRename(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	  data "ibm_pi_image" "power_image" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_volume_name       = "%[2]s-vol"
+	 pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_volume_shareable  = true
+	 pi_volume_size       = 20
+	 pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+	 pi_cloud_instance_id  = "%[1]s"
+	 pi_health_status      = "%[5]s"
+	 pi_image_id           = data.ibm_pi_image.power_image.id
+	 pi_instance_name      = "%[2]s"
+	 pi_memory             = "2"
+	 pi_proc_type          = "shared"
+	 pi_processors         = "0.25"
+	 pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_storage_type       = "%[6]s"
+	 pi_sys_type           = "s1022"
+	 pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	 pi_network {
+	  network_id = data.ibm_pi_network.power_networks.id
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v1r"
+	  size = 2
+	 }
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
+
+func testAccCheckIBMPIInstanceVPMEMUpdateConfigAdd(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	  data "ibm_pi_image" "power_image" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_volume_name       = "%[2]s-vol"
+	 pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_volume_shareable  = true
+	 pi_volume_size       = 20
+	 pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+	 pi_cloud_instance_id  = "%[1]s"
+	 pi_health_status      = "%[5]s"
+	 pi_image_id           = data.ibm_pi_image.power_image.id
+	 pi_instance_name      = "%[2]s"
+	 pi_memory             = "2"
+	 pi_proc_type          = "shared"
+	 pi_processors         = "0.25"
+	 pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_storage_type       = "%[6]s"
+	 pi_sys_type           = "s1022"
+	 pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	 pi_network {
+	  network_id = data.ibm_pi_network.power_networks.id
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v1r"
+	  size = 2
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v2"
+	  size = 1
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v3"
+	  size = 3
+	 }
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
+
+func testAccCheckIBMPIInstanceVPMEMUpdateConfigMixed(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	  data "ibm_pi_image" "power_image" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+	 pi_cloud_instance_id = "%[1]s"
+	 pi_volume_name       = "%[2]s-vol"
+	 pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_volume_shareable  = true
+	 pi_volume_size       = 20
+	 pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+	 pi_cloud_instance_id  = "%[1]s"
+	 pi_health_status      = "%[5]s"
+	 pi_image_id           = data.ibm_pi_image.power_image.id
+	 pi_instance_name      = "%[2]s"
+	 pi_memory             = "2"
+	 pi_proc_type          = "shared"
+	 pi_processors         = "0.25"
+	 pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+	 pi_storage_type       = "%[6]s"
+	 pi_sys_type           = "s1022"
+	 pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	 pi_network {
+	  network_id = data.ibm_pi_network.power_networks.id
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v1f"
+	  size = 2
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v3"
+	  size = 3
+	 }
+	 pi_vpmem_volumes {
+	  name = "%[2]s-v4"
+	  size = 1
+	 }
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
+
+func TestAccIBMPIInstanceAllowRemoteRestart(t *testing.T) {
+	instanceRes := "ibm_pi_instance.instance"
+	name := fmt.Sprintf("tf-pi-allow-remote-restart-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceAllowRemoteRestart(name, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_allow_remote_restart", "false"),
+				),
+			},
+			{
+				Config: testAccIBMPIInstanceAllowRemoteRestart(name, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_allow_remote_restart", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceAllowRemoteRestart(name string, allowRemoteRestart bool) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id        = "%[5]s"
+	}
+	resource "ibm_pi_instance" "instance" {
+		pi_allow_remote_restart  = "%[4]t"
+		pi_cloud_instance_id     = "%[1]s"
+		pi_image_id              = data.ibm_pi_image.power_image.id
+		pi_instance_name         = "%[2]s"
+		pi_memory                = "2"
+		pi_proc_type             = "shared"
+		pi_processors            = "0.25"
+		pi_sys_type              = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.pi_network_id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image_id, allowRemoteRestart, acc.Pi_network_id)
+}
+
+func TestAccIBMPIInstanceMetadataService(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, true, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, false, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceMetadataServiceConfig(name, instanceHealthStatus string, enabled, force bool) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id      = "%[4]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "2"
+		pi_proc_type         = "shared"
+		pi_processors        = "0.25"
+		pi_storage_type      = "%[6]s"
+		pi_sys_type          = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_metadata_service {
+			enabled = %[7]t
+			force   = %[8]t
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, enabled, force)
+}
+
+func TestAccIBMPIInstanceDefaultTrustedProfile(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, acc.IAMTrustedProfileID, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", acc.IAMTrustedProfileID),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.autolink", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, "", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", ""),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, acc.IAMTrustedProfileID, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", acc.IAMTrustedProfileID),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.autolink", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, instanceHealthStatus, trustedProfileID string, autolink bool) string {
+	autolinkLine := fmt.Sprintf("autolink = %t", autolink)
+	if trustedProfileID == "" {
+		// autolink must not be sent when clearing the target — omit it so the
+		// API-returned value is used (Optional+Computed).
+		autolinkLine = ""
+	}
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id      = "%[4]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "2"
+		pi_proc_type         = "shared"
+		pi_processors        = "0.25"
+		pi_storage_type      = "%[6]s"
+		pi_sys_type          = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_metadata_service {
+			enabled = true
+		}
+		pi_default_trusted_profile {
+			%[8]s
+			target {
+				id = "%[7]s"
+			}
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, trustedProfileID, autolinkLine)
+}
+
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

@@ -33,6 +33,14 @@ func DataSourceIBMIsIkePolicies() *schema.Resource {
 							Computed:    true,
 							Description: "The authentication algorithm.",
 						},
+						"authentication_algorithms": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The authentication algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						"connections": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -86,10 +94,26 @@ func DataSourceIBMIsIkePolicies() *schema.Resource {
 							Computed:    true,
 							Description: "The Diffie-Hellman group.",
 						},
+						"dh_groups": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The Diffie-Hellman groups to use for IKE negotiation.The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each Diffie-Hellman group having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
 						"encryption_algorithm": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The encryption algorithm.",
+						},
+						"encryption_algorithms": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"href": {
 							Type:        schema.TypeString,
@@ -214,6 +238,9 @@ func dataSourceIkePolicyCollectionIkePoliciesToMap(ikePoliciesItem vpcv1.IkePoli
 	if ikePoliciesItem.AuthenticationAlgorithm != nil {
 		ikePoliciesMap["authentication_algorithm"] = ikePoliciesItem.AuthenticationAlgorithm
 	}
+	if ikePoliciesItem.AuthenticationAlgorithms != nil && len(ikePoliciesItem.AuthenticationAlgorithms) > 0 {
+		ikePoliciesMap["authentication_algorithms"] = ikePoliciesItem.AuthenticationAlgorithms
+	}
 	if ikePoliciesItem.Connections != nil {
 		connectionsList := []map[string]interface{}{}
 		for _, connectionsItem := range ikePoliciesItem.Connections {
@@ -227,8 +254,14 @@ func dataSourceIkePolicyCollectionIkePoliciesToMap(ikePoliciesItem vpcv1.IkePoli
 	if ikePoliciesItem.DhGroup != nil {
 		ikePoliciesMap["dh_group"] = ikePoliciesItem.DhGroup
 	}
+	if ikePoliciesItem.DhGroups != nil {
+		ikePoliciesMap["dh_groups"] = ikePoliciesItem.DhGroups
+	}
 	if ikePoliciesItem.EncryptionAlgorithm != nil {
 		ikePoliciesMap["encryption_algorithm"] = ikePoliciesItem.EncryptionAlgorithm
+	}
+	if ikePoliciesItem.EncryptionAlgorithms != nil {
+		ikePoliciesMap["encryption_algorithms"] = ikePoliciesItem.EncryptionAlgorithms
 	}
 	if ikePoliciesItem.Href != nil {
 		ikePoliciesMap["href"] = ikePoliciesItem.Href

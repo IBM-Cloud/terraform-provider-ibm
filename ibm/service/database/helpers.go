@@ -6,19 +6,78 @@ package database
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-/*  TODO Move other helper functions here */
+const (
+	// Conversion constants
+	mbPerGb = 1024
+
+	// HTTP status codes
+	httpNotFound = 404
+
+	// Default values
+	defaultGroupID     = "member"
+	defaultMemberCount = 3
+
+	// Instance states - shared across Classic and Gen2
+	instanceStateRemoved = "removed"
+
+	// Database instance status constants
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
+
+	// Gen2 database operation keys
+	deploymentKind     = "deployment"
+	dataservicesKey    = "dataservices"
+	versionKey         = "version"
+	resourcesKey       = "resources"
+	platformOptionsKey = "platform_options"
+	adminUserKey       = "adminuser"
+	autoScalingKey     = "auto_scaling"
+	allowlistKey       = "allowlist"
+	databaseUserType   = "database"
+)
+
 type TimeoutHelper struct {
 	Now time.Time
+}
+
+func sharedSetShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return d.Set("shards", nil)
+	}
+
+	if instance == nil || instance.Extensions == nil {
+		return nil
+	}
+
+	// enterprise-sharding-gen2 stores shard data under "mongodbees" in extensions
+	shards := extractShardsFromExtensions(instance.Extensions)
+	if shards == 0 {
+		return nil
+	}
+	return d.Set("shards", shards)
 }
 
 // Allows mocking
@@ -101,7 +160,989 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	}
 }
 
+func isShardAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
+	v, ok := d.GetOkExists(k)
+	if !ok {
+		return false
+	}
+
+	if intVal, isInt := v.(int); isInt {
+		return intVal > 0
+	}
+	return false
+}
+
 func isGen2Plan(plan string) bool {
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
 	return gen2Pattern.MatchString(strings.ToLower(plan))
+}
+
+// instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
+// coupled backup CRN. Returns an error if the instance ID segment is missing.
+func instanceCRNFromCoupledBackupCRN(backupCRN string) (string, error) {
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 8 || parts[7] == "" {
+		return "", fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+	return strings.Join(parts[:8], ":") + "::", nil
+}
+
+// validateGen2BackupCRN returns an error if backupCRN is a Classic backup;
+// Gen2 (decoupled) backups are allowed.
+func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
+	if backupCRN == "" {
+		return nil
+	}
+
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 10 {
+		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
+	}
+
+	// Check if it's a decoupled backup (databases-independent-backups)
+	serviceName := parts[4]
+	if serviceName == "databases-independent-backups" {
+		// Decoupled backup - ALLOWED
+		return nil
+	}
+
+	// It's a coupled backup - need to check if the source instance is Gen2
+	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupCRN)
+	if err != nil {
+		return err
+	}
+
+	// Get the instance to check its plan
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceCRN,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get backup source instance %s: %w (response: %v)", instanceCRN, err, response)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return fmt.Errorf("backup source instance %s has no resource plan ID", instanceCRN)
+	}
+
+	// Get the plan name to check if it's Gen2
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return fmt.Errorf("failed to initialize catalog client: %w", err)
+	}
+
+	rsCatRepo := rsCatClient.ResourceCatalog()
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	if err != nil {
+		return fmt.Errorf("failed to get service plan for backup source instance: %w", err)
+	}
+
+	// Check if the plan is Gen2
+	if !isGen2Plan(servicePlan) {
+		return fmt.Errorf("backup_id references a Classic backup (plan: %s). Gen2 databases can only restore from Gen2 coupled backups or Gen2 decoupled backups. Please use a Gen2 backup CRN", servicePlan)
+	}
+
+	// Gen2 coupled backup - ALLOWED
+	return nil
+}
+
+// extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
+// CRN format: crn:version:cname:ctype:service-name:location:scope:service-instance:resource-type:resource
+// Returns the location field (index 5) or an error if the CRN is invalid.
+func extractLocationFromCRN(crn *string) (string, error) {
+	if crn == nil {
+		return "", fmt.Errorf("CRN is nil")
+	}
+	parts := strings.Split(*crn, ":")
+	if len(parts) <= 5 {
+		return "", fmt.Errorf("invalid CRN format: expected at least 6 parts, got %d", len(parts))
+	}
+	return parts[5], nil
+}
+
+// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
+// Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
+// Some callers may already provide the deployment ID directly.
+// Returns the deployment ID or an error if the input is invalid.
+func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
+	if catalogCRN == "" {
+		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
+	}
+
+	if !strings.HasPrefix(catalogCRN, "crn:") {
+		return catalogCRN, nil
+	}
+
+	// Split by "deployment:" to extract the deployment ID
+	parts := strings.Split(catalogCRN, "deployment:")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid catalog CRN format: expected exactly one 'deployment:' prefix")
+	}
+
+	deploymentID := parts[1]
+	if deploymentID == "" {
+		return "", fmt.Errorf("empty deployment ID in catalog CRN")
+	}
+
+	// Check for multiple deployment prefixes (invalid format)
+	if strings.Contains(deploymentID, "deployment:") {
+		return "", fmt.Errorf("invalid catalog CRN format: multiple 'deployment:' prefixes found")
+	}
+
+	return deploymentID, nil
+}
+
+// wrapAPIError wraps an API error with operation context and response details.
+// Provides consistent error formatting across API calls.
+func wrapAPIError(operation string, err error, response interface{}) error {
+	return fmt.Errorf("failed to %s: %w (response: %v)", operation, err, response)
+}
+
+// Database service name prefixes mapped to their type keys
+var databaseServicePrefixes = map[string]string{
+	"databases-for-etcd":           "etcd",
+	"databases-for-postgresql":     "postgresql",
+	"databases-for-redis":          "redis",
+	"databases-for-valkey":         "valkey",
+	"databases-for-valkey-cdp-dev": "valkey",
+	"databases-for-elasticsearch":  "elasticsearch",
+	"databases-for-mongodb":        "mongodb",
+	"messages-for-rabbitmq":        "rabbitmq",
+	"databases-for-mysql":          "mysql",
+	"databases-for-enterprisedb":   "enterprisedb",
+}
+
+// getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.
+// Used in extensions for Gen2 and in parameters structure.
+// Returns an empty string if the resource ID doesn't match any known database service.
+// For enterprise-sharding-gen2 MongoDB, returns "mongodbees" instead of "mongodb".
+func getDatabaseTypeFromResourceID(resourceID string, plan string) string {
+	dbType := ""
+	for prefix, t := range databaseServicePrefixes {
+		if strings.HasPrefix(resourceID, prefix) {
+			dbType = t
+			break
+		}
+	}
+	if dbType == "" {
+		return ""
+	}
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		return "mongodbees"
+	}
+	return dbType
+}
+
+// expandPlatformOptionsFromRCExtension extracts platform options from instance extensions for Gen2.
+// Returns a slice containing a single map with disk and backup encryption key CRNs.
+// If encryption keys are not found in extensions, empty strings are returned.
+func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []map[string]interface{} {
+	pltOption := map[string]interface{}{
+		"disk_encryption_key_crn":   "",
+		"backup_encryption_key_crn": "",
+	}
+
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return []map[string]interface{}{pltOption}
+	}
+
+	encryption, ok := dataservices["encryption"].(map[string]interface{})
+	if !ok {
+		return []map[string]interface{}{pltOption}
+	}
+
+	if disk, ok := encryption["disk"].(string); ok && disk != "" {
+		pltOption["disk_encryption_key_crn"] = disk
+	}
+	if backup, ok := encryption["backup"].(string); ok && backup != "" {
+		pltOption["backup_encryption_key_crn"] = backup
+	}
+
+	return []map[string]interface{}{pltOption}
+}
+
+// flattenIcdGroupsFromInstanceAndCatalog creates groups data from instance extensions and global catalog metadata for Gen2.
+// It combines actual allocation values from the instance with metadata constraints from the catalog.
+// Returns a slice of group configurations including memory, CPU, disk, and host flavor information.
+func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string, plan string) []map[string]interface{} {
+	groups := make([]map[string]interface{}, 0, len(catalogResources))
+
+	// Extract allocation values from instance extensions
+	allocations := extractDatabaseAllocations(instance, resourceID, plan)
+
+	// Process catalog resources to build group configurations
+	for _, resource := range catalogResources {
+		resourceMap, ok := resource.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		groupID, _ := resourceMap["id"].(string)
+
+		// Use members from instance if available, otherwise use catalog count
+		count := allocations.members
+		if count == 0 {
+			if c, ok := resourceMap["count"].(float64); ok {
+				count = int64(c)
+			}
+		}
+
+		group := map[string]interface{}{
+			"group_id":    groupID,
+			"count":       count,
+			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
+			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+		}
+		groups = append(groups, group)
+	}
+
+	return groups
+}
+
+// databaseAllocations holds resource allocation values extracted from instance extensions.
+// Fields are ordered by type for consistency.
+type databaseAllocations struct {
+	cpuCount     float64
+	memoryGB     float64
+	storageGB    float64
+	members      int64
+	shards       int64
+	hostFlavorID string
+}
+
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
+func extractDatabaseAllocations(instance map[string]interface{}, resourceID string, plan string) databaseAllocations {
+	var alloc databaseAllocations
+
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
+	if dbType == "" {
+		return alloc
+	}
+
+	dataservices, ok := instance["dataservices"].(map[string]interface{})
+	if !ok {
+		return alloc
+	}
+
+	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
+	if !ok {
+		// enterprise-sharding-gen2 stores data under "mongodbees" instead of "mongodb"
+		if dbType == "mongodb" {
+			dbTypeData, ok = dataservices["mongodbees"].(map[string]interface{})
+		}
+		if !ok {
+			return alloc
+		}
+	}
+
+	if mem, ok := dbTypeData["memory_gb"].(float64); ok {
+		alloc.memoryGB = mem
+	}
+	if cpu, ok := dbTypeData["cpu_count"].(float64); ok {
+		alloc.cpuCount = cpu
+	}
+	if storage, ok := dbTypeData["storage_gb"].(float64); ok {
+		alloc.storageGB = storage
+	}
+	if m, ok := dbTypeData["members"].(float64); ok {
+		alloc.members = int64(m)
+	}
+	if s, ok := dbTypeData["shards"].(float64); ok {
+		alloc.shards = int64(s)
+	}
+	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
+		alloc.hostFlavorID = flavor
+	}
+
+	return alloc
+}
+
+func extractShardsFromExtensions(extensions map[string]interface{}) int {
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	dbTypeData, ok := dataservices["mongodbees"].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	shards, ok := dbTypeData["shards"]
+	if !ok {
+		return 0
+	}
+
+	switch v := shards.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	}
+	return 0
+}
+
+// buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
+func buildMemoryConfig(resourceMap map[string]interface{}, memoryGB float64) []map[string]interface{} {
+	memory := make(map[string]interface{})
+
+	if memoryData, ok := resourceMap["memory"].(map[string]interface{}); ok {
+		memory["units"] = memoryData["units"]
+		memory["allocation_mb"] = int64(memoryGB * mbPerGb)
+		if minGB, ok := memoryData["minimum_gb"].(float64); ok {
+			memory["minimum_mb"] = int64(minGB * mbPerGb)
+		}
+		if stepGB, ok := memoryData["step_size_gb"].(float64); ok {
+			memory["step_size_mb"] = int64(stepGB * mbPerGb)
+		}
+		memory["is_adjustable"] = memoryData["is_adjustable"]
+		memory["can_scale_down"] = memoryData["can_scale_down"]
+	}
+
+	return []map[string]interface{}{memory}
+}
+
+// buildCPUConfig creates CPU configuration from catalog metadata and actual allocation
+func buildCPUConfig(resourceMap map[string]interface{}, cpuCount float64) []map[string]interface{} {
+	cpu := make(map[string]interface{})
+
+	if cpuData, ok := resourceMap["cpu"].(map[string]interface{}); ok {
+		cpu["units"] = cpuData["units"]
+		cpu["allocation_count"] = int64(cpuCount)
+		cpu["minimum_count"] = cpuData["minimum_count"]
+		cpu["step_size_count"] = cpuData["step_size_count"]
+		cpu["is_adjustable"] = cpuData["is_adjustable"]
+		cpu["can_scale_down"] = cpuData["can_scale_down"]
+	}
+
+	return []map[string]interface{}{cpu}
+}
+
+// buildDiskConfig creates disk configuration from catalog metadata and actual allocation
+func buildDiskConfig(resourceMap map[string]interface{}, storageGB float64) []map[string]interface{} {
+	disk := make(map[string]interface{})
+
+	if diskData, ok := resourceMap["disk"].(map[string]interface{}); ok {
+		disk["units"] = diskData["units"]
+		disk["allocation_mb"] = int64(storageGB * mbPerGb)
+		if minGB, ok := diskData["minimum_gb"].(float64); ok {
+			disk["minimum_mb"] = int64(minGB * mbPerGb)
+		}
+		if stepGB, ok := diskData["step_size_gb"].(float64); ok {
+			disk["step_size_mb"] = int64(stepGB * mbPerGb)
+		}
+		disk["is_adjustable"] = diskData["is_adjustable"]
+		disk["can_scale_down"] = diskData["can_scale_down"]
+	}
+
+	return []map[string]interface{}{disk}
+}
+
+// buildHostFlavorConfig creates host flavor configuration if a flavor ID is provided
+func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
+	if hostFlavorID == "" {
+		return []map[string]interface{}{}
+	}
+
+	hostflavor := map[string]interface{}{
+		"id":           hostFlavorID,
+		"name":         hostFlavorID,
+		"hosting_size": "", // Not available in Gen2
+	}
+
+	return []map[string]interface{}{hostflavor}
+}
+
+// getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
+// The input may be either a deployment catalog CRN or a deployment ID.
+// Returns the member count from the catalog metadata, or a default value if not found.
+// If the deployment reference is not a valid Global Catalog entry ID in the current environment,
+// fall back to the provider default instead of failing create.
+func getInitialNodeCountGen2(deploymentRef string, meta interface{}) (int, error) {
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
+	}
+
+	deploymentID, err := extractDeploymentIDFromCRN(deploymentRef)
+	if err != nil {
+		return 0, fmt.Errorf("failed to normalize deployment reference: %w", err)
+	}
+
+	options := &globalcatalogv1.GetCatalogEntryOptions{
+		ID: &deploymentID,
+	}
+
+	deployment, _, err := globalClient.GetCatalogEntry(options)
+	if err != nil {
+		log.Printf("[WARN] Unable to retrieve Gen2 deployment catalog entry %q, using default member count %d: %v", deploymentID, defaultMemberCount, err)
+		return defaultMemberCount, nil
+	}
+
+	// Extract member count from deployment metadata
+	count := extractMemberCountFromMetadata(deployment)
+	if count > 0 {
+		return count, nil
+	}
+
+	// Return default if not found in metadata
+	return defaultMemberCount, nil
+}
+
+// extractMemberCountFromMetadata extracts the member count from catalog entry metadata
+func extractMemberCountFromMetadata(deployment *globalcatalogv1.CatalogEntry) int {
+	if deployment.Metadata == nil || deployment.Metadata.Other == nil {
+		return 0
+	}
+
+	resources, ok := deployment.Metadata.Other["resources"].([]interface{})
+	if !ok {
+		return 0
+	}
+
+	for _, resource := range resources {
+		resourceMap, ok := resource.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		groupID, ok := resourceMap["id"].(string)
+		if !ok || groupID != "member" {
+			continue
+		}
+
+		count, ok := resourceMap["count"].(float64)
+		if ok && count > 0 {
+			return int(count)
+		}
+	}
+
+	return 0
+}
+
+// extractVersionFromExtensions extracts the database version from instance extensions.
+// Returns an empty string if the version cannot be found.
+func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string, plan string) string {
+	if extensions == nil {
+		return ""
+	}
+
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
+	if dbType == "" {
+		return ""
+	}
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	version, ok := dbTypeData[versionKey].(string)
+	if !ok {
+		return ""
+	}
+
+	return version
+}
+
+// findDeploymentByLocation finds a deployment catalog entry matching the specified location.
+// Returns the deployment entry or an error if not found.
+func findDeploymentByLocation(globalClient *globalcatalogv1.GlobalCatalogV1, planID string, location string) (*globalcatalogv1.CatalogEntry, error) {
+	if globalClient == nil {
+		return nil, fmt.Errorf("global catalog client is nil")
+	}
+
+	kind := deploymentKind
+	childOptions := globalcatalogv1.GetChildObjectsOptions{
+		ID:   &planID,
+		Kind: &kind,
+	}
+
+	children, _, err := globalClient.GetChildObjects(&childOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve plan children: %w", err)
+	}
+
+	if children == nil || children.Resources == nil {
+		return nil, fmt.Errorf("no deployments found for plan")
+	}
+
+	for _, child := range children.Resources {
+		if child.Metadata != nil &&
+			child.Metadata.Deployment != nil &&
+			child.Metadata.Deployment.Location != nil &&
+			*child.Metadata.Deployment.Location == location {
+			return &child, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find deployment catalog entry for region %s", location)
+}
+
+// getGlobalCatalogClient initializes and returns the Global Catalog V1 client.
+// Centralizes client initialization to reduce duplication and improve testability.
+func getGlobalCatalogClient(meta interface{}) (*globalcatalogv1.GlobalCatalogV1, error) {
+	client, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get global catalog client: %w", err)
+	}
+	return client, nil
+}
+
+// getResourceManagerClient initializes and returns the Resource Manager V2 client.
+// Centralizes client initialization to reduce duplication and improve testability.
+func getResourceManagerClient(meta interface{}) (interface{}, error) {
+	client, err := meta.(conns.ClientSession).ResourceManagerV2API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
+	}
+	return client, nil
+}
+
+// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
+// Returns error only for critical failures, logs warnings for non-critical issues.
+func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
+	tags, err := flex.GetTagsUsingCRN(meta, crn)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
+	}
+	return d.Set("tags", tags)
+}
+
+// buildResourceControllerURL constructs the resource controller URL for a given CRN.
+// Standardizes URL building across resources and data sources.
+func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return "", fmt.Errorf("failed to get base controller: %w", err)
+	}
+	return rcontroller + "/services/" + url.QueryEscape(crn), nil
+}
+
+// setResourceControllerAttributes sets common flex resource controller attributes.
+// Reduces duplication of setting name, CRN, status, and controller URL.
+func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
+	d.Set(flex.ResourceName, name)
+	d.Set(flex.ResourceCRN, crn)
+	d.Set(flex.ResourceStatus, state)
+
+	controllerURL, err := buildResourceControllerURL(meta, crn)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, controllerURL)
+
+	return nil
+}
+
+// setGen2BasicAttributes sets basic instance attributes including tags, name, status, location, and resource controller attributes.
+// This function is shared between data source and resource implementations.
+// Parameters:
+//   - includeServiceEndpoints: if true, sets service_endpoints from instance parameters (resource only)
+//   - includeResourceControllerURL: if true, sets resource_controller_url (resource only)
+func setGen2BasicAttributes(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}, includeServiceEndpoints, includeResourceControllerURL bool) error {
+	// Retrieve and set tags (non-critical operation, log errors but continue)
+	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
+	if err != nil {
+		log.Printf("[WARN] Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
+
+	// Set basic instance attributes
+	d.Set("name", instance.Name)
+	d.Set("status", instance.State)
+	d.Set("resource_group_id", instance.ResourceGroupID)
+	d.Set("guid", instance.GUID)
+
+	// Set location - try to extract from CRN first, fallback to RegionID
+	var instanceLocation string
+	if instance.CRN != nil {
+		var err error
+		instanceLocation, err = extractLocationFromCRN(instance.CRN)
+		if err == nil {
+			d.Set("location", instanceLocation)
+		}
+	}
+	if instanceLocation == "" && instance.RegionID != nil {
+		d.Set("location", instance.RegionID)
+	}
+
+	// Set service endpoints if requested (resource only)
+	if includeServiceEndpoints && instance.Parameters != nil {
+		if endpoint, ok := instance.Parameters["service_endpoints"]; ok {
+			d.Set("service_endpoints", endpoint)
+		}
+	}
+
+	// Set resource controller attributes
+	d.Set(flex.ResourceName, instance.Name)
+	d.Set(flex.ResourceCRN, instance.CRN)
+	d.Set(flex.ResourceStatus, instance.State)
+
+	// Retrieve and set resource group name
+	rMgtClient, err := getResourceManagerClient(meta)
+	if err != nil {
+		return err
+	}
+	getResourceGroupOptions := rg.GetResourceGroupOptions{
+		ID: instance.ResourceGroupID,
+	}
+	resourceGroup, resp, err := rMgtClient.(*rg.ResourceManagerV2).GetResourceGroup(&getResourceGroupOptions)
+	if err != nil || resourceGroup == nil {
+		log.Printf("[WARN] Failed to retrieve resource group: %v %v", err, resp)
+	}
+	if resourceGroup != nil && resourceGroup.Name != nil {
+		d.Set(flex.ResourceGroupName, resourceGroup.Name)
+	}
+
+	// Set resource controller URL if requested (resource only)
+	if includeResourceControllerURL {
+		rcontroller, err := flex.GetBaseController(meta)
+		if err != nil {
+			return fmt.Errorf("failed to get base controller: %w", err)
+		}
+		d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
+	}
+
+	return nil
+}
+
+// setGen2ServiceInfo retrieves and sets service and plan information from Global Catalog.
+// Clears admin user attribute as it's not available in Gen2.
+// This function is shared between data source and resource implementations.
+func setGen2ServiceInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
+	// Get global catalog client
+	globalClient, err := getGlobalCatalogClient(meta)
+	if err != nil {
+		return err
+	}
+
+	// Get service offering details
+	serviceOptions := globalcatalogv1.GetCatalogEntryOptions{
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&serviceOptions)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve service offering: %w", err)
+	}
+	d.Set("service", service.Name)
+
+	// Get plan details
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve plan: %w", err)
+	}
+	d.Set("plan", plan.Name)
+
+	// Clear Gen2-unsupported attributes to prevent stale Classic values
+	// Admin user is not available in Gen2. Users should manage credentials using ibm_resource_key.
+	d.Set(adminUserKey, nil)
+
+	return nil
+}
+
+// setGen2VersionInfo extracts and sets version information from instance extensions.
+// Also sets platform_options if includePlatformOptions is true (data source only).
+// This function is shared between data source and resource implementations.
+func setGen2VersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance, includePlatformOptions bool) {
+	// Extract version from instance.Extensions based on database type
+	version := ""
+	if instance.Extensions != nil && instance.ResourceID != nil {
+		plan, _ := d.Get("plan").(string)
+		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID, plan)
+	}
+	d.Set(versionKey, version)
+
+	// Extract platform_options from instance.Extensions for Gen2 (data source only)
+	if includePlatformOptions && instance.Extensions != nil {
+		d.Set(platformOptionsKey, expandPlatformOptionsFromRCExtension(instance.Extensions))
+	}
+}
+
+// setGen2GroupsInfo retrieves and sets groups information from catalog.
+// Combines instance extensions with catalog metadata to build group configurations.
+// This function is shared between data source and resource implementations.
+func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
+	// Extract location - try CRN first, fallback to RegionID
+	var instanceLocation string
+	if instance.CRN != nil {
+		var err error
+		instanceLocation, err = extractLocationFromCRN(instance.CRN)
+		if err != nil && instance.RegionID != nil {
+			instanceLocation = *instance.RegionID
+		}
+	} else if instance.RegionID != nil {
+		instanceLocation = *instance.RegionID
+	}
+
+	if instanceLocation == "" {
+		return fmt.Errorf("unable to determine instance location")
+	}
+
+	// Get global catalog client
+	globalClient, err := getGlobalCatalogClient(meta)
+	if err != nil {
+		return err
+	}
+
+	// Get groups data from GlobalCatalog for Gen2
+	// Find the deployment by getting plan's children and matching by location
+	deployment, err := findDeploymentByLocation(globalClient, *instance.ResourcePlanID, instanceLocation)
+	if err != nil {
+		return err
+	}
+
+	// Extract resources from deployment metadata
+	var catalogResources []interface{}
+	if deployment.Metadata != nil && deployment.Metadata.Other != nil {
+		if resources, ok := deployment.Metadata.Other[resourcesKey].([]interface{}); ok {
+			catalogResources = resources
+		}
+	}
+
+	// Flatten groups using instance extensions and catalog metadata
+	if instance.Extensions != nil && len(catalogResources) > 0 && instance.ResourceID != nil {
+		plan, _ := d.Get("plan").(string)
+		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID, plan))
+	}
+
+	return nil
+}
+
+// clearGen2UnsupportedAttributes clears attributes not supported in Gen2.
+// Sets allowlist, users, and configuration_schema to nil to prevent stale Classic values.
+// Note: auto_scaling and logical_replication_slot are silently ignored but NOT cleared
+// to avoid drift detection when users have these in their configuration.
+// This function is shared between data source and resource implementations.
+func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
+	// Admin user is not supported in Gen2 (no default admin user)
+	d.Set("adminuser", nil)
+
+	// Admin password is not supported in Gen2
+	d.Set("adminpassword", nil)
+
+	// Allowlist is not supported in Gen2
+	d.Set(allowlistKey, nil)
+
+	// Users management is not supported in Gen2 (use ibm_resource_key instead)
+	d.Set("users", nil)
+
+	// Auto scaling is not supported in Gen2
+	d.Set("auto_scaling", nil)
+
+	// Configuration schema is not supported in Gen2
+	d.Set("configuration_schema", nil)
+
+	// Note: backup_encryption_key_crn within platform_options is also not supported in Gen2,
+	// but platform_options is handled by the data source implementation which only sets
+	// disk_encryption_key_crn for Gen2 instances
+}
+
+const s2sAuthWarningHeader = "Database backup authorization required"
+const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
+	"Existing backups remain available for 30 days from their creation date. " +
+	"Backup creation and management are unavailable until the required service authorization is completed.\n" +
+	"Complete the required service authorization to enable backup operations.\n\n" +
+	"To configure the required IAM service authorization, please refer to the documentation below: \n" +
+	"https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-iam&interface=ui#s2s-authorization-backups"
+
+// s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
+type s2sAuthWarning struct{}
+
+func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
+
+// hasIndependentBackups reports whether the instance extensions indicate that
+// the instance is using Independent Backups.  This is determined by the presence
+// of a non-nil "backups" object inside extensions["dataservices"].
+// The S2S authorization check is only meaningful for instances that use
+// Independent Backups, so callers should gate checkS2SAuthorization on this.
+func hasIndependentBackups(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	backups, exists := dataservices["backups"]
+	return exists && backups != nil
+}
+
+// checkS2SAuthorization returns true only when both "independent_backups" and
+// "resource_group" authorizations are present and truthy in the RC extensions map.
+// The authorizations are nested under extensions["dataservices"]["authorizations"].
+func checkS2SAuthorization(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	authsRaw, exists := dataservices["authorizations"]
+	if !exists || authsRaw == nil {
+		return false
+	}
+	auths, ok := authsRaw.(map[string]interface{})
+	if !ok || len(auths) == 0 {
+		return false
+	}
+	return isTruthy(auths["independent_backups"]) && isTruthy(auths["resource_group"])
+}
+
+// isTruthy returns true if v is the boolean true or the string "true".
+func isTruthy(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		return val == "true"
+	}
+	return false
+}
+
+// getInstancesNext extracts the "next_url" query parameter from the URL returned
+// in a paginated Resource Controller list response's NextURL field, so it can be
+// used as the "start" token for the next page request. Returns an empty string,
+// with no error, when next is nil (i.e. there is no further page).
+func getInstancesNext(next *string) (string, error) {
+	if next == nil {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
+}
+
+// extractGen2BackupExtensions reads the source deployment CRN and backup type
+// from a Gen2 backup instance's Extensions["dataservices"]["backup"] block.
+// Both return values are empty strings if extensions is nil or the expected
+// structure is missing.
+func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataServiceCRN string, backupType string) {
+	if extensions == nil {
+		return
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	backupData, ok := dataservices["backup"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	if v, ok := backupData["source_data_service_crn"].(string); ok {
+		sourceDataServiceCRN = v
+	}
+	if v, ok := backupData["type"].(string); ok {
+		backupType = v
+	}
+	return
+}
+
+// gen2GetOperationDescription extracts a human-readable description from the instance's last operation or state.
+func gen2GetOperationDescription(instance *rc.ResourceInstance) string {
+	if instance.LastOperation != nil {
+		if instance.LastOperation.Description != nil && *instance.LastOperation.Description != "" {
+			return *instance.LastOperation.Description
+		}
+		if instance.LastOperation.Type != nil && *instance.LastOperation.Type != "" {
+			return fmt.Sprintf("Operation: %s", *instance.LastOperation.Type)
+		}
+	}
+
+	if instance.State != nil {
+		return fmt.Sprintf("Instance state: %s", *instance.State)
+	}
+
+	return "Gen2 database instance operation"
+}
+
+// gen2MapStateToStatus converts Resource Controller instance state to task status.
+// Maps Gen2 instance states to standardized task statuses for consistency with classic databases.
+func gen2MapStateToStatus(instance *rc.ResourceInstance) string {
+	if instance.State == nil {
+		// Instance state is not available
+		return "unknown"
+	}
+
+	state := *instance.State
+	switch state {
+	case "active":
+		// Instance is fully provisioned and operational
+		return "completed"
+	case "provisioning", "in progress":
+		// Instance is being created or an operation is in progress
+		return "running"
+	case "removed":
+		// Instance has been deleted, operation is complete
+		return "completed"
+	default:
+		// Return the original state for any unmapped states
+		return state
+	}
+}
+
+// gen2CalculateProgress estimates task completion percentage based on instance state.
+// Note: RC API doesn't provide granular progress data, so these are approximations.
+func gen2CalculateProgress(instance *rc.ResourceInstance) int {
+	if instance.State == nil {
+		// No state information available
+		return 0
+	}
+
+	state := *instance.State
+	switch state {
+	case "active":
+		// Instance is fully provisioned and operational - 100% complete
+		return 100
+	case "provisioning":
+		// Instance is being created - estimated at 50% (midpoint of provisioning process)
+		// Note: Actual progress may vary; RC API doesn't provide granular progress data
+		return 50
+	case "in progress":
+		// Operation is in progress - estimated at 75% (nearing completion)
+		// Note: This is an approximation as RC API doesn't provide actual progress percentage
+		return 75
+	case "failed", "removed":
+		// Operation has completed (either failed or instance removed) - 100% done
+		return 100
+	case "inactive":
+		// Instance is stopped/suspended - no progress (0%)
+		return 0
+	default:
+		// Unknown state - assume no progress
+		return 0
+	}
+}
+
+// gen2GetOperationTime returns the most recent timestamp for the instance operation.
+// Prefers UpdatedAt over CreatedAt, falls back to current time if neither is available.
+func gen2GetOperationTime(instance *rc.ResourceInstance) string {
+	if instance.UpdatedAt != nil {
+		return flex.DateTimeToString(instance.UpdatedAt)
+	}
+	if instance.CreatedAt != nil {
+		return flex.DateTimeToString(instance.CreatedAt)
+	}
+
+	return time.Now().UTC().Format(time.RFC3339)
 }

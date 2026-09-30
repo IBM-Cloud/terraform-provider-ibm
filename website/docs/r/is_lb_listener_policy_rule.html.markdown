@@ -114,7 +114,7 @@ The `ibm_is_lb_listener_policy_rule` rule provides the following [Timeouts](http
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `condition` - (Required, String) The condition that you want to apply to your rule. Supported values are `contains`, `equals`, and `matches_regex`.
+- `condition` - (Required, String) The condition that you want to apply to your rule. Supported values are `contains`, `equals`, `matches_regex` and `starts_with`.
 - `field` - (Optional, String) If you set `type` to `header`, enter the HTTP header field where you want to apply the rule condition.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a listener policy rule.
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener for which you want to create a policy rule. 

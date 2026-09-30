@@ -56,7 +56,8 @@ You can specify the following arguments for this data source.
 - `pi_vpmem_volumes` - (Required, Forces new resource, List)
    Nested schema for `pi_vpmem_volumes`:
   - `name` - (Required, String) Volume base name.
-  - `size` - (Required, Integer) Volume size (GB).
+  - `size` - (Required, Integer) Volume size (GiB).
+  - `volume_id` - (Computed, String) Volume ID.
 
 ## Attribute Reference
 
@@ -72,7 +73,7 @@ After your data source is created, you can read values from the following attrib
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
   - `reason` - (String) Reason for error.
-  - `size` - (Float) Volume Size (GB).
+  - `size` - (Float) Volume size (GiB).
   - `status` - (String) Status of the volume.
   - `updated_date` - (String) The date and time when the volume was updated.
   - `user_tags` - (List) List of user tags.

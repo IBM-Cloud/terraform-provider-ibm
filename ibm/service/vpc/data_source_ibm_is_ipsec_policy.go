@@ -38,6 +38,14 @@ func DataSourceIBMIsIpsecPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The authentication algorithm.",
 			},
+			"authentication_algorithms": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The authentication algorithms to use for IPsec Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"connections": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -96,6 +104,14 @@ func DataSourceIBMIsIpsecPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The encryption algorithm.",
 			},
+			"encryption_algorithms": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -111,6 +127,14 @@ func DataSourceIBMIsIpsecPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Perfect Forward Secrecy.",
+			},
+			"pfs_groups": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The Perfect Forward Secrecy groups to use for IPsec negotiation.The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each Perfect Forward Secrecy group having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"resource_group": {
 				Type:        schema.TypeList,
@@ -216,6 +240,14 @@ func dataSourceIBMIsIpsecPolicyRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting authentication_algorithm: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-authentication_algorithm").GetDiag()
 	}
 
+	authenticationAlgorithms := []interface{}{}
+	for _, authenticationAlgorithmsItem := range iPsecPolicy.AuthenticationAlgorithms {
+		authenticationAlgorithms = append(authenticationAlgorithms, authenticationAlgorithmsItem)
+	}
+	if err = d.Set("authentication_algorithms", authenticationAlgorithms); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting authentication_algorithms: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-authentication_algorithms").GetDiag()
+	}
+
 	if iPsecPolicy.Connections != nil {
 		err = d.Set("connections", dataSourceIPsecPolicyFlattenConnections(iPsecPolicy.Connections))
 		if err != nil {
@@ -231,6 +263,13 @@ func dataSourceIBMIsIpsecPolicyRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("encryption_algorithm", iPsecPolicy.EncryptionAlgorithm); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_algorithm: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-encryption_algorithm").GetDiag()
 	}
+	encryptionAlgorithms := []interface{}{}
+	for _, encryptionAlgorithmsItem := range iPsecPolicy.EncryptionAlgorithms {
+		encryptionAlgorithms = append(encryptionAlgorithms, encryptionAlgorithmsItem)
+	}
+	if err = d.Set("encryption_algorithms", encryptionAlgorithms); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption_algorithms: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-encryption_algorithms").GetDiag()
+	}
 	if err = d.Set("href", iPsecPolicy.Href); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-href").GetDiag()
 	}
@@ -242,6 +281,13 @@ func dataSourceIBMIsIpsecPolicyRead(context context.Context, d *schema.ResourceD
 	}
 	if err = d.Set("pfs", iPsecPolicy.Pfs); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting pfs: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-pfs").GetDiag()
+	}
+	pfsGroups := []interface{}{}
+	for _, pfsGroupsItem := range iPsecPolicy.PfsGroups {
+		pfsGroups = append(pfsGroups, pfsGroupsItem)
+	}
+	if err = d.Set("pfs_groups", pfsGroups); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting pfs_groups: %s", err), "(Data) ibm_is_ipsec_policy", "read", "set-pfs_groups").GetDiag()
 	}
 
 	if iPsecPolicy.ResourceGroup != nil {

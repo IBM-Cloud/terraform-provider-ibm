@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -9,42 +9,40 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIbmIamApiKeyBasic(t *testing.T) {
+func TestAccIBMIamAPIKeyBasic(t *testing.T) {
 	var conf iamidentityv1.APIKey
-	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmIamApiKeyDestroy,
+		CheckDestroy: testAccCheckIBMIamAPIKeyDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmIamApiKeyConfigBasic(name),
+			resource.TestStep{
+				Config: testAccCheckIBMIamAPIKeyConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmIamApiKeyExists("ibm_iam_api_key.iam_api_key", conf),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", name),
+					testAccCheckIBMIamAPIKeyExists("ibm_iam_api_key.iam_api_key_instance", conf),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "name", name),
 				),
 			},
-			{
-				Config: testAccCheckIbmIamApiKeyConfigBasic(nameUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMIamAPIKeyConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "name", nameUpdate),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
+func TestAccIBMIamAPIKeyAllArgs(t *testing.T) {
 	var conf iamidentityv1.APIKey
 	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
@@ -56,27 +54,27 @@ func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmIamApiKeyDestroy,
+		CheckDestroy: testAccCheckIBMIamAPIKeyDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmIamApiKeyConfig(name, description, storeValue),
+			resource.TestStep{
+				Config: testAccCheckIBMIamAPIKeyConfig(name, description, storeValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmIamApiKeyExists("ibm_iam_api_key.iam_api_key", conf),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "description", description),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "store_value", storeValue),
+					testAccCheckIBMIamAPIKeyExists("ibm_iam_api_key.iam_api_key_instance", conf),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "store_value", storeValue),
 				),
 			},
-			{
-				Config: testAccCheckIbmIamApiKeyConfig(nameUpdate, descriptionUpdate, storeValueUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMIamAPIKeyConfig(nameUpdate, descriptionUpdate, storeValueUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "store_value", storeValueUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key_instance", "store_value", storeValueUpdate),
 				),
 			},
-			{
-				ResourceName:      "ibm_iam_api_key.iam_api_key",
+			resource.TestStep{
+				ResourceName:      "ibm_iam_api_key.iam_api_key_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -89,19 +87,17 @@ func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIamApiKeyConfigBasic(name string) string {
+func testAccCheckIBMIamAPIKeyConfigBasic(name string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_iam_api_key" "iam_api_key" {
+		resource "ibm_iam_api_key" "iam_api_key_instance" {
 			name = "%s"
 		}
 	`, name)
 }
 
-func testAccCheckIbmIamApiKeyConfig(name string, description string, storeValue string) string {
+func testAccCheckIBMIamAPIKeyConfig(name string, description string, storeValue string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_iam_api_key" "iam_api_key" {
+		resource "ibm_iam_api_key" "iam_api_key_instance" {
 			name = "%s"
 			description = "%s"
 			store_value = %s
@@ -109,7 +105,7 @@ func testAccCheckIbmIamApiKeyConfig(name string, description string, storeValue 
 	`, name, description, storeValue)
 }
 
-func testAccCheckIbmIamApiKeyExists(n string, obj iamidentityv1.APIKey) resource.TestCheckFunc {
+func testAccCheckIBMIamAPIKeyExists(n string, obj iamidentityv1.APIKey) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -122,11 +118,11 @@ func testAccCheckIbmIamApiKeyExists(n string, obj iamidentityv1.APIKey) resource
 			return err
 		}
 
-		getApiKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
+		getAPIKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
 
-		getApiKeyOptions.SetID(rs.Primary.ID)
+		getAPIKeyOptions.SetID(rs.Primary.ID)
 
-		apiKey, _, err := iamIdentityClient.GetAPIKey(getApiKeyOptions)
+		apiKey, _, err := iamIdentityClient.GetAPIKey(getAPIKeyOptions)
 		if err != nil {
 			return err
 		}
@@ -136,7 +132,7 @@ func testAccCheckIbmIamApiKeyExists(n string, obj iamidentityv1.APIKey) resource
 	}
 }
 
-func testAccCheckIbmIamApiKeyDestroy(s *terraform.State) error {
+func testAccCheckIBMIamAPIKeyDestroy(s *terraform.State) error {
 	iamIdentityClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
@@ -146,17 +142,17 @@ func testAccCheckIbmIamApiKeyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getApiKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
+		getAPIKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
 
-		getApiKeyOptions.SetID(rs.Primary.ID)
+		getAPIKeyOptions.SetID(rs.Primary.ID)
 
 		// Try to find the key
-		_, response, err := iamIdentityClient.GetAPIKey(getApiKeyOptions)
+		_, response, err := iamIdentityClient.GetAPIKey(getAPIKeyOptions)
 
 		if err == nil {
 			return fmt.Errorf("iam_api_key still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for iam_api_key (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for iam_api_key (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

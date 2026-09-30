@@ -51,6 +51,11 @@ func DataSourceIBMISImage() *schema.Resource {
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "Whether the image is publicly visible or private to the account",
 			},
+			"minimum_provisioned_size": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum size (in gigabytes) of a volume onto which this image may be provisioned.",
+			},
 			"resource_group": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -395,6 +400,9 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 	if err = d.Set("user_data_format", image.UserDataFormat); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data_format: %s", err), "(Data) ibm_is_image", "read", "set-user_data_format").GetDiag()
 	}
+	if err = d.Set("minimum_provisioned_size", flex.IntValue(image.MinimumProvisionedSize)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_provisioned_size: %s", err), "(Data) ibm_is_image", "read", "set-minimum_provisioned_size").GetDiag()
+	}
 	if err = d.Set("status", image.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_image", "read", "set-status").GetDiag()
 	}
@@ -559,7 +567,7 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 		imageRemoteList := []map[string]interface{}{}
 		imageRemoteMap, err := dataSourceImageRemote(*image)
 		if err != nil {
-			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_legacy_vendor_images", "read", "initialize-client")
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -576,6 +584,9 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 	}
 	if err = d.Set("name", image.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_image", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("minimum_provisioned_size", flex.IntValue(image.MinimumProvisionedSize)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_provisioned_size: %s", err), "(Data) ibm_is_image", "read", "set-minimum_provisioned_size").GetDiag()
 	}
 	if err = d.Set("user_data_format", image.UserDataFormat); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data_format: %s", err), "(Data) ibm_is_image", "read", "set-user_data_format").GetDiag()

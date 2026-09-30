@@ -196,7 +196,7 @@ func dataSourceIBMISFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics { // Changed return type
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_floating_ip", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_floating_ip", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -210,7 +210,7 @@ func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}
 		}
 		floatingIPs, _, err := vpcClient.ListFloatingIpsWithContext(ctx, floatingIPOptions) // Use WithContext
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_floating_ip", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed: %s", err.Error()), "(Data) ibm_is_floating_ip", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -225,30 +225,30 @@ func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}
 		if *floatingIP.Name == name {
 
 			if err = d.Set("name", floatingIP.Name); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-name").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_floating_ip", "read", "set-name").GetDiag()
 			}
 			if err = d.Set("address", floatingIP.Address); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-address").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting address: %s", err), "(Data) ibm_is_floating_ip", "read", "set-address").GetDiag()
 			}
 			if err = d.Set("status", floatingIP.Status); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-status").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_floating_ip", "read", "set-status").GetDiag()
 			}
 			if err = d.Set(floatingIPZone, *floatingIP.Zone.Name); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-zone").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zone: %s", err), "(Data) ibm_is_floating_ip", "read", "set-zone").GetDiag()
 			}
 			if err = d.Set("crn", floatingIP.CRN); err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-crn").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_floating_ip", "read", "set-crn").GetDiag()
 			}
 
 			if floatingIP.Target != nil {
 				targetId, targetMap := dataSourceFloatingIPCollectionFloatingIpTargetToMap(floatingIP.Target)
 				if err = d.Set(floatingIPTarget, targetId); err != nil { // We don't use targetID, it's not even useful in set
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-target").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_floating_ip", "read", "set-target").GetDiag()
 				}
 				targetList := []map[string]interface{}{}
 				targetList = append(targetList, targetMap)
 				if err = d.Set(floatingIPTargets, targetList); err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_list: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-target_list").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_list: %s", err), "(Data) ibm_is_floating_ip", "read", "set-target_list").GetDiag()
 				}
 			}
 
@@ -257,7 +257,7 @@ func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}
 				log.Printf("Error on get of vpc Floating IP (%s) tags: %s", *floatingIP.Address, err)
 			}
 			if err = d.Set(floatingIPTags, tags); err != nil { // Use d.Set and check error
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-tags").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_floating_ip", "read", "set-tags").GetDiag()
 			}
 
 			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *floatingIP.CRN, "", isAccessTagType)
@@ -266,7 +266,7 @@ func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}
 					"Error on get of resource floating ip (%s) access tags: %s", d.Id(), err)
 			}
 			if err = d.Set(isFloatingIPAccessTags, accesstags); err != nil { // Use d.Set and check error
-				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_ibm_is_floating_ip", "read", "set-access_tags").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_floating_ip", "read", "set-access_tags").GetDiag()
 			}
 			d.SetId(*floatingIP.ID)
 
@@ -275,7 +275,7 @@ func floatingIPGet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	}
 
 	err = fmt.Errorf("No floatingIP found with name %s", name)
-	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_floating_ip", "read", "not-found").GetDiag()
+	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_floating_ip", "read", "not-found").GetDiag()
 
 }
 

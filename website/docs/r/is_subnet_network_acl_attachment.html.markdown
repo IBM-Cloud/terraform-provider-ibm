@@ -80,41 +80,41 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of this network ACL.
 - `name` - (String) The user-defined name of this network ACL.
 - `protocol` - (List) The protocol list to enforce.
-	
+
   Nested scheme for `protocol`:
   - `icmp` - (List) The protocol ICMP.
 
     Nested scheme for `icmp`:
-	  - `code` - (String) The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also specified.
-	  - `type` - (String) The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
-	- `tcp` - (List) The TCP protocol.
+    - `code` - (String) The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also specified.
+    - `type` - (String) The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
+  - `tcp` - (List) The TCP protocol.
 
     Nested scheme for `tcp`:
-	  - `destination_port_max` - (String) The inclusive maximum bound of TCP destination port range.
-	  - `destination_port_min` - (String) The inclusive minimum bound of TCP destination port range.
-	  - `source_port_max` - (String) The inclusive maximum bound of TCP source port range.
-	  - `source_port_min` - (String) The inclusive minimum bound of TCP source port range.
-	- `udp` - (List) The UDP protocol.
+    - `destination_port_max` - (String) The inclusive maximum bound of TCP destination port range.
+    - `destination_port_min` - (String) The inclusive minimum bound of TCP destination port range.
+    - `source_port_max` - (String) The inclusive maximum bound of TCP source port range.
+    - `source_port_min` - (String) The inclusive minimum bound of TCP source port range.
+  - `udp` - (List) The UDP protocol.
 
     Nested scheme for `udp`:
-	  - `destination_port_max` - (String) The inclusive maximum bound of UDP destination port range.
-	  - `destination_port_min` - (String) The inclusive minimum bound of UDP destination port range.
-	  - `source_port_max` - (String) The inclusive maximum bound of UDP source port range.
-	  - `source_port_min` - (String) The inclusive minimum bound of UDP source port range.
-	- `subnets` - (String) The subnets to which this network ACL is attached.
-	- `vpc` - (String) The VPC to which this network ACL is a part of.
+    - `destination_port_max` - (String) The inclusive maximum bound of UDP destination port range.
+    - `destination_port_min` - (String) The inclusive minimum bound of UDP destination port range.
+    - `source_port_max` - (String) The inclusive maximum bound of UDP source port range.
+    - `source_port_min` - (String) The inclusive minimum bound of UDP source port range.
+  - `subnets` - (String) The subnets to which this network ACL is attached.
+  - `vpc` - (String) The VPC to which this network ACL is a part of.
 - `resource_group` - (String) The resource group (Id), of this network ACL.
 - `rules` - (List) The ordered rules of this network ACL. If rules does not exist, all traffic will be denied. Nested rules blocks has the following structure.
 
   Nested scheme for `rules`:
-	- `action` - (String) Specify to allow or deny matching traffic.
-	- `created_at` - (String) The rule creation date and time.
-	- `source` - (String) The source CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
-	- `destination` - (String) The destination CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
-	- `href` - (String) The URL of the Network ACL rule.
-	- `id` - (String) The unique identifier of the Network ACL rule.
-	- `ip_version` - (String) The IP version of the rule.
-	- `name` - (String) The user-defined name of the rule.
+  - `action` - (String) Specify to allow or deny matching traffic.
+  - `created_at` - (String) The rule creation date and time.
+  - `source` - (String) The source CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
+  - `destination` - (String) The destination CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
+  - `href` - (String) The URL of the Network ACL rule.
+  - `id` - (String) The unique identifier of the Network ACL rule.
+  - `ip_version` - (String) The IP version of the rule.
+  - `name` - (String) The user-defined name of the rule.
 - `protocol` - (Optional, String) The name of the network protocol.  
 
 ## Import

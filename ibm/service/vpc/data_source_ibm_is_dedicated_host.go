@@ -384,7 +384,7 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -399,7 +399,7 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 	listDedicatedHostsOptions.Name = &name
 	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostsWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostsWithContext failed: %s\n%s", err, response), "(Data) ibm_is_dedicated_host", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -412,24 +412,24 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 
 		if err = d.Set("available_memory", dedicatedHost.AvailableMemory); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting available_memory: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-available_memory").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-available_memory").GetDiag()
 		}
 
 		if dedicatedHost.AvailableVcpu != nil {
 			err = d.Set("available_vcpu", dataSourceDedicatedHostFlattenAvailableVcpu(*dedicatedHost.AvailableVcpu))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting available_vcpu: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-available_vcpu").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-available_vcpu").GetDiag()
 			}
 		}
 		if err = d.Set("created_at", dedicatedHost.CreatedAt.String()); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting created_at: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-created_at").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-created_at").GetDiag()
 
 		}
 		if err = d.Set("crn", dedicatedHost.CRN); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting crn: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-crn").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-crn").GetDiag()
 		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
 		if err != nil {
@@ -441,88 +441,88 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 			err = d.Set("disks", dataSourceDedicatedHostFlattenDisks(dedicatedHost.Disks))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting disks: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-disks").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-disks").GetDiag()
 			}
 		}
 		if dedicatedHost.Group != nil {
 			err = d.Set("host_group", *dedicatedHost.Group.ID)
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting host_group: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-host_group").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-host_group").GetDiag()
 			}
 		}
 		if err = d.Set("href", dedicatedHost.Href); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting href: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-href").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-href").GetDiag()
 		}
 		if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting instance_placement_enabled: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-instance_placement_enabled").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-instance_placement_enabled").GetDiag()
 		}
 
 		if dedicatedHost.Instances != nil {
 			err = d.Set("instances", dataSourceDedicatedHostFlattenInstances(dedicatedHost.Instances))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting instances: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-instances").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-instances").GetDiag()
 			}
 		}
 		if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-lifecycle_state").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-lifecycle_state").GetDiag()
 		}
 		if err = d.Set("memory", dedicatedHost.Memory); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting memory: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-memory").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-memory").GetDiag()
 		}
 		if err = d.Set("name", dedicatedHost.Name); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting name: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-name").GetDiag()
 		}
 		if dedicatedHost.Numa != nil {
 			if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
 				err = fmt.Errorf("[ERROR] Error setting numa: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-numa").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-numa").GetDiag()
 			}
 		}
 		if dedicatedHost.Profile != nil {
 			err = d.Set("profile", dataSourceDedicatedHostFlattenProfile(*dedicatedHost.Profile))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting profile: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-profile").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-profile").GetDiag()
 
 			}
 		}
 		if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting provisionable: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-provisionable").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-provisionable").GetDiag()
 		}
 
 		if dedicatedHost.ResourceGroup != nil {
 			err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID)
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting resource_group: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-resource_group").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-resource_group").GetDiag()
 			}
 		}
 		if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-resource_type").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-resource_type").GetDiag()
 		}
 		if err = d.Set("socket_count", dedicatedHost.SocketCount); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting socket_count: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-socket_count").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-socket_count").GetDiag()
 		}
 		if err = d.Set("state", dedicatedHost.State); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting state: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-state").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-state").GetDiag()
 		}
 
 		if dedicatedHost.SupportedInstanceProfiles != nil {
 			err = d.Set("supported_instance_profiles", dataSourceDedicatedHostFlattenSupportedInstanceProfiles(dedicatedHost.SupportedInstanceProfiles))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting supported_instance_profiles: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-supported_instance_profiles").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-supported_instance_profiles").GetDiag()
 			}
 		}
 
@@ -530,7 +530,7 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 			err = d.Set("vcpu", dataSourceDedicatedHostFlattenVcpu(*dedicatedHost.Vcpu))
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting vcpu: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-vcpu").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-vcpu").GetDiag()
 			}
 		}
 
@@ -538,7 +538,7 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 			err = d.Set("zone", *dedicatedHost.Zone.Name)
 			if err != nil {
 				err = fmt.Errorf("[ERROR] Error setting zone: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host", "read", "set-zone").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host", "read", "set-zone").GetDiag()
 			}
 		}
 

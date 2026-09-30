@@ -49,6 +49,34 @@ func DataSourceIBMISLBListener() *schema.Resource {
 					},
 				},
 			},
+			"client_authentication": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The client authentication to use for this listener.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_authority": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The certificate instance used for the listener client certificate authority.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this certificate instance.",
+									},
+								},
+							},
+						},
+						"certificate_revocation_list": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A PEM-encoded certificate revocation list (CRL) used for the listener.",
+						},
+					},
+				},
+			},
 			"connection_limit": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -251,6 +279,12 @@ func dataSourceIBMIsLbListenerRead(context context.Context, d *schema.ResourceDa
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting certificate_instance: %s", err), "(Data) ibm_is_lb_listener", "read", "set-certificate_instance").GetDiag()
 		}
 	}
+	if loadBalancerListener.ClientAuthentication != nil {
+		err = d.Set("client_authentication", dataSourceLoadBalancerListenerFlattenClientAuthentication(*loadBalancerListener.ClientAuthentication))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_authentication: %s", err), "(Data) ibm_is_lb_listener", "read", "set-client_authentication").GetDiag()
+		}
+	}
 	if loadBalancerListener.ConnectionLimit != nil {
 		if err = d.Set("connection_limit", flex.IntValue(loadBalancerListener.ConnectionLimit)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connection_limit: %s", err), "(Data) ibm_is_lb_listener", "read", "set-connection_limit").GetDiag()
@@ -306,6 +340,24 @@ func dataSourceIBMIsLbListenerRead(context context.Context, d *schema.ResourceDa
 	}
 
 	return nil
+}
+
+func dataSourceLoadBalancerListenerFlattenClientAuthentication(result vpcv1.LoadBalancerListenerClientAuthentication) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceLoadBalancerListenerFlattenClientAuthenticationToMap(result)
+	finalList = append(finalList, finalMap)
+	return finalList
+}
+
+func dataSourceLoadBalancerListenerFlattenClientAuthenticationToMap(clientAuthItem vpcv1.LoadBalancerListenerClientAuthentication) (clientAuthMap map[string]interface{}) {
+	clientAuthMap = map[string]interface{}{}
+	if clientAuthItem.CertificateAuthority != nil {
+		clientAuthMap["certificate_authority"] = dataSourceLoadBalancerListenerFlattenCertificateInstance(*clientAuthItem.CertificateAuthority)
+	}
+	if clientAuthItem.CertificateRevocationList != nil {
+		clientAuthMap["certificate_revocation_list"] = *clientAuthItem.CertificateRevocationList
+	}
+	return clientAuthMap
 }
 
 func dataSourceLoadBalancerListenerFlattenCertificateInstance(result vpcv1.CertificateInstanceReference) (finalList []map[string]interface{}) {

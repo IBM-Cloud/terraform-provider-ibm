@@ -49,7 +49,7 @@ func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 				),
 			},
 			{
-				ExpectError: regexp.MustCompile("Template version '3' is not found."),
+				ExpectError: regexp.MustCompile(`Assignment version cannot`),
 				Config:      testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name, 3),
 			},
 			{

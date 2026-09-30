@@ -17,7 +17,7 @@ parentheses):
 The following parameters can be set by the user:
 
 * `pi_name`: Name assigned to Virtual Server Instance
-* `sys_type`: The type of system on which to create the VM (s922/e880/any)
+* `sys_type`: The type of system on which to create the VM
 * `pi_image`: VM image name ([retrieve available images])
 * `proc_type`: The type of processor mode in which the VM will run
                (shared/dedicated)

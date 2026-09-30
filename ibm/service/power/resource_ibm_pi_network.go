@@ -83,6 +83,12 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeSet,
 			},
+			Arg_EnableDHCP: {
+				Computed:    true,
+				Description: "Network will support DHCP.",
+				Optional:    true,
+				Type:        schema.TypeBool,
+			},
 			Arg_Gateway: {
 				Computed:    true,
 				Description: "The gateway ip address.",
@@ -186,6 +192,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
+			Attr_EnableDHCP: {
+				Computed:    true,
+				Description: "DHCP enabled network.",
+				Type:        schema.TypeBool,
+			},
 			Attr_NetworkAddressTranslation: {
 				Computed:    true,
 				Deprecated:  "This field is deprecated",
@@ -285,6 +296,10 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 
 	if _, ok := d.GetOk(Arg_Cidr); ok && networktype == PubVlan {
 		return diag.Errorf("%s cannot be set when %s is pub-vlan", Arg_Cidr, Arg_NetworkType)
+	}
+
+	if !d.GetRawConfig().GetAttr(Arg_EnableDHCP).IsNull() {
+		body.EnableDHCP = flex.PtrToBool(d.Get(Arg_EnableDHCP).(bool))
 	}
 
 	if !sess.IsOnPrem() {
@@ -387,6 +402,8 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(Arg_NetworkMTU, networkdata.Mtu)
 	d.Set(Arg_NetworkName, networkdata.Name)
 	d.Set(Arg_NetworkType, networkdata.Type)
+	d.Set(Arg_EnableDHCP, networkdata.EnableDHCP)
+	d.Set(Attr_EnableDHCP, networkdata.EnableDHCP)
 	d.Set(Attr_NetworkID, networkdata.NetworkID)
 	networkAddressTranslation := []map[string]interface{}{}
 	if networkdata.NetworkAddressTranslation != nil {
@@ -424,7 +441,7 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges(Arg_Advertise, Arg_ARPBroadcast, Arg_DNS, Arg_Gateway, Arg_IPAddressRange, Arg_NetworkName) {
+	if d.HasChanges(Arg_Advertise, Arg_ARPBroadcast, Arg_DNS, Arg_EnableDHCP, Arg_Gateway, Arg_IPAddressRange, Arg_NetworkName) {
 		client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{}
 
@@ -438,6 +455,10 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		if d.HasChange(Arg_DNS) {
 			body.DNSServers = flex.ExpandStringList((d.Get(Arg_DNS).(*schema.Set)).List())
+		}
+
+		if d.HasChange(Arg_EnableDHCP) {
+			body.EnableDHCP = flex.PtrToBool(d.Get(Arg_EnableDHCP).(bool))
 		}
 
 		networkType := d.Get(Arg_NetworkType).(string)
@@ -605,7 +626,11 @@ func isIBMPINetworkRefreshUpdateFunc(client *instance.IBMPINetworkClient, update
 				}
 			}
 		}
-
+		if updateBody.EnableDHCP != nil {
+			if *updateBody.EnableDHCP != network.EnableDHCP {
+				return network, State_Retry, nil
+			}
+		}
 		if updateBody.Gateway != nil {
 			if *updateBody.Gateway != network.Gateway {
 				return network, State_Retry, nil
@@ -681,8 +706,7 @@ func generateIPData(cdir string) (gway, firstip, lastip string, err error) {
 	ad := cidr.AddressCount(ipv4Net)
 
 	convertedad := strconv.FormatUint(ad, 10)
-	// Powervc in wdc04 has to reserve 3 ip address hence we start from the 4th. This will be the default behaviour
-	firstusable, err := cidr.Host(ipv4Net, 4)
+	firstusable, err := cidr.Host(ipv4Net, 2)
 	if err != nil {
 		log.Print(err)
 		return "", "", "", err

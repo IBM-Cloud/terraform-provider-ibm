@@ -49,15 +49,15 @@ In addition to all argument reference list, you can access the following attribu
 - `maximum_storage_allocation` - (Map) Maximum storage allocation.
 
   Nested scheme for `maximum_storage_allocation`:
-  - `max_allocation_size` - (Integer) Maximum allocation storage size (GB).
+  - `max_allocation_size` - (Integer) Maximum allocation storage size (GiB).
   - `storage_pool` - (String) The storage pool.
   - `storage_type`- (String) The storage type.
 
 - `storage_pools_capacity` - (List) List of storage pools capacity.
 
   Nested scheme for `storage_pools_capacity`:
-  - `max_allocation_size` - (Integer) Maximum allocation storage size (GB).
+  - `max_allocation_size` - (Integer) Maximum allocation storage size (GiB).
   - `pool_name` - (String) The pool name.
   - `storage_type` - (String) Storage type of the storage pool.
-  - `total_capacity` - (Integer) Total pool capacity (GB).
+  - `total_capacity` - (Integer) Total pool capacity (GiB).
   

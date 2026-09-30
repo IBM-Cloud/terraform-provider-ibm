@@ -8,14 +8,56 @@ description: |-
 
 # ibm_iam_account_settings
 
-Create or update iam_account_settingss with this resource.
+Create or update iam_account_settings with this resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
   mfa = "LEVEL3"
   session_expiration_in_seconds = "40000"
+}
+```
+
+### Configure MFA and Session Expiration
+
+```terraform
+resource "ibm_iam_account_settings" "iam_account_settings_instance" {
+  mfa                             = "LEVEL3"
+  session_expiration_in_seconds   = "40000"
+  session_invalidation_in_seconds = "1800"
+  max_sessions_per_identity       = "5"
+}
+```
+
+### Restrict User Invitations by Domain
+
+```terraform
+resource "ibm_iam_account_settings" "iam_account_settings_instance" {
+
+  restrict_user_domains {
+    realm_id = "IBMid"
+
+    invitation_email_allow_patterns = [
+      "*@example.com",
+      "*@ibm.com"
+    ]
+
+    restrict_invitation = true
+  }
+}
+```
+
+### Configure User MFA Exceptions
+
+```terraform
+resource "ibm_iam_account_settings" "iam_account_settings_instance" {
+  mfa        = "LEVEL2"
+
+  user_mfa {
+    iam_id = "IBMid-123456789"
+    mfa    = "NONE"
+  }
 }
 ```
 
@@ -23,11 +65,48 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 
 You can specify the following arguments for this resource.
 
-* `account_id` - (Required, Forces new resource, String) Unique ID of the account.
 * `include_history` - (Optional, Boolean) Defines if the entity history is included in the response.
   * Constraints: The default value is `false`.
+
 * `resolve_user_mfa` - (Optional, Boolean) Enrich MFA exemptions with user PI.
   * Constraints: The default value is `false`.
+
+* `restrict_create_service_id` - (Optional, String) Defines whether or not creating a Service Id is access controlled.
+  * Constraints: Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+
+* `restrict_create_platform_apikey` - (Optional, String) Defines whether or not creating platform API keys is access controlled.
+  * Constraints: Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+
+* `restrict_user_list_visibility` - (Optional, String) Defines whether or not user visibility is access controlled.
+  * Constraints: Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`.
+
+* `restrict_user_domains` - (Optional, List) Defines if account invitations are restricted to specified domains.
+
+	Nested schema for **restrict_user_domains**:
+	* `realm_id` - (Optional, String) The realm that the restrictions apply to.
+	* `invitation_email_allow_patterns` - (Optional, List) The list of allowed email patterns.
+	* `restrict_invitation` - (Optional, Boolean) When true invites will only be possible to the domain patterns provided.
+
+* `allowed_ip_addresses` - (Optional, String) Defines the IP addresses and subnets from which IAM tokens can be created for the account.
+
+* `mfa` - (Optional, String) MFA trait definitions.
+  * Constraints: Allowable values are: `NONE`, `NONE_NO_ROPC`, `TOTP`, `TOTP4ALL`, `LEVEL1`, `LEVEL2`, `LEVEL3`.
+
+* `user_mfa` - (Optional, List) List of users that are exempted from the MFA requirement of the account.
+
+	Nested schema for **user_mfa**:
+	* `iam_id` - (Required, String) The iam_id of the user.
+	* `mfa` - (Optional, String) MFA requirement for the user.
+
+	* `session_expiration_in_seconds` - (Optional, String) Defines the session expiration in seconds for the account.
+
+	* `session_invalidation_in_seconds` - (Optional, String) Defines the period of time in seconds in which a session will be invalidated due to inactivity.
+
+	* `max_sessions_per_identity` - (Optional, String) Defines the max allowed sessions per identity required by the account.
+
+	* `system_access_token_expiration_in_seconds` - (Optional, String) Defines the access token expiration in seconds.
+
+	* `system_refresh_token_expiration_in_seconds` - (Optional, String) Defines the refresh token expiration in seconds.
 
 ## Attribute Reference
 

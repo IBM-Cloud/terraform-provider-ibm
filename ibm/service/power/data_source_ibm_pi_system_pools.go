@@ -39,17 +39,17 @@ func DataSourceIBMPISystemPools() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						Attr_Capacity: {
 							Computed:    true,
-							Description: "Advertised capacity cores and memory (GB).",
+							Description: "Advertised capacity cores and memory (GiB).",
 							Type:        schema.TypeMap,
 						},
 						Attr_CoreMemoryRatio: {
 							Computed:    true,
-							Description: "Processor to Memory (GB) Ratio.",
+							Description: "Processor to Memory (GiB) Ratio.",
 							Type:        schema.TypeFloat,
 						},
 						Attr_MaxAvailable: {
 							Computed:    true,
-							Description: "Maximum configurable cores and memory (GB) (aggregated from all hosts).",
+							Description: "Maximum configurable cores and memory (GiB) (aggregated from all hosts).",
 							Type:        schema.TypeMap,
 						},
 						Attr_MaxCoresAvailable: {

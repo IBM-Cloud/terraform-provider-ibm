@@ -36,6 +36,44 @@ func DataSourceIBMIsSnapshotConsistencyGroup() *schema.Resource {
 				ValidateFunc: validate.InvokeDataSourceValidator("ibm_is_snapshot_consistency_group", isSnapshotName),
 				Description:  "The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the region.",
 			},
+			"backup_policy_job": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this backup policy job.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this backup policy job.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 			"backup_policy_plan": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -45,7 +83,7 @@ func DataSourceIBMIsSnapshotConsistencyGroup() *schema.Resource {
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
@@ -313,6 +351,20 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 
 				d.SetId(fmt.Sprintf("%s", *snapshotConsistencyGroup.ID))
 
+				backupPolicyJob := []map[string]interface{}{}
+				if snapshotConsistencyGroup.BackupPolicyJob != nil {
+					modelMap, err := dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceToMap(snapshotConsistencyGroup.BackupPolicyJob)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot_consistency_group", "read", "backup_policy_job-to-map").GetDiag()
+					}
+					backupPolicyJob = append(backupPolicyJob, modelMap)
+				}
+				if len(backupPolicyJob) > 0 {
+					if err = d.Set("backup_policy_job", backupPolicyJob); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_job: %s", err), "(Data) ibm_is_snapshot_consistency_group", "read", "set-backup_policy_job").GetDiag()
+					}
+				}
+
 				backupPolicyPlan := []map[string]interface{}{}
 				if snapshotConsistencyGroup.BackupPolicyPlan != nil {
 					modelMap, err := dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(snapshotConsistencyGroup.BackupPolicyPlan)
@@ -415,6 +467,20 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 
 		d.SetId(fmt.Sprintf("%s", *getSnapshotConsistencyGroupOptions.ID))
 
+		backupPolicyJob := []map[string]interface{}{}
+		if snapshotConsistencyGroup.BackupPolicyJob != nil {
+			modelMap, err := dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceToMap(snapshotConsistencyGroup.BackupPolicyJob)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot_consistency_group", "read", "backup_policy_job-to-map").GetDiag()
+			}
+			backupPolicyJob = append(backupPolicyJob, modelMap)
+		}
+		if len(backupPolicyJob) > 0 {
+			if err = d.Set("backup_policy_job", backupPolicyJob); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy_job: %s", err), "(Data) ibm_is_snapshot_consistency_group", "read", "set-backup_policy_job").GetDiag()
+			}
+		}
+
 		backupPolicyPlan := []map[string]interface{}{}
 		if snapshotConsistencyGroup.BackupPolicyPlan != nil {
 			modelMap, err := dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(snapshotConsistencyGroup.BackupPolicyPlan)
@@ -501,6 +567,27 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 		return nil
 	}
 
+}
+
+func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceToMap(model *vpcv1.BackupPolicyJobReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["resource_type"] = model.ResourceType
+	return modelMap, nil
+}
+
+func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = model.MoreInfo
+	return modelMap, nil
 }
 
 func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(model *vpcv1.BackupPolicyPlanReference) (map[string]interface{}, error) {

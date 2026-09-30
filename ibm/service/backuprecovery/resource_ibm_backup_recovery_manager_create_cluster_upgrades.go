@@ -26,8 +26,8 @@ func ResourceIbmBackupRecoveryManagerCreateClusterUpgrades() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate,
 		ReadContext:   resourceIbmBackupRecoveryManagerCreateClusterUpgradesRead,
-		DeleteContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesDelete,
 		UpdateContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesUpdate,
+		DeleteContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -206,7 +206,7 @@ func resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate(context context
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_create_cluster_upgrades", "create")
@@ -214,7 +214,7 @@ func resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate(context context
 		return tfErr.GetDiag()
 	}
 	if instanceId != "" {
-		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	createClustersUpgradesOptions := &backuprecoveryv1.CreateClustersUpgradesOptions{}

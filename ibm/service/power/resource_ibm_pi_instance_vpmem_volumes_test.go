@@ -9,16 +9,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
 func TestAccIBMPIInstancevpmemVolumesBasic(t *testing.T) {
@@ -32,8 +30,8 @@ func TestAccIBMPIInstancevpmemVolumesBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIInstancevpmemVolumesConfigBasic(name, power.OK, power.Action_Stop),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes_instance"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes_instance", "volumes.#", "1"),
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "1"),
 				),
 			},
 		},
@@ -86,6 +84,443 @@ func testAccCheckIBMPIInstancevpmemVolumesConfigBasic(name, instanceHealthStatus
 		pi_vpmem_volumes {
 			name = "%[2]s-1"
 			size = 1
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func TestAccIBMPIInstancevpmemVolumesUpdate(t *testing.T) {
+	name := fmt.Sprintf("tf-pvm-vpmem-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstancevpmemVolumesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigBasic(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigRenameUpdate(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigAddUpdate(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-3"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigRemoveUpdate(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-3"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigMixedUpdate(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1r"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-4"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstancevpmemVolumesDuplicateSize(t *testing.T) {
+	name := fmt.Sprintf("tf-pvm-vpmem-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstancevpmemVolumesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeCreate(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-v1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.size", "2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-v2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.size", "2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-v3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.size", "3"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeRename(name, power.OK, power.Action_Stop),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-v1r"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.size", "2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-v2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.size", "2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-v3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.size", "3"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigRenameUpdate(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+ 	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id 
+	}	
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-2"
+			size = 1
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigAddUpdate(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+ 	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id 
+	}	
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-1"
+			size = 1
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-2"
+			size = 1
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-3"
+			size = 1
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigRemoveUpdate(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+ 	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id 
+	}	
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-1"
+			size = 1
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-3"
+			size = 1
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigMixedUpdate(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id
+	}
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-1r"
+			size = 1
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-3"
+			size = 1
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-4"
+			size = 2
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeCreate(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id
+	}
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-v1"
+			size = 2
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-v2"
+			size = 2
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-v3"
+			size = 3
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)
+}
+
+func testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeRename(name, instanceHealthStatus, action string) string {
+	return fmt.Sprintf(`
+		
+		data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "vm" {
+		pi_action				= "%[7]s"
+		pi_cloud_instance_id	= "%[1]s"
+		pi_instance_id			= ibm_pi_instance.power_instance.instance_id
+	}
+	resource "ibm_pi_instance_vpmem_volumes" "vpmem_volumes" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
+		pi_vpmem_volumes {
+			name = "%[2]s-v1r"
+			size = 2
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-v2"
+			size = 2
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-v3"
+			size = 3
 		}
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, action)

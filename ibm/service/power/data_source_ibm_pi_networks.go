@@ -53,7 +53,12 @@ func DataSourceIBMPINetworks() *schema.Resource {
 						},
 						Attr_DhcpManaged: {
 							Computed:    true,
-							Description: "Indicates if the network DHCP Managed.",
+							Description: "DHCP enabled network.",
+							Type:        schema.TypeBool,
+						},
+						Attr_EnableDHCP: {
+							Computed:    true,
+							Description: "DHCP enabled network.",
 							Type:        schema.TypeBool,
 						},
 						Attr_Href: {
@@ -139,6 +144,7 @@ func flattenNetworks(list []*models.NetworkReference, meta any) []map[string]any
 			Attr_Advertise:    i.Advertise,
 			Attr_ARPBroadcast: i.ArpBroadcast,
 			Attr_DhcpManaged:  i.DhcpManaged,
+			Attr_EnableDHCP:   i.EnableDHCP,
 			Attr_Href:         *i.Href,
 			Attr_MTU:          i.Mtu,
 			Attr_Name:         *i.Name,

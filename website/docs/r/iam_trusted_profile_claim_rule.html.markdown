@@ -57,7 +57,7 @@ Nested scheme for **conditions**:
 	* `claim` - (Required, String) The claim to evaluate against.
 	* `operator` - (Required, String) The operation to perform on the claim. Supported values are EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN.
 	* `value` - (Required, String) The stringified JSON value that the claim is compared to using the operator.
-* `cr_type` - (Optional, String) The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Supported values are VSI, IKS_SA, ROKS_SA.
+* `cr_type` - (Optional, String) The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Supported values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.
 * `expiration` - (Optional, Integer) Session expiration in seconds, only required if type is 'Profile-SAML'.
 * `name` - (Optional, String) Name of the claim rule to be created or updated.
 * `profile_id` - (Required, Forces new resource, String) ID of the trusted profile to create a claim rule.

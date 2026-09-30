@@ -53,6 +53,11 @@ func ResourceIBMIsVPNServer() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceValidateAccessTags(diff, v)
 				}),
 		),
@@ -488,7 +493,7 @@ func resourceIBMIsVPNServerCreate(context context.Context, d *schema.ResourceDat
 				clientAuthPrototype.ClientCa = certificateInstanceIdentity
 
 			} else {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Error method type `certificate` should be passed with `client_ca_crn`", "ibm_is_vpn_server", "client_ca_crn").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server", "create", "parse-client_ca_crn").GetDiag()
 
 			}
 		} else {
@@ -583,7 +588,7 @@ func resourceIBMIsVPNServerCreate(context context.Context, d *schema.ResourceDat
 
 	_, err = isWaitForVPNServerStable(context, vpcClient, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "isWaitForVPNServerStable", "create", "wait-for-stable-vpnserver").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server", "create", "wait-for-stable-vpnserver").GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -20,6 +20,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/hashicorp/go-cty/cty"
 )
 
 const (
@@ -75,28 +76,26 @@ func ResourceIBMIamAccountSettings() *schema.Resource {
 			"restrict_user_domains": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Computed:    true,
 				Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"realm_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The realm that the restrictions apply to.",
 						},
 						"invitation_email_allow_patterns": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:             schema.TypeList,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressRestrictUserDomains,
+							Description:      "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+							Elem:             &schema.Schema{Type: schema.TypeString},
 						},
 						"restrict_invitation": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+							Type:             schema.TypeBool,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressRestrictUserDomains,
+							Description:      "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
 						},
 					},
 				},
@@ -128,20 +127,17 @@ func ResourceIBMIamAccountSettings() *schema.Resource {
 			"user_mfa": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Computed:    true,
 				Description: "List of users that are exempted from the MFA requirement of the account.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"iam_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The iam_id of the user.",
 						},
 						"mfa": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "Defines the MFA requirement for the user. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
 						},
 						"name": {
@@ -288,14 +284,18 @@ func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 func resourceIBMIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamAccountSettingsCreate failed: %s", err.Error()), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getAccountSettingsOptions.SetAccountID(userDetails.UserAccount)
 	if _, ok := d.GetOk("include_history"); ok {
@@ -304,8 +304,9 @@ func resourceIBMIamAccountSettingsCreate(context context.Context, d *schema.Reso
 
 	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAccountSettings failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamAccountSettingsCreate failed: %s", err.Error()), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\nGetAccountSettings failed: %s\n%s", tfErr.GetDebugMessage(), response)
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*accountSettingsResponse.AccountID)
@@ -377,6 +378,24 @@ func resourceIBMIamAccountSettingsRead(context context.Context, d *schema.Resour
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "restrict_user_domains-to-map").GetDiag()
 		}
 		restrictUserDomains = append(restrictUserDomains, restrictUserDomainsItemMap)
+	}
+
+	// Edge case: The API treats a restrict_user_domains entry with only realm_id as a "clear" command
+	// and returns an empty list afterwards. Re-inject any such "sentinel" entries from prior state so
+	// Terraform does not plan a perpetual addition diff on subsequent applies.
+	if len(restrictUserDomains) == 0 {
+		for _, prior := range d.Get("restrict_user_domains").([]interface{}) {
+			priorEntry := prior.(map[string]interface{})
+			realmID, _ := priorEntry["realm_id"].(string)
+			restrictInvitation, _ := priorEntry["restrict_invitation"].(bool)
+			patterns, _ := priorEntry["invitation_email_allow_patterns"].([]interface{})
+			if realmID != "" && !restrictInvitation && len(patterns) == 0 {
+				// re-inject realm_id so that the plan matches the "sentinel" format
+				restrictUserDomains = append(restrictUserDomains, map[string]interface{}{
+					"realm_id": realmID,
+				})
+			}
+		}
 	}
 	if err = d.Set("restrict_user_domains", restrictUserDomains); err != nil {
 		err = fmt.Errorf("Error setting restrict_user_domains: %s", err)
@@ -472,27 +491,44 @@ func resourceIBMIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("user_mfa") {
-		if _, ok := d.GetOk("user_mfa"); ok {
-			var userMfa []iamidentityv1.UserMfa
-			for _, v := range d.Get("user_mfa").([]interface{}) {
-				value := v.(map[string]interface{})
-				userMfaItem, err := ResourceIBMIamAccountSettingsMapToUserMfa(value)
-				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-user_mfa").GetDiag()
-				}
-				userMfa = append(userMfa, *userMfaItem)
+		// Create userMfa as a non-nil empty array
+		userMfa := make([]iamidentityv1.UserMfa, 0)
+		for _, v := range d.Get("user_mfa").([]interface{}) {
+			value := v.(map[string]interface{})
+			if value["iam_id"] == nil || value["iam_id"].(string) == "" {
+				// Ignore empty entries, to allow for use case of clearing the userMfa
+				continue
 			}
-			updateAccountSettingsOptions.SetUserMfa(userMfa)
+			userMfaItem, err := ResourceIBMIamAccountSettingsMapToUserMfa(value)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-user_mfa").GetDiag()
+			}
+			// Add the userMfa entry to the array
+			userMfa = append(userMfa, *userMfaItem)
 		}
-
+		// When no entries have been added to userMfa arrary we still want to set it here even though the array is empty, to handle use case of clearing userMfa
+		updateAccountSettingsOptions.SetUserMfa(userMfa)
 		hasChange = true
 	}
 
 	if d.HasChange("restrict_user_domains") {
 		if _, ok := d.GetOk("restrict_user_domains"); ok {
 			var restrictUserDomains []iamidentityv1.AccountSettingsUserDomainRestriction
-			for _, v := range d.Get("restrict_user_domains").([]interface{}) {
+			for i, v := range d.Get("restrict_user_domains").([]interface{}) {
 				value := v.(map[string]interface{})
+
+				// Raw config is used to detect absent restrict_invitation, since d.GetChange
+				// shows restrict_invitation=false when it is absent from restrict_user_domains
+				rawConfig := d.GetRawConfig()
+				if !rawConfig.IsNull() {
+					if restrictUserDomainsRaw := rawConfig.GetAttr("restrict_user_domains"); !restrictUserDomainsRaw.IsNull() && restrictUserDomainsRaw.LengthInt() > i {
+						if element := restrictUserDomainsRaw.Index(cty.NumberIntVal(int64(i))); !element.IsNull() && element.GetAttr("restrict_invitation").IsNull() {
+							// restrict_invitation is absent from restrict_user_domains config. Remove it fully from value
+							delete(value, "restrict_invitation")
+						}
+					}
+				}
+
 				restrictUserDomainsItem, err := ResourceIBMIamAccountSettingsMapToAccountSettingsUserDomainRestriction(value)
 				if err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-restrict_user_domains").GetDiag()

@@ -118,6 +118,11 @@ func DataSourceIBMISImages() *schema.Resource {
 							Computed:    true,
 							Description: "Whether the image is publicly visible or private to the account",
 						},
+						"minimum_provisioned_size": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum size (in gigabytes) of a volume onto which this image may be provisioned.",
+						},
 						"operating_system": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -542,6 +547,9 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		if image.SourceVolume != nil {
 			l["source_volume"] = *image.SourceVolume.ID
 		}
+		if image.MinimumProvisionedSize != nil {
+			l["minimum_provisioned_size"] = flex.IntValue(image.MinimumProvisionedSize)
+		}
 		if image.CatalogOffering != nil {
 			catalogOfferingList := []map[string]interface{}{}
 			catalogOfferingMap := dataSourceImageCollectionCatalogOfferingToMap(*image.CatalogOffering)
@@ -553,7 +561,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 			imageRemoteMap, err := dataSourceImageRemote(image)
 			if err != nil {
 				if err != nil {
-					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read", "initialize-client")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}
@@ -567,7 +575,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 			usageConstraintList := []map[string]interface{}{}
 			modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read")
 				log.Println(tfErr.GetDiag())
 			}
 			usageConstraintList = append(usageConstraintList, modelMap)
@@ -585,7 +593,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		for _, zonesItem := range image.Zones {
 			zonesItemMap, err := DataSourceIBMIsImagesZoneReferenceToMap(&zonesItem) // #nosec G601
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read")
 				log.Println(tfErr.GetDiag())
 			}
 			zones = append(zones, zonesItemMap)

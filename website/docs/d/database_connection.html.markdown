@@ -8,16 +8,62 @@ subcategory: "Cloud Databases"
 
 # ibm_database_connection
 
-Provides a read-only data source for database_connection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for database_connection. Supports both Classic and Gen2 database instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+### Gen2 Independent Backups and S2S Authorization
+
+Gen2 database instances support **Independent Backups** — automated backups managed independently of the database instance lifecycle. When a Gen2 instance is configured to use Independent Backups, it requires a service-to-service (S2S) IAM authorization between the database service and the backup storage.
+
+If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan` or `apply`:
+
+```
+╷
+│ Warning: Database backup authorization required
+│
+│   with data.ibm_database_connection.<name>,
+│
+│ This database uses Independent Backups.
+│ Existing backups remain available for 30 days from their creation date.
+│ Backup creation and management are unavailable until the required service authorization is completed.
+│
+│ Complete the required service authorization to enable backup operations.
+╵
+```
+
+The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+
+To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 
 ## Example Usage
 
+### Classic
+
 ```hcl
 data "ibm_database_connection" "database_connection" {
-	endpoint_type = "public"
-	deployment_id = ibm_database.my_db.id
-	user_id = "user_id"
-	user_type = "database"
+  endpoint_type = "public"
+  deployment_id = ibm_database.my_db.id
+  user_id       = "user_id"
+  user_type     = "database"
+}
+```
+
+### Gen2
+
+For Gen2 instances, connection information is retrieved through IBM Cloud resource keys. A resource key must exist for the instance before this data source can be used. The `user_id` is matched against resource key names; if no match is found, the first available key is used automatically.
+
+```hcl
+resource "ibm_resource_key" "db_key" {
+  name                 = "my-db-key"
+  resource_instance_id = ibm_database.my_db.id
+}
+
+data "ibm_database_connection" "database_connection" {
+  deployment_id = ibm_database.my_db.id
+  user_id       = ibm_resource_key.db_key.name
+  user_type     = "database"
+  endpoint_type = "private"
+
+  depends_on = [ibm_resource_key.db_key]
 }
 ```
 
@@ -25,12 +71,37 @@ data "ibm_database_connection" "database_connection" {
 
 Review the argument reference that you can specify for your data source.
 
-* `endpoint_type` - (Required, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.
+* `endpoint_type` - (Required, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched. Not used for key selection in Gen2.
   * Constraints: Allowable values are: `public`, `private`.
 * `deployment_id` - (Required, String) Deployment ID.
+
+  **Classic:** The database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:us-south:a/<account_id>:<instance_id>::
+  ```
+
+  **Gen2:** The Gen2 database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:<region>:a/<account_id>:<instance_id>::
+  ```
+  The Gen2 deployment CRN can be retrieved from:
+  - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
+  - The IBM Cloud UI under **Databases → your instance → Overview**.
+
 * `user_id` - (Required, String) User ID.
-* `user_type` - (Required, String) User type.
+
+  **Classic:** The database username to fetch connection information for.
+
+  **Gen2:** The name of the resource key to use. If no key with this name exists, the first available resource key for the instance is used automatically.
+
+* `user_type` - (Required, String) User type. Not used for connection retrieval in Gen2.
 * `certificate_root` - (Optional, String) Optional certificate root path to prepend certificate names. Certificates would be stored in this directory for use by other commands.
+
+## Gen2 Behaviour
+
+For Gen2 database instances, connection information is extracted from IBM Cloud resource key credentials via the Resource Controller API rather than the Cloud Databases V5 API. The `user_id` field is matched against resource key names. If no matching key is found, the first available key is used and `user_id` is updated in state to reflect the actual key name used.
+
+**Note:** If no resource keys exist for the Gen2 instance, the data source returns an error. Create a resource key using `ibm_resource_key` before using this data source.
 
 ## Attribute Reference
 

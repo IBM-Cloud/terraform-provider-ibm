@@ -33,6 +33,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Config: testAccCheckIBMIsSnapshotConsistencyGroupDataSourceConfigBasic(vpcname, subnetname, sshname, publicKey, name, scgname, snapname, deleteSnapshotsOnDelete),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "backup_policy_job.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "delete_snapshots_on_delete"),
@@ -52,7 +53,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func testAccCheckIBMIsSnapshotConsistencyGroupDataSourceConfigBasic(vpcname, subnetname, sshname, publicKey, name, snapname, scgname, deleteSnapshotsOnDelete string) string {
+func testAccCheckIBMIsSnapshotConsistencyGroupDataSourceConfigBasic(vpcname, subnetname, sshname, publicKey, name, scgname, snapname, deleteSnapshotsOnDelete string) string {
 	return testAccCheckIBMIsSnapshotConsistencyGroupConfig(vpcname, subnetname, sshname, publicKey, name, scgname, snapname, deleteSnapshotsOnDelete) + fmt.Sprintf(`
 	data "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group" {
 		identifier = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group.id

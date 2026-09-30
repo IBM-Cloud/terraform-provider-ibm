@@ -23,6 +23,19 @@ resource "ibm_cm_validation" "cm_version_validation" {
   mark_version_consumable = true
 }
 ```
+where each 'example_override_key' is the name of one of the input variables.  The value should be appropriate for the input variable.  Override 
+values are optional and are one way to provide a value for an input that is different from the default value defined or provide a value when no default
+value has been defined.
+
+For example: 
+``` 
+resource "ibm_cm_validation" "cm_version_validation" {
+   version_locator = "11111111-1111-1111-111111111111.22222222-2222-2222-2222-222222222222"
+   override_values = {
+     "color" = "red"
+   }
+}
+```
 
 ## Argument Reference
 

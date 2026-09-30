@@ -304,7 +304,7 @@ func dataSourceIbmBackupRecoveryManagerGetClusterInfoRead(context context.Contex
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_get_cluster_info", "read")
@@ -312,7 +312,7 @@ func dataSourceIbmBackupRecoveryManagerGetClusterInfoRead(context context.Contex
 		return tfErr.GetDiag()
 	}
 	if instanceId != "" {
-		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	getClustersInfoOptions := &backuprecoveryv1.GetClustersInfoOptions{}

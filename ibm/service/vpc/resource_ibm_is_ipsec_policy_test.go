@@ -269,6 +269,138 @@ func testAccCheckIBMISIPSecPolicyAlgorithmConfig(name, authAlg, encAlg, pfs stri
 		}
 	`, name, authAlg, encAlg, pfs)
 }
+
+func TestAccIBMISIPSecPolicy_MultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-multi-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.multi_algorithm_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyMultipleAlgorithmsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISIPSecPolicy_MigrateSingularToMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-migrate-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.migration_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicySingularConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs", "group_17"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyMigrationConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISIPSecPolicy_UpdateMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-updmulti-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.update_multi_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyUpdateMultiInitialConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyUpdateMultiUpdatedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.2", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_15"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_16"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.2", "group_17"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISIPSecPolicyUpdateMultiInitialConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			pfs_groups = ["group_14", "group_15"]
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyUpdateMultiUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha256"]
+			encryption_algorithms = ["aes256", "aes192", "aes128"]
+			pfs_groups = ["group_15", "group_16", "group_17"]
+		}
+	`, name)
+}
+
 func TestAccIBMISIPSecPolicy_ComputedFields(t *testing.T) {
 	name := fmt.Sprintf("tfipsecc-computed-%d", acctest.RandIntRange(10, 100))
 	resourceKey := "ibm_is_ipsec_policy.computed_test"
@@ -300,6 +432,276 @@ func testAccCheckIBMISIPSecPolicyConfigBasic(name string) string {
 			authentication_algorithm = "sha256"
 			encryption_algorithm = "aes128"
 			pfs = "group_17"
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyMultipleAlgorithmsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "multi_algorithm_test" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			pfs_groups = ["group_14", "group_15"]
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicySingularConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "migration_test" {
+			name = "%s"
+			authentication_algorithm = "sha512"
+			encryption_algorithm = "aes256"
+			pfs = "group_17"
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyMigrationConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "migration_test" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			pfs_groups = ["group_14", "group_15"]
+		}
+	`, name)
+}
+
+func TestAccIBMISIPSecPolicy_Scenario1_LegacyNoRegression(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-s1-%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("tfipsecc-s1-upd-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.s1_legacy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyS1LegacyConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs", "disabled"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+					resource.TestCheckResourceAttrSet(resourceKey, "encapsulation_mode"),
+					resource.TestCheckResourceAttrSet(resourceKey, "transform_protocol"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyS1LegacyUpdateLifetimeConfig(name, 7200),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs", "disabled"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "7200"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyS1LegacyUpdateAlgoConfig(updatedName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", updatedName),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "14400"),
+				),
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMISIPSecPolicy_Scenario2_MigrationWithIdempotency(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-s2-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.s2_migration"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyS2SingularConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyS2MigratedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+				),
+			},
+			{
+				Config:   testAccCheckIBMISIPSecPolicyS2MigratedConfig(name),
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMISIPSecPolicy_Scenario3_NewUserFullLifecycle(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-s3-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.s3_newuser"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyS3NewUserConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.2", "group_16"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "7200"),
+					resource.TestCheckResourceAttrSet(resourceKey, "encapsulation_mode"),
+					resource.TestCheckResourceAttrSet(resourceKey, "transform_protocol"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyS3NewUserUpdatedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.2", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_19"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_20"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "14400"),
+				),
+			},
+			{
+				Config:   testAccCheckIBMISIPSecPolicyS3NewUserUpdatedConfig(name),
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISIPSecPolicyS1LegacyConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes128"
+			pfs                      = "disabled"
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyS1LegacyUpdateLifetimeConfig(name string, lifetime int) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes128"
+			pfs                      = "disabled"
+			key_lifetime             = %d
+		}
+	`, name, lifetime)
+}
+
+func testAccCheckIBMISIPSecPolicyS1LegacyUpdateAlgoConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha512"
+			encryption_algorithm     = "aes256"
+			pfs                      = "group_14"
+			key_lifetime             = 14400
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyS2SingularConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s2_migration" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes128"
+			pfs                      = "group_14"
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyS2MigratedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s2_migration" {
+			name                      = "%s"
+			authentication_algorithms = ["sha256", "sha384"]
+			encryption_algorithms     = ["aes128", "aes192"]
+			pfs_groups                = ["group_14", "group_15"]
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyS3NewUserConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s3_newuser" {
+			name                      = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms     = ["aes256", "aes128"]
+			pfs_groups                = ["group_14", "group_15", "group_16"]
+			key_lifetime              = 7200
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyS3NewUserUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "s3_newuser" {
+			name                      = "%s"
+			authentication_algorithms = ["sha256"]
+			encryption_algorithms     = ["aes128", "aes192", "aes256"]
+			pfs_groups                = ["group_19", "group_20"]
+			key_lifetime              = 14400
 		}
 	`, name)
 }

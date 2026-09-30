@@ -223,8 +223,14 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "Specifies the datamover image location of Kubernetes source.",
+						},
+						"datamover_hostport_number": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "Specifies the port number to use when using the HostPort model for datamover communication. If user specifies a port number, that value is set here. If no port number was specified by the user, the gflag controlled value is set here.",
 						},
 						"datamover_service_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -356,6 +362,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Specifies the velero image location of the Kubernetes source.",
+						},
+						"velero_kubevirt_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the velero kubevirt plugin image location of the Kubernetes source.",
 						},
 						"velero_openshift_plugin_image_location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -1336,6 +1347,7 @@ func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool
 			d.HasChange("kubernetes_params.0.resource_annotations") ||
 			d.HasChange("kubernetes_params.0.resource_labels") ||
 			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_kubevirt_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.cohesity_dataprotect_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
@@ -1360,7 +1372,7 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1368,7 +1380,7 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	registerProtectionSourceOptions := &backuprecoveryv1.RegisterProtectionSourceOptions{}
@@ -1474,7 +1486,7 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1482,7 +1494,7 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
@@ -1675,7 +1687,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1683,7 +1695,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -1843,7 +1855,7 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1851,7 +1863,7 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}
@@ -1924,7 +1936,12 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 	if modelMap["cohesity_dataprotect_plugin_image_location"] != nil && modelMap["cohesity_dataprotect_plugin_image_location"].(string) != "" {
 		model.CohesityDataprotectPluginImageLocation = core.StringPtr(modelMap["cohesity_dataprotect_plugin_image_location"].(string))
 	}
-	model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
+	if modelMap["data_mover_image_location"] != nil && modelMap["data_mover_image_location"].(string) != "" {
+		model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
+	}
+	if modelMap["datamover_hostport_number"] != nil {
+		model.DatamoverHostportNumber = core.Int64Ptr(int64(modelMap["datamover_hostport_number"].(int)))
+	}
 	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
 		model.DatamoverServiceType = core.StringPtr(modelMap["datamover_service_type"].(string))
 	}
@@ -1991,6 +2008,9 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 	}
 	if modelMap["velero_image_location"] != nil && modelMap["velero_image_location"].(string) != "" {
 		model.VeleroImageLocation = core.StringPtr(modelMap["velero_image_location"].(string))
+	}
+	if modelMap["velero_kubevirt_plugin_image_location"] != nil && modelMap["velero_kubevirt_plugin_image_location"].(string) != "" {
+		model.VeleroKubevirtPluginImageLocation = core.StringPtr(modelMap["velero_kubevirt_plugin_image_location"].(string))
 	}
 	if modelMap["velero_openshift_plugin_image_location"] != nil && modelMap["velero_openshift_plugin_image_location"].(string) != "" {
 		model.VeleroOpenshiftPluginImageLocation = core.StringPtr(modelMap["velero_openshift_plugin_image_location"].(string))
@@ -2165,6 +2185,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	if model.DataMoverImageLocation != nil {
 		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
 	}
+	if model.DatamoverHostportNumber != nil {
+		modelMap["datamover_hostport_number"] = flex.IntValue(model.DatamoverHostportNumber)
+	}
 	if model.DatamoverServiceType != nil {
 		modelMap["datamover_service_type"] = *model.DatamoverServiceType
 	}
@@ -2231,6 +2254,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	}
 	if model.VeleroImageLocation != nil {
 		modelMap["velero_image_location"] = *model.VeleroImageLocation
+	}
+	if model.VeleroKubevirtPluginImageLocation != nil {
+		modelMap["velero_kubevirt_plugin_image_location"] = *model.VeleroKubevirtPluginImageLocation
 	}
 	if model.VeleroOpenshiftPluginImageLocation != nil {
 		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation

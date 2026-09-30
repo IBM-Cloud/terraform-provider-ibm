@@ -69,7 +69,7 @@ data "iam_trusted_profiles_link" "iam_trusted_profiles_link_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | profile_id | ID of the trusted profile. | `string` | true |
-| cr_type | The compute resource type. Valid values are VSI, IKS_SA, ROKS_SA. | `string` | true |
+| cr_type | The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE. | `string` | true |
 | link | Link details. | `` | true |
 | name | Optional name of the Link. | `string` | false |
 | profile_id | ID of the trusted profile. | `string` | true |

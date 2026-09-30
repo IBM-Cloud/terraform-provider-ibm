@@ -16,7 +16,8 @@ const cisFiltersList = "cis_filters_list"
 
 func DataSourceIBMCISFilters() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISFiltersRead,
+		Read:               dataIBMCISFiltersRead,
+		DeprecationMessage: "Firewall rules are deprecated. CIS moved existing firewall rules to WAF custom rules. For more information on this change, see https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-custom-rules.",
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,

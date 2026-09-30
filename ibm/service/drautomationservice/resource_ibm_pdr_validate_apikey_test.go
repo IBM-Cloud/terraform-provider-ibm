@@ -7,21 +7,25 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "3ad42074-e4f3-4b7b-a3d8-f88799e6da09"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID),
@@ -36,13 +40,14 @@ func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 
 func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "3ad42074-e4f3-4b7b-a3d8-f88799e6da09"
-	acceptLanguage := "it"
-	acceptLanguageUpdate := "it"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	acceptLanguageUpdate := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfig(instanceID, acceptLanguage),
@@ -62,31 +67,28 @@ func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 			resource.TestStep{
 				ResourceName:      "ibm_pdr_validate_apikey.pdr_validate_apikey_instance",
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 func testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID string) string {
-	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
-			api_key = "%s"
 		}
-	`, instanceID, apiKey)
+	`, instanceID)
 }
 
 func testAccCheckIBMPdrValidateApikeyConfig(instanceID string, acceptLanguage string) string {
-	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
+
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
-			api_key = "%s"
 			accept_language = "%s"
 		}
-	`, instanceID, apiKey, acceptLanguage)
+	`, instanceID, acceptLanguage)
 }
 
 func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.ValidationKeyResponse) resource.TestCheckFunc {
@@ -104,7 +106,13 @@ func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.
 
 		getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-		getApikeyOptions.SetInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		validationKeyResponse, _, err := drAutomationServiceClient.GetApikey(getApikeyOptions)
 		if err != nil {
@@ -128,7 +136,13 @@ func testAccCheckIBMPdrValidateApikeyDestroy(s *terraform.State) error {
 
 		getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-		getApikeyOptions.SetInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := drAutomationServiceClient.GetApikey(getApikeyOptions)

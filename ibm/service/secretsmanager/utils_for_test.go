@@ -29,13 +29,13 @@ var customMetadata = `{"key1":"value1"}`
 var modifiedCustomMetadata = `{"key2":"value2"}`
 var rotationPolicy = `{
 				auto_rotate = true
-				interval = 1
-				unit = "day"
+				interval = 2
+				unit = "month"
 			}`
 var modifiedRotationPolicy = `{
 				auto_rotate = true
-				interval = 2
-				unit = "month"
+				interval = 3
+				unit = "day"
 			}`
 
 func getSecret(s *terraform.State, resourceName string) (secretsmanagerv2.SecretIntf, error) {

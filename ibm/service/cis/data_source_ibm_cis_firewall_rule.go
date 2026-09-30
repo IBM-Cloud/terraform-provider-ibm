@@ -17,7 +17,8 @@ import (
 
 func DataSourceIBMCISFirewallRules() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMCISFirewallRulesRead,
+		ReadContext:        dataSourceIBMCISFirewallRulesRead,
+		DeprecationMessage: "Firewall rules are deprecated. CIS moved existing firewall rules to WAF custom rules. For more information on this change, see https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-custom-rules.",
 
 		Schema: map[string]*schema.Schema{
 			cisID: {

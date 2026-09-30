@@ -49,6 +49,7 @@ func testAccCheckIBMEnSourceDataSourceConfigBasic(instanceName, name, descriptio
 		name        = "%s"
 		enabled = true
 		description = "%s"
+		store_notifications = true
 	}
 
 		data "ibm_en_source" "en_source_data_1" {

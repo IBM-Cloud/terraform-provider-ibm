@@ -8,6 +8,9 @@ description: |-
 ---
 
 # ibm_cis_waf_rule
+
+!> **Deprecated:** The legacy WAF APIs are deprecated and are replaced by WAF managed rules. For more information on this change, see [Migrating to WAF managed rules](https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-managed-rules)
+
 Create, update, or delete an IBM Cloud Internet Services WAF rule settings resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to change WAF rule settings of a domain of a CIS instance. For more information, refer to [IBM Cloud Internet Services rule sets](https://cloud.ibm.com/docs/cis?topic=cis-waf-settings#cis-ruleset-for-waf).
 
 ## Example usage

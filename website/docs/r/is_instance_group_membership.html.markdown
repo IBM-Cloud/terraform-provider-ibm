@@ -60,6 +60,6 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance group membership are:
   </br>&#x2022; **deleting** Membership is deleting dependent resources.
   </br>&#x2022; **failed** Membership is unable to maintain dependent resources.
-	</br>&#x2022; **healthy** Membership is active and serving in the group.
-	</br>&#x2022; **pending** Membership is waiting for dependent resources.
-	</br>&#x2022; **unhealthy** Membership contains unhealthy dependent resources.
+  </br>&#x2022; **healthy** Membership is active and serving in the group.
+  </br>&#x2022; **pending** Membership is waiting for dependent resources.
+  </br>&#x2022; **unhealthy** Membership contains unhealthy dependent resources.

@@ -91,16 +91,16 @@ Review the argument references that you can specify for your resource.
 - `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
 - `allowed_use` - (Optional, List) The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot` is bootable. If not specified, the value of this property will be inherited from the `source_snapshot`.
     
-    Nested schema for `allowed_use`:
-    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
-    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
-   
+  Nested schema for `allowed_use`:
+  - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+
+  - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
     ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
       **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-	 
-    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
-    
+
+  - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
     ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties:  </br>
       **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
       **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
@@ -150,12 +150,12 @@ In addition to all argument reference list, you can access the following attribu
 - `catalog_offering` - (List) The catalog offering this volume was created from. If a virtual server instance is provisioned with a boot_volume_attachment specifying this volume, the virtual server instance will use this volume's catalog offering, including its pricing plan.If absent, this volume was not created from a catalog offering.
 
   Nested scheme for `catalog_offering`:
-    - `version_crn` - (String) The CRN for this version of a catalog offering
-    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-    
-      Nested schema for `deleted`:
-        - `more_info`  - (String) Link to documentation about deleted resources.
+  - `version_crn` - (String) The CRN for this version of a catalog offering
+  - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+    Nested schema for `deleted`:
+    - `more_info`  - (String) Link to documentation about deleted resources.
 - `crn` - (String) The CRN for the volume.
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `health_reasons` - (List) The reasons for the current health_state (if any).

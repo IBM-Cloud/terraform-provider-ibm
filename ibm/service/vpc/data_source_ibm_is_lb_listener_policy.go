@@ -74,7 +74,7 @@ func DataSourceIBMISLBListenerPolicy() *schema.Resource {
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
@@ -229,8 +229,7 @@ func dataSourceIBMIsLbListenerPolicyRead(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provisioning_status: %s", err), "(Data) ibm_is_lb_listener_policy", "read", "set-provisioning_status").GetDiag()
 	}
 	if loadBalancerListenerPolicy.Rules != nil {
-		err = d.Set("rules", dataSourceLoadBalancerListenerPolicyFlattenRules(loadBalancerListenerPolicy.Rules))
-		if err != nil {
+		if err = d.Set("rules", dataSourceLoadBalancerListenerPolicyFlattenRules(loadBalancerListenerPolicy.Rules)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting rules: %s", err), "(Data) ibm_is_lb_listener_policy", "read", "set-rules").GetDiag()
 		}
 	}

@@ -40,12 +40,14 @@ In addition to all argument references listed, you can access the following attr
 - `provisioning_status` - (Required, String) The provisioning status of this member.
 - `target` - (Required, List) The pool member target. Load balancers in the `network` family support virtual serverinstances. Load balancers in the `application` family support IP addresses.
 	Nested scheme for `target`:
-    	- `address` - (Optional, String) The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-    	- `crn` - (Optional, String) The CRN for this virtual server instance.
-    	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
-			Nested scheme for `deleted`:
-        		- `more_info` - (Required, String) Link to documentation about deleted resources.
-    	- `href` - (Optional, String) The URL for this virtual server instance.
-    	- `id` - (Optional, String) The unique identifier for this virtual server instance.
-    	- `name` - (Optional, String) The user-defined name for this virtual server instance (and default system hostname).
+	- `address` - (Optional, String) The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	- `crn` - (Optional, String) The CRN for this virtual server instance.
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+		Nested scheme for `deleted`:
+			- `more_info` - (Required, String) Link to documentation about deleted resources.
+	- `fqdn` - (String) A fully qualified domain name for this resource.
+	- `href` - (Optional, String) The URL for this virtual server instance.
+	- `id` - (Optional, String) The unique identifier for this virtual server instance.
+	- `name` - (Optional, String) The user-defined name for this virtual server instance (and default system hostname).
+	- `resource_type` - (String) The resource type.
 - `weight` - (Optional, Integer) Weight of the server member. Applicable only if the pool algorithm is`weighted_round_robin`.

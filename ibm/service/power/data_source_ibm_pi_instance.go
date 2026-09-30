@@ -44,6 +44,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_AllowRemoteRestart: {
+				Computed:    true,
+				Description: "Indicates if the server allows server to be restarted from remote.",
+				Type:        schema.TypeBool,
+			},
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
@@ -53,6 +58,44 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The dedicated host ID where the shared processor pool resides.",
 				Type:        schema.TypeString,
+			},
+			Attr_DefaultTrustedProfile: {
+				Description: "default IAM trusted profile to use for this virtual server instance.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Autolink: {
+							Computed:    true,
+							Description: "If set to true, the system will create a link to the specified trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+							Type:        schema.TypeBool,
+						},
+						Attr_Target: {
+							Description: "The target of the trusted profile.",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_CRN: {
+										Computed:    true,
+										Description: "The CRN for the trusted profile.",
+										Type:        schema.TypeString,
+									},
+									Attr_ID: {
+										Computed:    true,
+										Description: "Unique identifier for the trusted profile.",
+										Type:        schema.TypeString,
+									},
+									Attr_Name: {
+										Description: "name of the trusted profile.",
+										Optional:    true,
+										Type:        schema.TypeString,
+									},
+								},
+							},
+							Type: schema.TypeList,
+						},
+					},
+				},
+				Type: schema.TypeList,
 			},
 			Attr_DeploymentType: {
 				Computed:    true,
@@ -118,6 +161,20 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The amount of memory that is allocated to the instance.",
 				Type:        schema.TypeFloat,
+			},
+			Attr_MetadataService: {
+				Computed:    true,
+				Description: "The metadata service configuration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Enabled: {
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server.",
+							Type:        schema.TypeBool,
+						},
+					},
+				},
+				Type: schema.TypeList,
 			},
 			Attr_MinMem: {
 				Computed:    true,
@@ -335,7 +392,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
-
+	d.Set(Attr_AllowRemoteRestart, powervmdata.AllowRemoteRestart)
 	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
 	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
@@ -395,5 +452,13 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 	d.Set(Attr_VPMEMVolumes, vpmemVolumes)
+
+	if powervmdata.DefaultTrustedProfile != nil {
+		d.Set(Attr_DefaultTrustedProfile, flattenDefaultTrustedProfile(powervmdata.DefaultTrustedProfile))
+	}
+	if powervmdata.MetadataService != nil {
+		d.Set(Attr_MetadataService, flattenMetadataService(powervmdata.MetadataService))
+	}
+
 	return nil
 }

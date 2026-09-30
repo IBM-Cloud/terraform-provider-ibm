@@ -19,11 +19,11 @@ When a target is added to a security group, the security group rules are applied
 
 **provider.tf**
 
-  ```terraform
-  provider "ibm" {
-    region = "eu-gb"
-  }
-  ```
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 Sample to create a security group target.

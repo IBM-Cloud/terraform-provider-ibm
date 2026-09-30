@@ -53,6 +53,8 @@ func TestAccIBMCmVersionSimpleArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "zipurl", zipurl),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "target_version", targetVersion),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "include_config", includeConfig),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "validation.#", "1"),          // check that it is set and there is exactly 1 item.
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "validation.0.target.#", "0"), // check that is it null
 				),
 			},
 		},
@@ -133,6 +135,7 @@ func TestAccIBMCmVersionVSI(t *testing.T) {
 
 func testAccCheckIBMCmVersionConfigBasic() string {
 	return fmt.Sprintf(`
+
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "test_tf_catalog_label_1"
 			kind = "offering"

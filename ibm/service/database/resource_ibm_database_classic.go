@@ -7,6 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var classicUnsupportedAttrs = []string{
+	"shards",
+}
+
 type resourceIBMDatabaseClassicBackend struct{}
 
 func newResourceIBMDatabaseClassicBackend() resourceIBMDatabaseBackend {
@@ -26,11 +30,11 @@ func (c *resourceIBMDatabaseClassicBackend) Update(context context.Context, d *s
 }
 
 func (c *resourceIBMDatabaseClassicBackend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return classicDatabaseInstanceDelete(context, d, meta)
+	return databaseInstanceDelete(context, d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return classicDatabaseInstanceExists(d, meta)
+	return databaseInstanceExists(d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
@@ -38,5 +42,17 @@ func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Cont
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateUnsupportedAttrsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateGroupsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateServiceEndpointsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }

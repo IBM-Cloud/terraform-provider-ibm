@@ -83,6 +83,13 @@ resource "ibm_is_security_group_rule" "example3" {
   port_max = 8080
 }
 
+resource "ibm_is_security_group_rule" "example4" {
+  group      = ibm_is_security_group.example_security_group.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  protocol   = "any"
+}
+
 resource "ibm_is_security_group_rule" "example_security_group_rule_icmp" {
   group      = ibm_is_security_group.example_security_group.id
   direction  = "inbound"

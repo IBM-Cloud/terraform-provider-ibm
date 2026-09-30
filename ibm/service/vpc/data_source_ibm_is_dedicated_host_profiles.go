@@ -350,7 +350,7 @@ func DataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_profiles", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -365,7 +365,7 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		}
 		dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostProfilesWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_profiles", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostProfilesWithContext failed: %s\n%s", err, response), "(Data) ibm_is_dedicated_host_profiles", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -383,12 +383,12 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(allrecs))
 		if err != nil {
 			err = fmt.Errorf("[ERROR] Error setting profiles: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-profiles").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_profiles", "read", "set-profiles").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_profiles", "read", "set-total_count").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_profiles", "read", "set-total_count").GetDiag()
 		}
 	}
 	return nil

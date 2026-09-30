@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cloudant
@@ -148,15 +148,8 @@ func DataSourceIBMCloudantDatabase() *schema.Resource {
 
 func dataSourceIBMCloudantDatabaseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceCRN := d.Get("instance_crn").(string)
-	cUrl, err := GetCloudantInstanceUrl(instanceCRN, meta)
-	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cloudant_database", "read", "get-instance-url")
-		return tfErr.GetDiag()
-	}
-
-	cloudantClient, err := GetCloudantClientForUrl(cUrl, meta)
-	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cloudant_database", "read", "get-client")
+	cloudantClient, tfErr := GetCloudantClientFromCrn(instanceCRN, meta, "ibm_cloudant_database", "read")
+	if tfErr != nil {
 		return tfErr.GetDiag()
 	}
 

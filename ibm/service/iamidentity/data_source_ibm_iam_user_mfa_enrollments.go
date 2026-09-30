@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
@@ -138,7 +139,9 @@ func DataSourceIBMIamUserMfaEnrollments() *schema.Resource {
 func dataSourceIBMIamUserMfaEnrollmentsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getMfaStatusOptions := &iamidentityv1.GetMfaStatusOptions{}
@@ -148,38 +151,39 @@ func dataSourceIBMIamUserMfaEnrollmentsRead(context context.Context, d *schema.R
 
 	userMfaEnrollments, response, err := iamIdentityClient.GetMfaStatusWithContext(context, getMfaStatusOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetMfaStatusWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetMfaStatusWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetMfaStatusWithContext failed: %s", err.Error()), "ibm_iam_user_mfa_enrollments", "read")
+		log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), response)
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMIamUserMfaEnrollmentsID(d))
 
 	if err = d.Set("effective_mfa_type", userMfaEnrollments.EffectiveMfaType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting effective_mfa_type: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "set-effective_mfa_type").GetDiag()
 	}
 
 	idBasedMfa := []map[string]interface{}{}
 	if userMfaEnrollments.IDBasedMfa != nil {
 		modelMap, err := dataSourceIBMIamUserMfaEnrollmentsIDBasedMfaEnrollmentToMap(userMfaEnrollments.IDBasedMfa)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "mfa-enrollment-to-map").GetDiag()
 		}
 		idBasedMfa = append(idBasedMfa, modelMap)
 	}
 	if err = d.Set("id_based_mfa", idBasedMfa); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id_based_mfa %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "set-id_based_mfa").GetDiag()
 	}
 
 	accountBasedMfa := []map[string]interface{}{}
 	if userMfaEnrollments.AccountBasedMfa != nil {
 		modelMap, err := dataSourceIBMIamUserMfaEnrollmentsAccountBasedMfaEnrollmentToMap(userMfaEnrollments.AccountBasedMfa)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "mfa-enrollment-to-map").GetDiag()
 		}
 		accountBasedMfa = append(accountBasedMfa, modelMap)
 	}
 	if err = d.Set("account_based_mfa", accountBasedMfa); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_based_mfa %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_user_mfa_enrollments", "read", "set-account_based_mfa").GetDiag()
 	}
 
 	return nil

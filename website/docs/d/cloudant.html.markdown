@@ -40,7 +40,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `capacity` (Number) A number of blocks of throughput units.
 
-Capacity changes are reflected immediately, but are applied asynchronously over time by the service. Large capacity jumps are not fully available for some time after modification, but typically complete within 12 hours. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
+  Capacity changes on Gen 1 are reflected immediately but applied asynchronously; large jumps may take up to 12 hours to become fully effective. For more information, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration).
 * `cors_config` (List of Object) Configuration for CORS.
 
   Nested scheme for `cors_config`:
@@ -52,14 +52,14 @@ Capacity changes are reflected immediately, but are applied asynchronously over 
 * `features` (List of String) List of enabled optional features.
 * `features_flags` (List of String) List of feature flags.
 * `guid` (String) The `GUID` of the resource instance.
-* `include_data_events` (Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker with LogDNA for the IBM Cloudant instance. By default emitted events are only of the  `management` type.
+* `include_data_events` (Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker Event Routing for the IBM Cloudant instance. By default emitted events are only of the `management` type.
 * `plan` (String) The plan type of the instance.
 * `resource_controller_url` (String) The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource.
 * `resource_crn` (String) The CRN of the resource.
 * `resource_group_name` (String) The resource group name in which resource is provisioned.
 * `resource_name` (String) The name of the resource.
 * `resource_status` (String) The status of the resource.
-* `service` (String) The service type of the instance.
+* `service` (String) The service type of the instance. Always `cloudantnosqldb`.
 * `status` (String) The resource instance status.
-* `throughput` (Map of Number) Schema for detailed information about throughput capacity with breakdown by specific throughput requests classes.
+* `throughput` (Map of Number) **Gen 1 only.** Schema for detailed information about throughput capacity with breakdown by specific throughput requests classes. Not populated for Gen 2 instances.
 * `version` (String) The vendor version.

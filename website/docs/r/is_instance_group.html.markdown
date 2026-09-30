@@ -117,7 +117,7 @@ The `id` property can be formed from `instance group ID`. For example:
 
 ```terraform
 import {
-  to = ibm_is_instance_group.instance_group
+  to = ibm_is_instance_group.example
   id = "<instance_group_id>"
 }
 ```
@@ -125,5 +125,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_group.instance_group <instance_group_id>
+% terraform import ibm_is_instance_group.example <instance_group_id>
 ```

@@ -52,6 +52,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "snapshot_reference.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "snapshot_reference.0.crn"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "snapshot_reference.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot_consistency_group.is_snapshot_consistency_group", "backup_policy_job.#", "0"),
 				),
 			},
 			resource.TestStep{
@@ -68,6 +69,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 func testAccCheckIBMIsSnapshotConsistencyGroupConfig(vpcname, subnetname, sshname, publicKey, name, snapname, scgname, deleteSnapshotsOnDelete string) string {
 	return fmt.Sprintf(`
 
+	data "ibm_is_image" "testacc_image" {
+		name = "%s"
+	}
+
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	  }
@@ -82,11 +87,11 @@ func testAccCheckIBMIsSnapshotConsistencyGroupConfig(vpcname, subnetname, sshnam
 	  resource "ibm_is_ssh_key" "testacc_sshkey" {
 		name       = "%s"
 		public_key = "%s"
-	  } 
+	  }
 	  
 	  resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
-		image   = "%s"
+		image   = data.ibm_is_image.testacc_image.id
 		profile = "%s"
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
@@ -108,7 +113,7 @@ func testAccCheckIBMIsSnapshotConsistencyGroupConfig(vpcname, subnetname, sshnam
 		}
 		name = "%s"
 	  }
-	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, deleteSnapshotsOnDelete, scgname, snapname)
+	`, acc.IsImageName, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, deleteSnapshotsOnDelete, scgname, snapname)
 }
 
 func testAccCheckIBMIsSnapshotConsistencyGroupExists(n string, obj vpcv1.SnapshotConsistencyGroup) resource.TestCheckFunc {

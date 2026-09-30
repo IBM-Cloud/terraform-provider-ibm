@@ -49,21 +49,21 @@ Review the argument references that you can specify for your resource.
 - `capacity` - (List) The capacity reservation configuration to use.
 
   Nested scheme for `capacity`:
-    - `total` - (Integer) The total amount to use for this capacity reservation.
+  - `total` - (Integer) The total amount to use for this capacity reservation.
 - `committed_use` - (List) The committed use configuration to use for this reservation.
 
   Nested scheme for `committed_use`:
-    - `expiration_policy` - (Optional, String) The policy to apply when the committed use term expires. [**release**, **renew**]
+  - `expiration_policy` - (Optional, String) The policy to apply when the committed use term expires. [**release**, **renew**]
     ~> **Note:**
     **&#x2022;** `release` Release any available capacity and let the reservation expire.</br>
     **&#x2022;** `renew` Renew for another term, provided the term remains listed in the reservation_terms for the profile. Otherwise, let the reservation expire.</br>
-    - `term` - (String) The term for this committed use reservation. [**one_year**, **three_year**]
+  - `term` - (String) The term for this committed use reservation. [**one_year**, **three_year**]
 - `name` - (Optional, String) The name for this reservation. The name must not be used by another reservation in the region. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `profile` - (List) The virtual server instance profile to use for this reservation.
 
   Nested scheme for `profile`:
-    - `name` - (String) The globally unique name of the profile. 
-    - `resource_type` - (String) The resource type of the profile. [ **instance_profile** ]
+  - `name` - (String) The globally unique name of the profile.
+  - `resource_type` - (String) The resource type of the profile. [ **instance_profile** ]
 - `resource_group` - (Optional, List) The resource group to use. If unspecified, the account's default resource group will be used.
 
   Nested scheme for `resource_group`: 
@@ -148,8 +148,8 @@ You can access the following attribute references after your data source is crea
 
   Nested scheme for `status_reasons`:
   - `code` - (String) A snake case string succinctly identifying the status reason.
-  
-    ->**code** 
+
+    ->**code**
       </br>&#x2022; cannot_activate_no_capacity_available
       </br>&#x2022; cannot_renew_unsupported_profile_term
   - `message` - (String) An explanation of the status reason.

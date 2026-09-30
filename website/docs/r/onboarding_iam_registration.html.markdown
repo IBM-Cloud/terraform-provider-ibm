@@ -176,6 +176,9 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 			api_types {
 				name = "name"
 				enforcement_method = [ "enforcement_method" ]
+				event_publishing {
+					state = "enabled"
+				}
 				display_name {
 					default = "default"
 					en = "en"
@@ -201,6 +204,12 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 					pt_br = "pt_br"
 					zh_tw = "zh_tw"
 					zh_cn = "zh_cn"
+				}
+			}
+			defaults {
+				enforcement_method = [ "enforcement_method" ]
+				event_publishing {
+					state = "enabled"
 				}
 			}
 		}
@@ -568,8 +577,20 @@ Nested schema for **supported_network**:
 				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 			* `enforcement_method` - (Optional, List) The enforcement method used for the API type.
 			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
+			* `event_publishing` - (Optional, List) Specifies the event publishing state.
+			Nested schema for **event_publishing**:
+				* `state` - (Optional, String) The event publishing state.
+				  * Constraints: Allowable values are: `enabled`, `disabled`.
 			* `name` - (Optional, String) The cloud resource name (CRN) or name of the API type.
 			  * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+		* `defaults` - (Optional, List) Specifies default supported network operation behavior that applies when an API type does not explicitly set a value.
+		Nested schema for **defaults**:
+			* `enforcement_method` - (Optional, List) The default enforcement method used for API types.
+			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
+			* `event_publishing` - (Optional, List) Specifies the event publishing state.
+			Nested schema for **event_publishing**:
+				* `state` - (Optional, String) The event publishing state.
+				  * Constraints: Allowable values are: `enabled`, `disabled`.
 	* `self_managed_allowlist_enforcement` - (Optional, List) Deprecated field, which is optionally specified only if the service uses additional enforcement mechanisms beyond the primary one.
 	Nested schema for **self_managed_allowlist_enforcement**:
 		* `event_publishing` - (Optional, List) Specifies API types that the service supports. This method is deprecated and is used only for older setups. Don't use this method when you create a context-based restrictions setup for the first time.
@@ -650,7 +671,7 @@ You can import the `ibm_onboarding_iam_registration` resource by using `name`.
 The `name` property can be formed from `product_id`, and `name` in the following format:
 
 <pre>
-&lt;product_id/name
+product_id/name
 </pre>
 * `product_id`: A string. The unique ID of the resource.
 * `name`: A string in the format `pet-store`. The IAM registration name, which must be the programmatic name of the product.

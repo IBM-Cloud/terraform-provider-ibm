@@ -1164,11 +1164,11 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			templateDataItemMap := resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateDataItem)
 			templateData = append(templateData, templateDataItemMap)
 		}
-		if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+		// if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
+		// 	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
+		// 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		// 	return tfErr.GetDiag()
+		// }
 		if err = d.Set("template_git_folder", templateData[0]["folder"]); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -1189,21 +1189,21 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		if err = d.Set("template_values", templateData[0]["values"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+		// if err = d.Set("template_values", templateData[0]["values"]); err != nil {
+		// 	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
+		// 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		// 	return tfErr.GetDiag()
+		// }
 		if err = d.Set("template_values_metadata", templateData[0]["values_metadata"]); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+		// if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
+		// 	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMSchematicsWorkspaceRead failed with error: %s", err), "ibm_schematics_workspace", "read")
+		// 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		// 	return tfErr.GetDiag()
+		// }
 
 	}
 	if err = d.Set("template_ref", workspaceResponse.TemplateRef); err != nil {
@@ -1777,8 +1777,23 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	hasTemplateData := false
 
 	if d.HasChange("template_env_settings") {
-		templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
-		hasTemplateData = true
+		// templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
+
+		var templateDataEnv []schematicsv1.TemplateSourceDataRequest
+		// Convert []interface{} to []map[string]interface{} for EnvValues
+		envValues := []map[string]interface{}{}
+		for _, envValuesItem := range d.Get("template_env_settings").([]interface{}) {
+			envValues = append(envValues, envValuesItem.(map[string]interface{}))
+		}
+		templateType := d.Get("template_type").(string)
+		templateDataEnv1 := schematicsv1.TemplateSourceDataRequest{
+			EnvValues: envValues,
+			Type:      &templateType,
+		}
+		templateDataEnv = append(templateDataEnv, templateDataEnv1)
+		updateWorkspaceOptions.SetTemplateData(templateDataEnv)
+		metadataChange = true
+		hasChange = true
 	}
 	if d.HasChange("template_git_folder") {
 		templateSourceDataRequestMap["folder"] = d.Get("template_git_folder").(string)
@@ -1899,6 +1914,7 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		changed := false
 
 		if !changed && repoChange {
+
 			changed = true
 			_, response, err := schematicsClient.ReplaceWorkspaceWithContext(context, replaceWorkspaceOptions)
 			if err != nil {

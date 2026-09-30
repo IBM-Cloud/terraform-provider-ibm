@@ -45,6 +45,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `name` - (String) The name of the Ingress ALB.
 	- `state` - (String) The state of the ALB. Supported values are `enabled` or `disabled`. 
 	- `resize` -  (Bool)  Indicate whether resizing should be done. 
+- `cluster_name` - (String) The name of the cluster.
 - `crn` - (String) The CRN of the cluster.
 - `health` - (String) The health of the cluster master.
 - `id` - (String) The unique identifier of the cluster.

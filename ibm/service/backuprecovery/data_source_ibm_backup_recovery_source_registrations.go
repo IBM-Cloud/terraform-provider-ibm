@@ -1161,6 +1161,11 @@ func DataSourceIbmBackupRecoverySourceRegistrations() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the velero image location of the Kubernetes source.",
 									},
+									"velero_kubevirt_plugin_image_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the velero kubevirt plugin image location of the Kubernetes source.",
+									},
 									"velero_openshift_plugin_image_location": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -1236,7 +1241,7 @@ func dataSourceIbmBackupRecoverySourceRegistrationsRead(context context.Context,
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1244,7 +1249,7 @@ func dataSourceIbmBackupRecoverySourceRegistrationsRead(context context.Context,
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	getSourceRegistrationsOptions := &backuprecoveryv1.GetSourceRegistrationsOptions{}
@@ -2175,6 +2180,9 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesSourceRegistrationP
 	}
 	if model.VeleroOpenshiftPluginImageLocation != nil {
 		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation
+	}
+	if model.VeleroKubevirtPluginImageLocation != nil {
+		modelMap["velero_kubevirt_plugin_image_location"] = *model.VeleroKubevirtPluginImageLocation
 	}
 	if model.VlanInfoVec != nil {
 		vlanInfoVec := []map[string]interface{}{}

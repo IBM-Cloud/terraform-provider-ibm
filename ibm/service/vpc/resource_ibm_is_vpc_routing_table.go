@@ -66,6 +66,11 @@ func ResourceIBMISVPCRoutingTable() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceValidateAccessTags(diff, v)
 				}),
 		),
@@ -622,7 +627,7 @@ func resourceIBMISVPCRoutingTableUpdate(context context.Context, d *schema.Resou
 
 	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
 	if asPatchErr != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("routingTablePatchModel.AsPatch() failed: %s", asPatchErr.Error()), "ibm_is_vpc_routing_table", "update")
+		tfErr := flex.TerraformErrorf(asPatchErr, fmt.Sprintf("routingTablePatchModel.AsPatch() failed: %s", asPatchErr.Error()), "ibm_is_vpc_routing_table", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

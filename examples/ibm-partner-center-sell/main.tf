@@ -176,6 +176,9 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
       location_url = "location_url"
       target_crn = "target_crn"
     }
+    other {
+      location_proxied_by = "location_proxied_by"
+    }
   }
 }
 
@@ -498,6 +501,8 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
           id = "id"
         }
       }
+      product_code = "product_code"
+      product_code_type = "product_code_type"
     }
   }
 }
@@ -702,6 +707,9 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
       api_types {
         name = "name"
         enforcement_method = [ "enforcement_method" ]
+        event_publishing {
+          state = "enabled"
+        }
         display_name {
           default = "default"
           en = "en"
@@ -727,6 +735,12 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
           pt_br = "pt_br"
           zh_tw = "zh_tw"
           zh_cn = "zh_cn"
+        }
+      }
+      defaults {
+        enforcement_method = [ "enforcement_method" ]
+        event_publishing {
+          state = "enabled"
         }
       }
     }

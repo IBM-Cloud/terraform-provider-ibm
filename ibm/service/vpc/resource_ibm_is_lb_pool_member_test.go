@@ -377,6 +377,7 @@ func testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, zone, cidr, name, 
 		health_retries = 5
 		health_timeout = 30
 		health_type = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
 		lb = "${ibm_is_lb.testacc_LB.id}"
@@ -430,6 +431,7 @@ func testAccCheckIBMISLBPoolMemberIDConfig(vpcname, subnetname, zone, cidr, sshn
         health_retries = 5
         health_timeout = 30
         health_type    = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
 		lb = "${ibm_is_lb.testacc_NLB.id}"
@@ -485,6 +487,7 @@ func testAccCheckIBMISLBPoolMemberIDAddressConfig(vpcname, subnetname, zone, cid
         health_retries = 5
         health_timeout = 30
         health_type    = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
 		lb = "${ibm_is_lb.testacc_NLB.id}"
@@ -522,6 +525,7 @@ func testAccCheckIBMISLBPoolMemberWeightConfig(vpcname, subnetname, zone, cidr, 
 		health_retries = 5
 		health_timeout = 30
 		health_type = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_lb_mem_wgt" {
 		lb = "${ibm_is_lb.testacc_LB.id}"
@@ -561,6 +565,7 @@ func testAccCheckIBMISLBPoolMemberIDConfigWithLBTarget(vpcname, subnetname, zone
         health_retries = 5
         health_timeout = 30
         health_type    = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
 		lb = "${ibm_is_lb.testacc_NLB.id}"
@@ -602,6 +607,7 @@ func testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(vpcname, subnetna
         health_retries = 5
         health_timeout = 30
         health_type    = "tcp"
+		health_monitor {}
 	}
 	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
 		lb = "${ibm_is_lb.testacc_NLB.id}"
@@ -611,4 +617,239 @@ func testAccCheckIBMISLBPoolMemberIDConfigWithReservedIPTarget(vpcname, subnetna
 		target_id = "${element(split("/",ibm_is_subnet_reserved_ip.testacc_rip.id),1)}"
 	}
 `, vpcname, subnetname, zone, cidr, resIpSubnetName, nlbName, nlbPoolName)
+}
+
+func TestAccIBMISLBPoolMember_target_fqdn(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	fqdn := "example.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISLBPoolMemberFqdnConfig(vpcname, subnetname, zone, cidr, name, poolName, fqdn string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {}
+	}
+	resource "ibm_is_lb_pool_member" "testacc_lb_mem_fqdn" {
+		lb          = ibm_is_lb.testacc_LB.id
+		pool        = element(split("/", ibm_is_lb_pool.testacc_lb_pool.id), 1)
+		port        = 8080
+		target_fqdn = "%s"
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName, fqdn)
+}
+
+// TestAccIBMISLBPoolMember_target_fqdn_update exercises the bug fix that ensures
+// d.HasChange("target_fqdn") is checked in the update condition, so changing from
+// one FQDN to another actually triggers an API update.
+func TestAccIBMISLBPoolMember_target_fqdn_update(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	fqdn1 := "example.com"
+	fqdn2 := "example.org"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn1),
+				),
+			},
+			// Update the FQDN — this exercises the bug fix (HasChange("target_fqdn") in update).
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn2),
+				),
+			},
+		},
+	})
+}
+
+// TestAccIBMISLBPoolMember_target_fqdn_with_health_monitor creates a pool with an
+// advanced HTTP health monitor and a member using target_fqdn, verifying they work together.
+func TestAccIBMISLBPoolMember_target_fqdn_with_health_monitor(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	fqdn := "api.example.com"
+	port := 443
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnWithHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn, port),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "port", fmt.Sprintf("%d", port)),
+				),
+			},
+			{
+				ResourceName:      "ibm_is_lb_pool_member.testacc_lb_mem_fqdn",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccIBMISLBPoolMember_target_fqdn_port_update verifies that port and FQDN
+// can be changed together in a single update step.
+func TestAccIBMISLBPoolMember_target_fqdn_port_update(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	fqdn1 := "app.example.com"
+	fqdn2 := "backend.example.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnWithHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn1, 80),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn1),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "port", "80"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnWithHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, fqdn2, 8080),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", fqdn2),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "port", "8080"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISLBPoolMemberFqdnWithHealthMonitorConfig(vpcname, subnetname, zone, cidr, name, poolName, fqdn string, port int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "GET"
+			}
+			response {
+				codes = ["200"]
+			}
+		}
+	}
+	resource "ibm_is_lb_pool_member" "testacc_lb_mem_fqdn" {
+		lb          = ibm_is_lb.testacc_LB.id
+		pool        = element(split("/", ibm_is_lb_pool.testacc_lb_pool.id), 1)
+		port        = %d
+		target_fqdn = "%s"
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName, port, fqdn)
+}
+
+// TestAccIBMISLBPoolMember_target_type_switch verifies that switching from
+// target_fqdn to target_address clears the old FQDN from state (tests the
+// stale-target-field bug fix where Read only sets the field the API returns).
+func TestAccIBMISLBPoolMember_target_type_switch(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbmc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create with target_fqdn
+			{
+				Config: testAccCheckIBMISLBPoolMemberFqdnConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, "example.ibm.com"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_fqdn", "example.ibm.com"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_address", ""),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool_member.testacc_lb_mem_fqdn", "target_id", ""),
+				),
+			},
+		},
+	})
 }

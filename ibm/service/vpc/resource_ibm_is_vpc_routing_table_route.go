@@ -350,7 +350,7 @@ func resourceIBMISVPCRoutingTableRouteRead(context context.Context, d *schema.Re
 	if route.Creator != nil {
 		mm, err := dataSourceIBMIsRouteCreatorToMap(route.Creator)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table", "read", "creator-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpc_routing_table_route", "read", "creator-to-map").GetDiag()
 		}
 		creator = append(creator, mm)
 	}
@@ -417,7 +417,7 @@ func resourceIBMISVPCRoutingTableRouteUpdate(context context.Context, d *schema.
 	if hasChange {
 		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 		if patchErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("routePatchModel.AsPatch() failed: %s", patchErr.Error()), "ibm_is_vpc_routing_table_route", "update")
+			tfErr := flex.TerraformErrorf(patchErr, fmt.Sprintf("routePatchModel.AsPatch() failed: %s", patchErr.Error()), "ibm_is_vpc_routing_table_route", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}

@@ -338,7 +338,7 @@ The `id` property can be formed from `instance group ID`, and `instance group ma
 
 ```terraform
 import {
-  to = ibm_is_instance_group_manager.manager
+  to = ibm_is_instance_group_manager.example
   id = "<instance_group_id>/<instance_group_manager_id>"
 }
 ```
@@ -346,7 +346,7 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_group_manager.manager <instance_group_id>/<instance_group_manager_id>
+% terraform import ibm_is_instance_group_manager.example <instance_group_id>/<instance_group_manager_id>
 ```
 ## Related Resources
 

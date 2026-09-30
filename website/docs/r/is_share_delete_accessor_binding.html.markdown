@@ -28,10 +28,10 @@ resource "ibm_is_share" "example" {
 
 ```terraform
 resource "ibm_is_share" "example1" {
-    origin_share {
-      crn = ibm_is_share.example.crn
-    }
-    name = "my-replica1"
+  origin_share {
+    crn = ibm_is_share.example.crn
+  }
+  name = "my-replica1"
 }
 ```
 

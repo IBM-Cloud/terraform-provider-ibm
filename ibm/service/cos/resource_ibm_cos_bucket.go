@@ -102,6 +102,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"kms_key_crn"},
 				Description:   "CRN of the key you want to use data at rest encryption",
 			},
@@ -109,6 +110,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"key_protect"},
 				Description:   "CRN of the key you want to use data at rest encryption",
 			},
@@ -1089,7 +1091,6 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	var keyProtectFlag bool
 	var archiveFlag, expireFlag, abortFlag, ncFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
@@ -1104,9 +1105,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
 
-	if _, ok := d.GetOk("key_protect"); ok {
-		keyProtectFlag = true
-	}
 	if _, ok := d.GetOk("expire_rule"); ok {
 		expireFlag = true
 	}
@@ -1264,11 +1262,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if head.IBMSSEKPEnabled != nil {
 		if *head.IBMSSEKPEnabled == true {
-			if keyProtectFlag == true {
-				d.Set("key_protect", head.IBMSSEKPCrkId)
-			} else {
-				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
-			}
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
 		}
 	}
 

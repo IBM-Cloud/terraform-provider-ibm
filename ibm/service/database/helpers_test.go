@@ -5,12 +5,15 @@ package database
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,6 +96,44 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 			require.Equal(t, tc.expected, result)
 		})
 	}
+}
+func TestExtractShardsFromExtensions(t *testing.T) {
+	t.Run("returns shard count from mongodbees extensions", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 2, shards)
+	})
+
+	t.Run("returns zero when shards key is missing", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 0, shards)
+	})
+
+	t.Run("returns zero when mongodbees key is absent", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"otherdb": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 0, shards)
+	})
 }
 
 type MockTaskClient struct {
@@ -286,4 +327,951 @@ func TestIsGen2Plan(t *testing.T) {
 			t.Errorf("isGen2Plan(%q) = %v, want %v", c.plan, got, c.want)
 		}
 	}
+}
+
+// TestClearGen2UnsupportedAttributes tests the clearGen2UnsupportedAttributes function
+func TestClearGen2UnsupportedAttributes(t *testing.T) {
+	adminPasswordValue := "example-admin-value"
+
+	d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
+		"adminuser": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"adminpassword": {
+			Type:      schema.TypeString,
+			Optional:  true,
+			Sensitive: true,
+		},
+		"auto_scaling": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enabled": {
+						Type:     schema.TypeBool,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"allowlist": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"address": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"users": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"configuration_schema": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}, map[string]interface{}{
+		"adminuser":            "admin",
+		"adminpassword":        adminPasswordValue,
+		"auto_scaling":         []interface{}{map[string]interface{}{"enabled": true}},
+		"allowlist":            []interface{}{map[string]interface{}{"address": "1.2.3.4"}},
+		"users":                []interface{}{map[string]interface{}{"name": "user1"}},
+		"configuration_schema": "some_schema",
+	})
+
+	clearGen2UnsupportedAttributes(d)
+
+	// Verify all Gen2 unsupported attributes are cleared (d.Set(key, nil) results in empty values, not nil)
+
+	adminuser := d.Get("adminuser")
+	require.Equal(t, "", adminuser, "adminuser should be empty string after clearing")
+
+	adminpassword := d.Get("adminpassword")
+	require.Equal(t, "", adminpassword, "adminpassword should be empty string after clearing")
+
+	autoScaling := d.Get("auto_scaling")
+	require.NotNil(t, autoScaling, "auto_scaling should be set to empty value")
+	require.Empty(t, autoScaling, "auto_scaling should be empty after clearing")
+
+	allowlist := d.Get("allowlist")
+	require.NotNil(t, allowlist, "allowlist should be set to empty value")
+	require.Empty(t, allowlist, "allowlist should be empty after clearing")
+
+	users := d.Get("users")
+	require.NotNil(t, users, "users should be set to empty value")
+	require.Empty(t, users, "users should be empty after clearing")
+
+	configSchema := d.Get("configuration_schema")
+	require.Equal(t, "", configSchema, "configuration_schema should be empty string after clearing")
+
+	// Note: platform_options.backup_encryption_key_crn is also not supported in Gen2,
+	// but it's handled by the data source implementation which only sets disk_encryption_key_crn
+}
+
+func TestExtractDeploymentIDFromCRN(t *testing.T) {
+	testcases := []struct {
+		description   string
+		catalogCRN    string
+		expectedID    string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			description: "Valid CRN with deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:standard-gen2-deployment-ca-mon-11b01c58",
+			expectedID:  "standard-gen2-deployment-ca-mon-11b01c58",
+			expectError: false,
+		},
+		{
+			description: "Valid CRN with different deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:databases-for-postgresql-standard-us-south",
+			expectedID:  "databases-for-postgresql-standard-us-south",
+			expectError: false,
+		},
+		{
+			description:   "Invalid CRN - missing deployment prefix",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::standard-gen2-deployment-ca-mon-11b01c58",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Invalid CRN - empty deployment ID",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:",
+			expectError:   true,
+			errorContains: "empty deployment ID",
+		},
+		{
+			description:   "Invalid CRN - multiple deployment prefixes",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:test:deployment:another",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Empty CRN",
+			catalogCRN:    "",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			deploymentID, err := extractDeploymentIDFromCRN(tc.catalogCRN)
+
+			if tc.expectError {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errorContains)
+				require.Empty(t, deploymentID)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedID, deploymentID)
+			}
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// isTruthy
+// ---------------------------------------------------------------------------
+
+func TestIsTruthy(t *testing.T) {
+	cases := []struct {
+		name string
+		in   interface{}
+		want bool
+	}{
+		{"bool true", true, true},
+		{"bool false", false, false},
+		{"string true", "true", true},
+		{"string false", "false", false},
+		{"string TRUE (case sensitive)", "TRUE", false},
+		{"nil", nil, false},
+		{"int 1", 1, false},
+		{"empty string", "", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, isTruthy(c.in))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// s2sAuthWarning sentinel error
+// ---------------------------------------------------------------------------
+
+func TestS2sAuthWarningError(t *testing.T) {
+	w := &s2sAuthWarning{}
+	require.Equal(t, s2sAuthWarningHeader, w.Error())
+}
+
+// ---------------------------------------------------------------------------
+// checkS2SAuthorization
+// ---------------------------------------------------------------------------
+
+func TestCheckS2SAuthorization(t *testing.T) {
+	cases := []struct {
+		name       string
+		extensions map[string]interface{}
+		want       bool
+	}{
+		{
+			name:       "nil extensions",
+			extensions: nil,
+			want:       false,
+		},
+		{
+			name:       "empty extensions map",
+			extensions: map[string]interface{}{},
+			want:       false,
+		},
+		{
+			name: "dataservices key missing",
+			extensions: map[string]interface{}{
+				"other_key": "value",
+			},
+			want: false,
+		},
+		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "authorizations key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is empty map",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "both flags true (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      true,
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "both flags true (string)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": "true",
+						"resource_group":      "true",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "independent_backups false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "resource_group false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      false,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "both flags false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      false,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "independent_backups missing",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"resource_group": true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "resource_group missing",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "mixed: bool true + string true",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "true",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "resource_group string false",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "false",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is not a map (wrong type)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": "not-a-map",
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, checkS2SAuthorization(c.extensions))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// hasIndependentBackups
+// ---------------------------------------------------------------------------
+
+func TestHasIndependentBackups(t *testing.T) {
+	cases := []struct {
+		name       string
+		extensions map[string]interface{}
+		want       bool
+	}{
+		{
+			name:       "nil extensions",
+			extensions: nil,
+			want:       false,
+		},
+		{
+			name:       "empty extensions",
+			extensions: map[string]interface{}{},
+			want:       false,
+		},
+		{
+			name: "dataservices key missing",
+			extensions: map[string]interface{}{
+				"other_key": "value",
+			},
+			want: false,
+		},
+		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "backups key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is present and non-nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": true,
+							"window": map[string]interface{}{
+								"start_time": "09:04Z",
+							},
+						},
+						"preserve":  false,
+						"retention": "30d",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "backups key is an empty map (still non-nil)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, hasIndependentBackups(c.extensions))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// s2sAuthWarningHeader / s2sAuthWarningDetail constants are non-empty
+// ---------------------------------------------------------------------------
+
+func TestS2SWarningConstants(t *testing.T) {
+	require.NotEmpty(t, s2sAuthWarningHeader, "s2sAuthWarningHeader must not be empty")
+	require.NotEmpty(t, s2sAuthWarningDetail, "s2sAuthWarningDetail must not be empty")
+}
+func TestExtractGen2BackupExtensions(t *testing.T) {
+	testcases := []struct {
+		description        string
+		extensions         map[string]interface{}
+		expectedSourceCRN  string
+		expectedBackupType string
+	}{
+		{
+			description: "Valid extensions with source_data_service_crn and type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Valid extensions with scheduled backup type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+						"type":                    "scheduled",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+			expectedBackupType: "scheduled",
+		},
+		{
+			description:        "Nil extensions",
+			extensions:         nil,
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description:        "Empty extensions map",
+			extensions:         map[string]interface{}{},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing dataservices key",
+			extensions: map[string]interface{}{
+				"other_key": "some_value",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing backup key within dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "some_value",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "backup is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": "not-a-map",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing source_data_service_crn field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"type": "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Missing type field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+		{
+			description: "source_data_service_crn is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": 12345,
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "type is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    42,
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			sourceDataServiceCRN, backupType := extractGen2BackupExtensions(tc.extensions)
+
+			require.Equal(t, tc.expectedSourceCRN, sourceDataServiceCRN)
+			require.Equal(t, tc.expectedBackupType, backupType)
+		})
+	}
+}
+
+func TestGetInstancesNext(t *testing.T) {
+	testcases := []struct {
+		description string
+		next        *string
+		expected    string
+		expectError bool
+	}{
+		{
+			description: "Nil next returns empty string and no error",
+			next:        nil,
+			expected:    "",
+		},
+		{
+			description: "URL with next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?next_url=abc123"),
+			expected:    "abc123",
+		},
+		{
+			description: "URL without next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?start=abc123"),
+			expected:    "",
+		},
+		{
+			description: "Empty string URL",
+			next:        core.StringPtr(""),
+			expected:    "",
+		},
+		{
+			description: "Malformed URL returns error",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances/%zz"),
+			expected:    "",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			result, err := getInstancesNext(tc.next)
+
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gen2GetOperationDescription
+// ---------------------------------------------------------------------------
+
+func TestGen2GetOperationDescription_LastOperationDescription(t *testing.T) {
+	desc := "Provisioning complete"
+	instance := &rc.ResourceInstance{
+		LastOperation: &rc.ResourceInstanceLastOperation{
+			Description: core.StringPtr(desc),
+			Type:        core.StringPtr("provision"),
+		},
+	}
+	got := gen2GetOperationDescription(instance)
+	if got != desc {
+		t.Errorf("expected %q, got %q", desc, got)
+	}
+}
+
+func TestGen2GetOperationDescription_LastOperationTypeFallback(t *testing.T) {
+	instance := &rc.ResourceInstance{
+		LastOperation: &rc.ResourceInstanceLastOperation{
+			Description: core.StringPtr(""),
+			Type:        core.StringPtr("update"),
+		},
+	}
+	got := gen2GetOperationDescription(instance)
+	want := "Operation: update"
+	if got != want {
+		t.Errorf("expected %q, got %q", want, got)
+	}
+}
+
+func TestGen2GetOperationDescription_StateFallback(t *testing.T) {
+	instance := &rc.ResourceInstance{
+		State: core.StringPtr("active"),
+	}
+	got := gen2GetOperationDescription(instance)
+	want := "Instance state: active"
+	if got != want {
+		t.Errorf("expected %q, got %q", want, got)
+	}
+}
+
+func TestGen2GetOperationDescription_DefaultFallback(t *testing.T) {
+	instance := &rc.ResourceInstance{}
+	got := gen2GetOperationDescription(instance)
+	want := "Gen2 database instance operation"
+	if got != want {
+		t.Errorf("expected %q, got %q", want, got)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gen2MapStateToStatus
+// ---------------------------------------------------------------------------
+
+func TestGen2MapStateToStatus(t *testing.T) {
+	tests := []struct {
+		state *string
+		want  string
+	}{
+		{nil, "unknown"},
+		{core.StringPtr("active"), "completed"},
+		{core.StringPtr("provisioning"), "running"},
+		{core.StringPtr("in progress"), "running"},
+		{core.StringPtr("removed"), "completed"},
+		{core.StringPtr("failed"), "failed"},
+		{core.StringPtr("inactive"), "inactive"},
+		{core.StringPtr("unknown-state"), "unknown-state"},
+	}
+
+	for _, tc := range tests {
+		label := "nil"
+		if tc.state != nil {
+			label = *tc.state
+		}
+		t.Run(label, func(t *testing.T) {
+			instance := &rc.ResourceInstance{State: tc.state}
+			got := gen2MapStateToStatus(instance)
+			if got != tc.want {
+				t.Errorf("state=%q: expected %q, got %q", label, tc.want, got)
+			}
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gen2CalculateProgress
+// ---------------------------------------------------------------------------
+
+func TestGen2CalculateProgress(t *testing.T) {
+	tests := []struct {
+		state *string
+		want  int
+	}{
+		{nil, 0},
+		{core.StringPtr("active"), 100},
+		{core.StringPtr("provisioning"), 50},
+		{core.StringPtr("in progress"), 75},
+		{core.StringPtr("failed"), 100},
+		{core.StringPtr("removed"), 100},
+		{core.StringPtr("inactive"), 0},
+		{core.StringPtr("unknown-state"), 0},
+	}
+
+	for _, tc := range tests {
+		label := "nil"
+		if tc.state != nil {
+			label = *tc.state
+		}
+		t.Run(label, func(t *testing.T) {
+			instance := &rc.ResourceInstance{State: tc.state}
+			got := gen2CalculateProgress(instance)
+			if got != tc.want {
+				t.Errorf("state=%q: expected %d, got %d", label, tc.want, got)
+			}
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gen2GetOperationTime
+// ---------------------------------------------------------------------------
+
+func TestGen2GetOperationTime_UpdatedAt(t *testing.T) {
+	updatedAt := strfmt.DateTime(time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC))
+	createdAt := strfmt.DateTime(time.Date(2024, 6, 1, 11, 0, 0, 0, time.UTC))
+	instance := &rc.ResourceInstance{
+		UpdatedAt: &updatedAt,
+		CreatedAt: &createdAt,
+	}
+	got := gen2GetOperationTime(instance)
+	// UpdatedAt should be preferred over CreatedAt
+	if !strings.Contains(got, "2024") {
+		t.Errorf("unexpected time string: %q", got)
+	}
+}
+
+func TestGen2GetOperationTime_CreatedAtFallback(t *testing.T) {
+	createdAt := strfmt.DateTime(time.Date(2024, 6, 1, 10, 0, 0, 0, time.UTC))
+	instance := &rc.ResourceInstance{
+		CreatedAt: &createdAt,
+	}
+	got := gen2GetOperationTime(instance)
+	if !strings.Contains(got, "2024") {
+		t.Errorf("unexpected time string: %q", got)
+	}
+}
+
+func TestGen2GetOperationTime_NowFallback(t *testing.T) {
+	before := time.Now().UTC().Add(-2 * time.Second)
+	instance := &rc.ResourceInstance{}
+	got := gen2GetOperationTime(instance)
+	after := time.Now().UTC().Add(2 * time.Second)
+
+	parsed, err := time.Parse(time.RFC3339, got)
+	if err != nil {
+		t.Fatalf("returned string is not RFC3339: %q", got)
+	}
+	if parsed.Before(before) || parsed.After(after) {
+		t.Errorf("expected time near now, got %q", got)
+	}
+}
+
+func TestExtractDatabaseAllocations(t *testing.T) {
+	t.Run("extracts allocations from mongodb key for standard-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodb": map[string]interface{}{
+					"storage_gb":  float64(30),
+					"host_flavor": "bx3d.4x20",
+					"members":     float64(3),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "standard-gen2")
+		require.Equal(t, float64(30), alloc.storageGB)
+		require.Equal(t, "bx3d.4x20", alloc.hostFlavorID)
+		require.Equal(t, int64(3), alloc.members)
+	})
+
+	t.Run("falls back to mongodbees key for enterprise-sharding-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"storage_gb":  float64(60),
+					"host_flavor": "bx3d.8x40",
+					"shards":      float64(2),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "enterprise-sharding-gen2")
+		require.Equal(t, float64(60), alloc.storageGB)
+		require.Equal(t, "bx3d.8x40", alloc.hostFlavorID)
+		require.Equal(t, int64(2), alloc.shards)
+	})
+
+	t.Run("returns zero allocations when dataservices key is absent", func(t *testing.T) {
+		instance := map[string]interface{}{}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "standard-gen2")
+		require.Equal(t, float64(0), alloc.storageGB)
+		require.Equal(t, "", alloc.hostFlavorID)
+	})
+}
+func TestSharedSetShardsInfo(t *testing.T) {
+	t.Run("does not set shards when instance is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		err := sharedSetShardsInfo(d, nil)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil instance, got %d", v)
+		}
+	})
+
+	t.Run("does not set shards when instance.Extensions is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rc.ResourceInstance{Extensions: nil}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil extensions, got %d", v)
+		}
+	})
+
+	t.Run("reads shard count from extensions for enterprise-sharding-gen2", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rc.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						"shards": float64(3),
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 3 {
+			t.Fatalf("expected shards=3 from extensions, got %d", v)
+		}
+	})
+
+	t.Run("does not set shards when extensions exist but shards key is absent", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rc.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						// no "shards" key
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) when key absent, got %d", v)
+		}
+	})
 }

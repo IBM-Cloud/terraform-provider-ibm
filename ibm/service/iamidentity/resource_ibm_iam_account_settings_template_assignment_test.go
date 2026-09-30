@@ -50,7 +50,7 @@ func TestAccIBMAccountSettingsTemplateAssignmentBasic(t *testing.T) {
 				),
 			},
 			{
-				ExpectError: regexp.MustCompile("Template version '2' is not found."),
+				ExpectError: regexp.MustCompile(`Assignment version cannot`),
 				Config:      testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(enterpriseAccountId, targetId, name),
 			},
 		},

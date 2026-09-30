@@ -69,9 +69,9 @@ resource "ibm_pag_instance" "pag" {
     }
   )
   timeouts {
-    create = "15m"
-    update = "15m"
-    delete = "15m"
+    create = "95m"
+    update = "1h"
+    delete = "1h"
   }
 }
 

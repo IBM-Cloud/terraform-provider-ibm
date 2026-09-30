@@ -53,6 +53,7 @@ In addition to all argument reference list, you can access the following attribu
 - `cidr` - (String) The CIDR of the network.
 - `crn` - (String) The CRN of this resource.
 - `dns`- (Set) The DNS Servers for the network.
+- `enable_dhcp` - (Boolean) DHCP enabled network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
 - `name` - (String) The name of the network.

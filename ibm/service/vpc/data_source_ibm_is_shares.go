@@ -798,7 +798,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.SourceSnapshot != nil {
 		modelMap, err := DataSourceIBMIsShareShareSourceSnapshotToMap(sharesItem.SourceSnapshot)
 		if err != nil {
-			return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "source_snapshot-to-map").GetDiag()
+			return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_shares", "read", "source_snapshot-to-map").GetDiag()
 		}
 		sourceSnapshot = append(sourceSnapshot, modelMap)
 	}

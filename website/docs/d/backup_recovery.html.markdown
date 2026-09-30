@@ -237,6 +237,7 @@ Nested schema for **kubernetes_params**:
 			Nested schema for **exclude_params**:
 				* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
 				  * Constraints: Allowable values are: `AND`, `OR`.
+				* `label_filter_entity_type` - (String) The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.
 				* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
 				Nested schema for **label_vector**:
 					* `key` - (String) The key of the label, used to identify the label.
@@ -256,11 +257,13 @@ Nested schema for **kubernetes_params**:
 			* `excluded_pvcs` - (List) Specifies the list of pvc to be excluded from recovery. This will be deprecated in the future. This is overridden by the object level param.
 			Nested schema for **excluded_pvcs**:
 				* `id` - (Integer) Specifies the id of the pvc.
+				* `metadata_only` - (Boolean) This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).
 				* `name` - (String) Name of the pvc.
 			* `include_params` - (List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
 			Nested schema for **include_params**:
 				* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
 				  * Constraints: Allowable values are: `AND`, `OR`.
+				* `label_filter_entity_type` - (String) The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.
 				* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
 				Nested schema for **label_vector**:
 					* `key` - (String) The key of the label, used to identify the label.
@@ -338,6 +341,7 @@ Nested schema for **kubernetes_params**:
 				Nested schema for **exclude_params**:
 					* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
 					  * Constraints: Allowable values are: `AND`, `OR`.
+					* `label_filter_entity_type` - (String) The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.
 					* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
 					Nested schema for **label_vector**:
 						* `key` - (String) The key of the label, used to identify the label.
@@ -358,6 +362,7 @@ Nested schema for **kubernetes_params**:
 				Nested schema for **include_params**:
 					* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
 					  * Constraints: Allowable values are: `AND`, `OR`.
+					* `label_filter_entity_type` - (String) The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.
 					* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
 					Nested schema for **label_vector**:
 						* `key` - (String) The key of the label, used to identify the label.
@@ -452,6 +457,8 @@ Nested schema for **kubernetes_params**:
 						* `value` - (String) The value associated with the label key.
 					* `use_storage_class_mapping` - (Boolean) Specifies whether or not to use storage class mapping.
 				* `unbind_pvcs` - (Boolean) Specifies whether the volume bindings will be removed from all restored PVCs. This will effectively unbind the PVCs from their original PVs. Default: false.
+				* `use_instant_recovery` - (Boolean) Specifies whether to use instant recovery for the VMs. The VMs will be restored using copy recovery by default when this field is unset or set to false. Default: false.
+			* `preserve_mac_address` - (Boolean) Specifies whether to preserve mac address for restored vm. Default is false.
 			* `recover_cluster_scoped_resources` - (List) Specifies the parameters from where the cluster scoped resources would be recovered.
 			Nested schema for **recover_cluster_scoped_resources**:
 				* `snapshot_id` - (String) Specifies the snapshot id of the namespace from where the cluster scoped resources are to be recovered.

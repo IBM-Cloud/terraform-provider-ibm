@@ -10,6 +10,8 @@ subcategory: "DrAutomation Service"
 
 Retrieves the (GRS) location pairs associated with the specified service instance based on managed VMs.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_grs_location_pairs` instead.**
+
 ## Example Usage
 
 ```hcl

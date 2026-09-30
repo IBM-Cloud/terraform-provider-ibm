@@ -166,7 +166,7 @@ func ResourceIBMISLBListenerPolicyRule() *schema.Resource {
 func ResourceIBMISLBListenerPolicyRuleValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	condition := "contains, equals, matches_regex"
+	condition := "contains, equals, matches_regex, starts_with"
 	ruletype := "header, hostname, path, body, query, sni_hostname"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{

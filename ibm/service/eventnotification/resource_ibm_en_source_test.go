@@ -36,7 +36,8 @@ func TestAccIBMEnSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnSourceExists("ibm_en_source.en_source_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "store_notifications", "true"),
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "description", description),
 				),
 			},
@@ -44,7 +45,8 @@ func TestAccIBMEnSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIBMEnSourceConfig(instanceName, newName, newDescription, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "store_notifications", "true"),
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "description", newDescription),
 				),
 			},
@@ -71,6 +73,7 @@ func testAccCheckIBMEnSourceConfig(instanceName, name, description string, enabl
 		name        = "%s"
 		description = "%s"
 		enabled = %t
+		store_notifications = true
 	}
 	`, instanceName, name, description, enabled)
 }
