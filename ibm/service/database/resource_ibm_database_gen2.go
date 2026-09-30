@@ -420,6 +420,9 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	if dbType == "mongodbees" {
 		config.Shards = d.Get("shards").(int)
+		if config.Shards == 0 {
+			config.Shards = 1
+		}
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
