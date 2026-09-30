@@ -30,6 +30,7 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
+	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
 }
@@ -421,6 +422,9 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	if dbType == "mongodbees" {
 		config.Shards = d.Get("shards").(int)
+		if config.Shards == 0 {
+			config.Shards = 1 // default to 1 shard when not explicitly configured
+		}
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
@@ -465,19 +469,27 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 	dbConfig["configuration"] = configMap
 }
 
-// dbConfigToMap converts DBConfig to a map for the API, omitting zero-value fields.
-// For mongodbees, "shards" is used instead of "members".
+// dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
+// Only includes non-zero values to avoid sending unnecessary fields.
+// For mongodbees (enterprise-sharding-gen2):
+//   - emit "shards" when explicitly configured (> 0)
+//   - emit "members" when members > 0 and shards == 0 (e.g. scale-up without shard change)
+//
+// For all other database types, emit "members" when > 0.
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if config.Version != "" {
 		result["version"] = config.Version
 	}
-	// Include "members" whenever a count is set — applies to all database types including mongodbees.
-	if config.Members > 0 {
+	if dbType == "mongodbees" {
+		if config.Shards > 0 {
+			result["shards"] = config.Shards
+		} else if config.Members > 0 {
+			result["members"] = config.Members
+		}
+	} else if config.Members > 0 {
 		result["members"] = config.Members
-	} else if config.Shards > 0 {
-		result["shards"] = config.Shards
 	}
 	// Only include member_zones when set — omitted for standard multi-member deployments
 	if len(config.MemberZones) > 0 {
@@ -1073,14 +1085,10 @@ func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *sc
 		serviceName = parts[0]
 	}
 
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	plan := d.Get("plan").(string)
+	dbType := getDatabaseTypeFromResourceID(serviceName, plan)
 	if dbType == "" {
 		return diagError("unable to determine database type from resource plan ID for promotion")
-	}
-
-	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
-	if d.Get("plan").(string) == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
 	}
 
 	parameters := map[string]interface{}{
