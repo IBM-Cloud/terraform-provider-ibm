@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +10,7 @@ import (
 // classicUnsupportedAttrs are attributes only available on Gen2 plans.
 // Setting any of these on a Classic plan produces a plan-time error.
 var classicUnsupportedAttrs = []string{
+	"shards",
 	"maintenance",
 }
 
@@ -45,15 +45,7 @@ func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Cont
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	if d == nil {
-		return nil
-	}
-	for _, attr := range classicUnsupportedAttrs {
-		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
-			return fmt.Errorf("attribute %q is only supported for Gen2 database plans and cannot be used with Classic plans", attr)
-		}
-	}
-	return nil
+	return validateUnsupportedAttrsDiffClassic(context, d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -65,5 +57,9 @@ func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateMaintenanceWindowDiff(_ context.Context, _ *schema.ResourceDiff, _ interface{}) error {
+	return nil
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }
