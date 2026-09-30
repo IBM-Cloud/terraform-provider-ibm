@@ -1119,7 +1119,8 @@ type CountLimit struct {
 // validation is skipped for them.
 func validateConfigurationForService(service, plan, configJSON string) error {
 	var rawConfig map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(configJSON), &rawConfig); err != nil {
+	err := json.Unmarshal([]byte(configJSON), &rawConfig)
+	if err != nil {
 		return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
 	}
 
@@ -1146,7 +1147,8 @@ func validateConfigurationForService(service, plan, configJSON string) error {
 		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
 	}
 
-	if err := core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn); err != nil {
+	err = core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn)
+	if err != nil {
 		return fmt.Errorf("[ERROR] configuration is invalid\n%s", err)
 	}
 
