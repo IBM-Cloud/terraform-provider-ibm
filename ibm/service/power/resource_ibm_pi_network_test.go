@@ -205,7 +205,7 @@ func TestAccIBMPINetworkEnableDHCPSatellite(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
 					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
 					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "pi_enable_dhcp", "true"),
-					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "dhcp_managed", "true"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "enable_dhcp", "true"),
 				),
 			},
 			{
@@ -217,7 +217,7 @@ func TestAccIBMPINetworkEnableDHCPSatellite(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
 					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
 					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "pi_enable_dhcp", "false"),
-					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "dhcp_managed", "false"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "enable_dhcp", "false"),
 				),
 			},
 		},
