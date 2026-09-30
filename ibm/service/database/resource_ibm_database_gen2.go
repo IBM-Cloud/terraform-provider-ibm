@@ -342,16 +342,12 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 // Includes database configuration, encryption settings, and backup_id for restore.
 // Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
-	// Get the database type for the dataservices key
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	// Get the database type for the dataservices key.
+	// getDatabaseTypeFromResourceID handles the enterprise-sharding-gen2 → "mongodbees" override.
+	plan := d.Get("plan").(string)
+	dbType := getDatabaseTypeFromResourceID(serviceName, plan)
 	if dbType == "" {
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
-	}
-
-	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
 	}
 
 	// Build database configuration using typed struct

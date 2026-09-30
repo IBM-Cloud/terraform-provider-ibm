@@ -319,13 +319,22 @@ var databaseServicePrefixes = map[string]string{
 // getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.
 // Used in extensions for Gen2 and in parameters structure.
 // Returns an empty string if the resource ID doesn't match any known database service.
-func getDatabaseTypeFromResourceID(resourceID string) string {
-	for prefix, dbType := range databaseServicePrefixes {
+// For enterprise-sharding-gen2 MongoDB, returns "mongodbees" instead of "mongodb".
+func getDatabaseTypeFromResourceID(resourceID string, plan string) string {
+	dbType := ""
+	for prefix, t := range databaseServicePrefixes {
 		if strings.HasPrefix(resourceID, prefix) {
-			return dbType
+			dbType = t
+			break
 		}
 	}
-	return ""
+	if dbType == "" {
+		return ""
+	}
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		return "mongodbees"
+	}
+	return dbType
 }
 
 // expandPlatformOptionsFromRCExtension extracts platform options from instance extensions for Gen2.
@@ -360,11 +369,11 @@ func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []m
 // flattenIcdGroupsFromInstanceAndCatalog creates groups data from instance extensions and global catalog metadata for Gen2.
 // It combines actual allocation values from the instance with metadata constraints from the catalog.
 // Returns a slice of group configurations including memory, CPU, disk, and host flavor information.
-func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string) []map[string]interface{} {
+func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string, plan string) []map[string]interface{} {
 	groups := make([]map[string]interface{}, 0, len(catalogResources))
 
 	// Extract allocation values from instance extensions
-	allocations := extractDatabaseAllocations(instance, resourceID)
+	allocations := extractDatabaseAllocations(instance, resourceID, plan)
 
 	// Process catalog resources to build group configurations
 	for _, resource := range catalogResources {
@@ -409,10 +418,10 @@ type databaseAllocations struct {
 }
 
 // extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
-func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
+func extractDatabaseAllocations(instance map[string]interface{}, resourceID string, plan string) databaseAllocations {
 	var alloc databaseAllocations
 
-	dbType := getDatabaseTypeFromResourceID(resourceID)
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
 	if dbType == "" {
 		return alloc
 	}
@@ -621,12 +630,12 @@ func extractMemberCountFromMetadata(deployment *globalcatalogv1.CatalogEntry) in
 
 // extractVersionFromExtensions extracts the database version from instance extensions.
 // Returns an empty string if the version cannot be found.
-func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string) string {
+func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string, plan string) string {
 	if extensions == nil {
 		return ""
 	}
 
-	dbType := getDatabaseTypeFromResourceID(resourceID)
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
 	if dbType == "" {
 		return ""
 	}
@@ -855,7 +864,8 @@ func setGen2VersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance, i
 	// Extract version from instance.Extensions based on database type
 	version := ""
 	if instance.Extensions != nil && instance.ResourceID != nil {
-		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID)
+		plan, _ := d.Get("plan").(string)
+		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID, plan)
 	}
 	d.Set(versionKey, version)
 
@@ -908,7 +918,8 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 
 	// Flatten groups using instance extensions and catalog metadata
 	if instance.Extensions != nil && len(catalogResources) > 0 && instance.ResourceID != nil {
-		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID))
+		plan, _ := d.Get("plan").(string)
+		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID, plan))
 	}
 
 	return nil
