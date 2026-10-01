@@ -63,6 +63,20 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_secret                       = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                         = "xxx.ibm.com"
   proxy_ip                            = "10.3.41.4:443"
+
+  #secure connection(CA certificates) --> Secrets manager
+  primary_orch_ca_certs_secrets      ={
+                        "ca_certificate_secret_id": "dxxxx-4b72-xxxx-2a22-xxxx",
+                        "ca_secret_manager_guid": "xxxxx-9f66-xxxx-a750-xxxxxx"
+                        }
+  "standby_orch_ca_certs_secrets":{
+                      "ca_certificate_secret_id": "xxxxxx-4b72-xxxx-2a22-xxxxxxx"
+                      },
+  #secure connection(CA certificates) --> Bash64 encoded file content
+  primary_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  primary_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 ```
 ```hcl
@@ -74,7 +88,7 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   location_id                       = "dal10"
   orchestrator_workspace_id         = "75cbf05b-78f6-406e-afe7-a904f646d798"
   orchestrator_name                 = "drautomationprimarymh3"
-  orchestrator_password             = "EverytimeNewPassword@1"
+  orchestrator_password             = "Everytxxxxxxxxxxxxxxx@1"
   machine_type                      = "s922"
   tier                              = "tier1"
   guid                              = "397dc20d-9f66-46dc-a750-d15392872023"
@@ -100,6 +114,20 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_secret                     = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                       = "xxx.ibm.com"
   proxy_ip                          = "10.3.41.4:443"
+
+  #secure connection(Optional, CA certificates) --> Secrets manager
+  primary_orch_ca_certs_secrets      ={
+                        "ca_certificate_secret_id": "dxxxx-4b72-xxxx-2a22-xxxx",
+                        "ca_secret_manager_guid": "xxxxx-9f66-xxxx-a750-xxxxxx"
+                        }
+  "standby_orch_ca_certs_secrets":{
+                      "ca_certificate_secret_id": "xxxxxx-4b72-xxxx-2a22-xxxxxxx"
+                      },
+  #secure connection(Optional, CA certificates) --> Bash64 encoded file content
+  primary_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  primary_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 ```
 ```hcl
@@ -125,6 +153,20 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_secret               = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                 = "xxx.ibm.com"
   proxy_ip                    = "10.3.41.4:443"
+
+  #secure connection(Optional, CA certificates) --> Secrets manager
+  primary_orch_ca_certs_secrets      ={
+                        "ca_certificate_secret_id": "dxxxx-4b72-xxxx-2a22-xxxx",
+                        "ca_secret_manager_guid": "xxxxx-9f66-xxxx-a750-xxxxxx"
+                        }
+  "standby_orch_ca_certs_secrets":{
+                      "ca_certificate_secret_id": "xxxxxx-4b72-xxxx-2a22-xxxxxxx"
+                      },
+  #secure connection(Optional, CA certificates) --> Bash64 encoded file content
+  primary_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  primary_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 ```
 ```hcl
@@ -153,9 +195,62 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_secret               = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                 = "xxx.ibm.com"
   proxy_ip                    = "10.3.41.4:443"
+
+  #secure connection(Optional, CA certificates) --> Secrets manager
+  primary_orch_ca_certs_secrets      ={
+                        "ca_certificate_secret_id": "dxxxx-4b72-xxxx-2a22-xxxx",
+                        "ca_secret_manager_guid": "xxxxx-9f66-xxxx-a750-xxxxxx"
+                        }
+  "standby_orch_ca_certs_secrets":{
+                      "ca_certificate_secret_id": "xxxxxx-4b72-xxxx-2a22-xxxxxxx"
+                      },
+  #secure connection(Optional, CA certificates) --> Bash64 encoded file content
+  primary_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  primary_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 ```
 
+```hcl
+ServiceInstanceManageDr Non-HA without Secrets and SSH key
+resource "ibm_pdr_managedr" "pdr_managedr_instance" {
+  instance_id                 = "050ebe3b-13f4-4db8-8ece-501a3c13be80mnh7"
+  orchestrator_ha             = false
+  orchestrator_location_type  = "off-premises"
+  location_id                 = "dal10"
+  orchestrator_workspace_id   = "75cbf05b-78f6-406e-afe7-a904f646d798"
+  orchestrator_name           = "drautomationprimarymnh7"
+  orchestrator_password       = "EverytimeNewPassword@1"
+  machine_type                = "s922"
+  tier                        = "tier1"
+  region_id                   = "us-south"
+  action                      = "done"
+  api_key                     = "apikey is required"
+  orchestrator_network_ids    = ["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  managed_apikey              = "xxxxxx-xxxx-xxxx-xxxxx"
+
+  # MFA (Multi-Factor Authentication)
+  client_id                   = "123abcd-97d2-4b14-bf62-8eaecc67a122"
+  client_secret               = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
+  tenant_name                 = "xxx.ibm.com"
+  proxy_ip                    = "10.3.41.4:443"
+
+  #secure connection(Optional, CA certificates) --> Secrets manager
+  primary_orch_ca_certs_secrets      ={
+                        "ca_certificate_secret_id": "dxxxx-4b72-xxxx-2a22-xxxx",
+                        "ca_secret_manager_guid": "xxxxx-9f66-xxxx-a750-xxxxxx"
+                        }
+  "standby_orch_ca_certs_secrets":{
+                      "ca_certificate_secret_id": "xxxxxx-4b72-xxxx-2a22-xxxxxxx"
+                      },
+  #secure connection(Optional, CA certificates) --> Bash64 encoded file content
+  primary_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  primary_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_cert   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  standby_orch_ca_certs_server_key    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+```
 
 ### Path Parameters
 
