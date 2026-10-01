@@ -393,13 +393,13 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 		}
 
 		group := map[string]interface{}{
-			"group_id":    groupID,
-			"count":       count,
-			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
-			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
-			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
-			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
-			"members":     buildMembersConfig(int(allocations.members), allocations.memberZones),
+			"group_id":     groupID,
+			"count":        count,
+			"memory":       buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":          buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":         buildDiskConfig(resourceMap, allocations.storageGB),
+			"host_flavor":  buildHostFlavorConfig(allocations.hostFlavorID),
+			"member_zones": allocations.memberZones,
 		}
 		groups = append(groups, group)
 	}
@@ -564,24 +564,6 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	}
 
 	return []map[string]interface{}{hostflavor}
-}
-
-// buildMembersConfig builds the members sub-block for a flattened group.
-// This ensures allocation_count is present in state so ValidateGroupsDiff can detect downgrade attempts.
-func buildMembersConfig(allocationCount int, memberZones []string) []map[string]interface{} {
-	if allocationCount == 0 {
-		return []map[string]interface{}{}
-	}
-	zones := memberZones
-	if zones == nil {
-		zones = []string{}
-	}
-	return []map[string]interface{}{
-		{
-			"allocation_count": allocationCount,
-			"member_zones":     zones,
-		},
-	}
 }
 
 // getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
@@ -1140,7 +1122,11 @@ func memberZonesInRawConfig(d *schema.ResourceDiff, fn func(zones []string, allo
 		if membersVal.IsNull() || !membersVal.IsKnown() || membersVal.LengthInt() == 0 {
 			continue
 		}
-		_, memberVal := membersVal.ElementIterator().Element() // first (only) element
+		mit := membersVal.ElementIterator()
+		if !mit.Next() {
+			continue
+		}
+		_, memberVal := mit.Element() // first (only) element
 		if memberVal.IsNull() || !memberVal.IsKnown() {
 			continue
 		}
