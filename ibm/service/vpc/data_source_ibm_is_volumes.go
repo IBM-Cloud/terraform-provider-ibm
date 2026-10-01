@@ -670,6 +670,50 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
+
+						"software_attachments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The software attachments for this volume.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this volume software attachment.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this volume software attachment.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this volume software attachment. The name is unique across all software attachments for the volume.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -920,6 +964,16 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 			"Error on get of resource vpc volume (%s) access tags: %s", *volumesItem.ID, err)
 	}
 	volumesMap[isVolumeAccessTags] = accesstags
+	// software attachments
+	softwareAttachments := []map[string]interface{}{}
+	for _, softwareAttachmentsItem := range volumesItem.SoftwareAttachments {
+		softwareAttachmentsItemMap, err := DataSourceIBMIsVolumesVolumeSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+		if err != nil {
+			return volumesMap
+		}
+		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+	}
+	volumesMap["software_attachments"] = softwareAttachments
 	return volumesMap
 }
 
@@ -1204,4 +1258,26 @@ func dataSourceVolumeCollectionVolumesZoneToMap(zoneItem vpcv1.ZoneReference) (z
 	}
 
 	return zoneMap
+}
+
+func DataSourceIBMIsVolumesVolumeSoftwareAttachmentReferenceToMap(model *vpcv1.VolumeSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsVolumesDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func DataSourceIBMIsVolumesDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
+	return modelMap, nil
 }
