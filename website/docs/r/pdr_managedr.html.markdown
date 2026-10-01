@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_pdr_managedr"
 description: |-
   Manages pdr_managedr.
-subcategory: "DrAutomation Service"
+subcategory: "HA and DR Automation for IBM® Power® Virtual Server API reference"
 ---
 
 # ibm_pdr_managedr
@@ -12,6 +12,25 @@ Creates DR Deployment by creating Orchestrator instance in the given PowerVS wor
 
 ## Example Usage
 
+```hcl
+resource "ibm_pdr_managedr" "pdr_managedr_instance" {
+  location_id                = "dal10"
+  orchestrator_location_type = "off-premises"
+  orchestrator_name          = "drautomationprimary"
+  orchestrator_password      = "password"
+  orchestrator_workspace_id  = "75cbf05b-78f6-406e-afe7-a904f646d798"
+
+  machine_type                = "s922"
+  orchestrator_ha              = false
+  proxy_ip                    = "10.30.40.10:8888"
+  ssh_key_name                = "vijaykey"
+  standby_machine_type        = "s922"
+  standby_orchestrator_name   = "drautomationstandby"
+  standby_orchestrator_workspace_id = "71027b79-0e31-44f6-a499-63eca1a66feb"
+  tenant_name                 = "xxx.ibm.com"
+  tier                        = "tier1"
+}
+```
 ```hcl
 ServiceInstanceManageDr HA with sshkey
 resource "ibm_pdr_managedr" "pdr_managedr_instance" {
@@ -45,7 +64,6 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   tenant_name                         = "xxx.ibm.com"
   proxy_ip                            = "10.3.41.4:443"
 }
-
 ```
 ```hcl
 ServiceInstanceManageDr HA with secrets
@@ -138,64 +156,177 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
 }
 ```
 
+
+### Path Parameters
+
+* `instance_id` - (Required, Forces new resource, String) The unique identifier of the DR service instance.
+  * Constraints: The maximum length is `1048` characters. The minimum length is `36` characters. The value must match regular expression `/^.*$/`.
+
+### Query Parameters
+
+* `accept_language` - (Optional, Forces new resource, String) The language in which the response should be returned.
+* `accepts_incomplete` - (Optional, Forces new resource, Boolean) Indicates whether the request can be accepted before the operation is complete.
+* `stand_by_redeploy` - (Optional, Forces new resource, Boolean) Indicates whether the standby orchestrator should be redeployed.
+
 ## Argument Reference
 
-You can specify the following arguments for this resource:
+You can specify the following arguments for this resource.
 
-* `instance_id` - (Required, Forces new resource, String) The ID of the Power DR Automation service instance.
-* `action` - (Optional, String) Indicates whether to proceed with asynchronous operation after all configuration details are updated in the database.
-* `api_key` - (Required, String, Sensitive) The api Key of the service instance for deploying the disaster recovery service.
-* `client_id` - (Optional, String) The Client Id created for MFA authentication API.
-* `client_secret` - (Optional, String, Sensitive) The client secret created for MFA authentication API.
-* `tenant_name` - (Optional, String) The tenant name for MFA authentication API.
-* `proxy_ip` - (Optional, String) The Proxy IP for the Communication between Orchestrator and Service.
-* `guid` - (Optional, String) The global unique identifier of the service instance.
-* `region_id` - (Optional, String) The power virtual server region where the service instance is deployed.
-* `location_id` - (Required, String) The Location or data center identifier where the service instance is deployed. you can fetch locations using data_source "ibm_pdr_dr_locations". 
-* `machine_type` - (Required, String) The machine type used for deploying orchestrator. you can fetch machine types use data_source "ibm_pdr_machine_types".
-* `tier` - (Required, String) The storage tier used for deploying primary orchestrator (e.g., tier1, tier3, etc).
-* `ssh_key_name` - (Optional, String) The name of the SSH key used for deploying the orchestator.
-* `orchestrator_ha` - (Required, Boolean) Indicates whether the orchestrator High Availability (HA) is enabled for the service instance.
-* `orchestrator_location_type` - (Required, String) The cloud location where your orchestator need to be created.(eg., "off-premises", "on-premises")
-* `orchestrator_name` - (Required, String) Username for the orchestrator management interface.
-* `orchestrator_password` - (Required, String, Sensitive) The password that you can use to access your orchestrator.
-* `orchestrator_workspace_id` - (Required, String) The unique identifier orchestrator workspace.
-* `secret_group` - (Optional, String) The secret group name in IBM Cloud Secrets Manager containing sensitive data for the service instance.
-* `secret` - (Optional, String) Secret name or identifier used for retrieving credentials from Secrets Manager.
-* `standby_orchestrator_name` - (Optional, String) Username for the standby orchestrator management interface.
-* `standby_orchestrator_workspace_id` - (Optional, String) The unique identifier of the standby orchestrator workspace.
-* `standby_orchestrator_workspace_location` - (Optional, String) Location of the standby orchestrator workspace.
-* `standby_machine_type` - (Optional, String) The machine type used for deploying standby virtual machines.
-* `standby_tier` - (Optional, String) The storage tier used for deploying standby orchestrator.
-* `stand_by_redeploy` - (Optional, String)  Flag to indicate if standby should be redeployed only for HA case (must be "true" or "false").
-* `standby_orchestrator_network_ids` - (Optional, String) List of network IDs for standby orchestrator VM.
-* `orchestrator_network_ids` - (Optional, String) List of network IDs for primary orchestrator VM.
-* `standby_ssh_key_name` - (Optional, String) standy ssh key name of the service instance.
-* `managed_apikey` - (Optional, String, Sensitive) APIKey used to manage the workloads by adding the PowerVS instances to the orchestrator.
+* `location_id` - (Required, Forces new resource, String) Location or data center identifier for the DR deployment.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `orchestrator_name` - (Required, Forces new resource, String) Name of the primary orchestrator.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `orchestrator_password` - (Required, Forces new resource, String) Password for the primary orchestrator management interface.
+ * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\x7E]*$/`.
+* `orchestrator_workspace_id` - (Required, Forces new resource, String) PowerVS workspace ID for the primary orchestrator.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `orchestrator_location_type` - (Required, Forces new resource, String) Type of location where the orchestrator is deployed, such as off-premises or VPC.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `primary_orch_ca_certs_server_cert` - (Optional, Forces new resource, String) PEM-encoded CA certificate for the primary orchestrator server certificate.
+ * Constraints: The maximum length is `65536` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\x7E]*$/`.
+* `primary_orch_ca_certs_server_key` - (Optional, Forces new resource, String) PEM-encoded private key for the primary orchestrator CA certificate.
+ * Constraints: The maximum length is `65536` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\x7E]*$/`.
+* `standby_orch_ca_certs_server_cert` - (Optional, Forces new resource, String) PEM-encoded CA certificate for the standby orchestrator server certificate.
+ * Constraints: The maximum length is `65536` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\x7E]*$/`.
+* `standby_orch_ca_certs_server_key` - (Optional, Forces new resource, String) PEM-encoded private key for the standby orchestrator CA certificate.
+ * Constraints: The maximum length is `65536` characters. The minimum length is `0` characters. The value must match regular expression `/^[\x20-\x7E]*$/`.
+* `api_key` - (Optional, Forces new resource, String) IBM Cloud API key used for DR automation operations.
+ * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `ssh_key_name` - (Optional, Forces new resource, String) SSH key name used to access the primary orchestrator VM.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `standby_ssh_key_name` - (Optional, Forces new resource, String) SSH key name used to access the standby orchestrator VM.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `orchestrator_ha` - (Optional, Forces new resource, Boolean) Whether high availability is enabled for the orchestrator.
+* `resource_instance` - (Optional, Forces new resource, String) CRN or identifier of the associated resource instance.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `secret_group` - (Optional, Forces new resource, String) Secrets Manager secret group containing deployment secrets.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `secret` - (Optional, Forces new resource, String) Secrets Manager secret name or identifier.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `region_id` - (Optional, Forces new resource, String) PowerVS region ID for the deployment.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `guid` - (Optional, Forces new resource, String) Globally unique identifier for the service instance.
+ * Constraints: The maximum length is `36` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `machine_type` - (Optional, Forces new resource, String) Machine type for the primary orchestrator.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `tier` - (Optional, Forces new resource, String) Storage tier for the primary orchestrator.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `standby_tier` - (Optional, Forces new resource, String) Storage tier for the standby orchestrator.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `standby_machine_type` - (Optional, Forces new resource, String) Machine type for the standby orchestrator.
+ * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `client_id` - (Optional, Forces new resource, String) OAuth client ID used for authentication.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `client_secret` - (Optional, Forces new resource, String) OAuth client secret used for authentication.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `tenant_name` - (Optional, Forces new resource, String) Tenant name used for MFA authentication.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `proxy_ip` - (Optional, Forces new resource, String) Proxy IP address and port for orchestrator-to-service communication.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `dedicated_host_enabled` - (Optional, Forces new resource, Boolean) Whether dedicated host deployment is enabled.
+
+* `primary_deployment_target` - (Optional, Forces new resource, Object) Deployment target for the primary virtual server.
+* Nested schema for **primary_deployment_target**:
+    * `id` - (String) ID of the dedicated host where the virtual server will be deployed.
+     * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+    * `type` - (String) Type of the deployment target.
+     * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+
+* `standby_deployment_target` - (Optional, Forces new resource, Object) Deployment target for the standby virtual server.
+* Nested schema for **standby_deployment_target**:
+    * `id` - (String) ID of the dedicated host where the virtual server will be deployed.
+     * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+    * `type` - (String) Type of the deployment target.
+     * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+* `orchestrator_network_ids` - (Optional, Forces new resource, List of String) Network IDs to attach to the primary orchestrator.
+  * Constraints: The maximum number of items is `10`. The minimum number of items is `0`.
+  * Nested item constraints: The maximum length of each item is `36` characters. The minimum length of each item is `0` characters. Each item must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `standby_orchestrator_network_ids` - (Optional, Forces new resource, List of String) Network IDs to attach to the standby orchestrator.
+  * Constraints: The maximum number of items is `10`. The minimum number of items is `0`.
+  * Nested item constraints: The maximum length of each item is `36` characters. The minimum length of each item is `0` characters. Each item must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+* `managed_apikey` - (Optional, Forces new resource, String) IBM Cloud API key managed by the service for workload access.
+  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]*$/`.
+
+* `primary_orch_ca_certs_secrets` - (Optional, Forces new resource, Object) Secrets manager details for primary orchestrator CA certificates.
+* Nested schema for **primary_orch_ca_certs_secrets**:
+    * `ca_certificate_secret_id` - (String) ID of the secret.
+     * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
+    * `ca_secret_manager_guid` - (String) ID of the Primary CA certificate secret.
+     * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
+
+* `standby_orch_ca_certs_secrets` - (Optional, Forces new resource, Object) Secrets manager details for standby orchestrator CA certificates.
+* Nested schema for **standby_orch_ca_certs_secrets**:
+    * `ca_certificate_secret_id` - (String) ID of the Standby CA certificate secret.
+     * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
 
 ## Attribute Reference
 
-After your resource is created, you can read values from the listed arguments and the following attributes.
+After your resource is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_managedr.
+* `id` - (String) The CRN (Cloud Resource Name) of the DR service instance.
+ * Constraints: The maximum length is `1048` characters. The minimum length is `20` characters. The value must match regular expression `/^.*$/`.
+* `href` - (String) Resource reference.
+ * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 * `dashboard_url` - (String) URL to the dashboard for managing the DR service instance in IBM Cloud.
-* `instance_id` - (String) The CRN (Cloud Resource Name) of the DR service instance.
-
-
-
+ * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^https?:\/\/[a-zA-Z0-9\-._~:\/?#[\]@!$&'()*+,;=]+$/`.
+* `orchestrator_location_type` - (String) The cloud location where your orchestator need to be created.
+ * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `location_id` - (String) The location or data center identifier where the service instance is deployed.
+  * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `ssh_key_name` - (String) The name of the SSH key used for deploying the orchestator.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `standby_ssh_key_name` - (String) The name of the SSH key used for deploying the standby orchestator.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `orchestrator_name` - (String) The username used for the orchestrator.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `orchestrator_workspace_id` - (String) The unique identifier orchestrator workspace.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `standby_orchestrator_name` - (String) The username for the standby orchestrator management interface.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `standby_orchestrator_workspace_id` - (String) The unique identifier of the standby orchestrator workspace.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `orchestrator_ha` - (Boolean) Indicates whether the orchestrator High Availability (HA) is enabled for the service instance.
+* `resource_instance` - (String) The uniquie identifier of the associated IBM Cloud resource instance.
+ * Constraints: The maximum length is `512` characters. The minimum length is `20` characters. The value must match regular expression `/^crn:v1:[a-zA-Z0-9\-_]+:public:resource-controller:[a-zA-Z0-9\-_]+:[a-zA-Z0-9\-_\/]+:[a-zA-Z0-9\-_]+::$/`.
+* `secret_group` - (String) The secret group name in IBM Cloud Secrets Manager containing sensitive data for the service instance.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `secret` - (String) The secret name or identifier used for retrieving credentials from secrets manager.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `region_id` - (String) The power virtual server region where the service instance is deployed.
+ * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `guid` - (String) The global unique identifier of the service instance.
+ * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `machine_type` - (String) The machine type used for deploying orchestrator.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `tier` - (String) The storage tier used for deploying primary orchestrator.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `standby_tier` - (String) The storage tier used for deploying standby orchestrator.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `standby_machine_type` - (String) The machine type used for deploying standby virtual machines.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-_]+$/`.
+* `tenant_name` - (String) The tenant name for MFA authentication API.
+ * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\-_:]+$/`.
+* `proxy_ip` - (String) Proxy IP for the Communication between Orchestrator and Service broker.
+ * Constraints: The maximum length is `512` characters. The minimum length is `7` characters. The value must match regular expression `/^[a-zA-Z0-9.\-_:]+$/`.
 
 
 ## Import
 
 You can import the `ibm_pdr_managedr` resource by using `id`.
-The `id` property can be formed from `instance_id`, and `instance_id` in the following format:
+
+The `id` property can be formed from `instance_id` and the service instance CRN in the following format:
 
 <pre>
-&lt;instance_id&gt;
+&lt;instance_id&gt;/&lt;instance_id&gt;
 </pre>
-* `instance_id`: A string in the format `050ebe3b-13f4-4db8-8ece-501a3c13be80mh1`. Unique identifier of the provisioned instance.
+
+* `instance_id`: A string in the format `123456d3-1122-3344-b67d-4389b44b7bf9`. Service Instance ID.
+* `instance_id`: A string in the format `crn:v1:staging:public:power-dr-automation:global:a/a123456fb04cefb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::`. The CRN (Cloud Resource Name) of the DR service instance.
 
 # Syntax
+
 <pre>
-$ terraform import ibm_pdr_managedr.pdr_managedr &lt;instance_id&gt;
+$ terraform import ibm_pdr_managedr.pdr_managedr &lt;instance_id&gt;/&lt;instance_id&gt;
 </pre>
+
+---
