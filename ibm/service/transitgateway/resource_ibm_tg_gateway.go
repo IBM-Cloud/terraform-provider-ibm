@@ -28,10 +28,14 @@ const (
 	tgLocation                    = "location"
 	tgCreatedAt                   = "created_at"
 	tgGlobal                      = "global"
-	tgGreEnhancedRoutePropagation = "gre_enhanced_route_propagation"
 	tgStatus                      = "status"
 	tgUpdatedAt                   = "updated_at"
 	tgGatewayTags                 = "tags"
+	tgRedundancyGroup             = "redundancy_group"
+	tgRedundancyGroupID           = "redundancy_group_id"
+	tgGreEnhancedRoutePropagation = "gre_enhanced_route_propagation"
+	tgConnectionCount             = "connection_count"
+	tgConnectionNeedsAttention    = "connection_needs_attention"
 
 	isTransitGatewayProvisioning     = "provisioning"
 	isTransitGatewayProvisioningDone = "done"
@@ -50,7 +54,7 @@ func ResourceIBMTransitGateway() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(32 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -87,8 +91,7 @@ func ResourceIBMTransitGateway() *schema.Resource {
 			tgGreEnhancedRoutePropagation: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    false,
-				Default:     false,
+				Computed:    true,
 				Description: "Allow route propagation across all GREs connected to the same transit gateway. This affects connections on the gateway of type redundant_gre, unbound_gre_tunnel and gre_tunnel",
 			},
 
@@ -125,6 +128,31 @@ func ResourceIBMTransitGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Status of the resource",
+			},
+
+			tgRedundancyGroup: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The redundancy group name for this global transit gateway",
+			},
+
+			tgRedundancyGroupID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier of the redundancy group for this global transit gateway",
+			},
+
+			tgConnectionCount: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of connections associated with this Transit Gateway",
+			},
+
+			tgConnectionNeedsAttention: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates if this Transit Gateway has a connection that needs attention (such as cross account approval)",
 			},
 
 			flex.ResourceControllerURL: {
@@ -202,18 +230,24 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	location := d.Get(tgLocation).(string)
 	name := d.Get(tgName).(string)
 	global := d.Get(tgGlobal).(bool)
-	greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
 
 	createTransitGatewayOptions := &transitgatewayapisv1.CreateTransitGatewayOptions{}
 
 	createTransitGatewayOptions.Name = &name
 	createTransitGatewayOptions.Location = &location
 	createTransitGatewayOptions.Global = &global
-	createTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
 
 	if rsg, ok := d.GetOk(tgResourceGroup); ok {
 		resourceGroup := rsg.(string)
 		createTransitGatewayOptions.ResourceGroup = &transitgatewayapisv1.ResourceGroupIdentity{ID: &resourceGroup}
+	}
+	if v, ok := d.GetOk(tgGreEnhancedRoutePropagation); ok {
+		greEnhanced := v.(bool)
+		createTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhanced
+	}
+	if v, ok := d.GetOk(tgRedundancyGroup); ok {
+		rg := v.(string)
+		createTransitGatewayOptions.RedundancyGroup = &rg
 	}
 
 	//log.Println("going to create tgw now with options", *createTransitGatewayOptions.ResourceGroup)
@@ -307,6 +341,17 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 	}
 	d.Set(tgGlobal, tgw.Global)
 	d.Set(tgStatus, tgw.Status)
+	d.Set(tgGreEnhancedRoutePropagation, tgw.GreEnhancedRoutePropagation)
+	if tgw.RedundancyGroup != nil {
+		d.Set(tgRedundancyGroup, *tgw.RedundancyGroup)
+	}
+	if tgw.RedundancyGroupID != nil {
+		d.Set(tgRedundancyGroupID, *tgw.RedundancyGroupID)
+	}
+	if tgw.ConnectionCount != nil {
+		d.Set(tgConnectionCount, int(*tgw.ConnectionCount))
+	}
+	d.Set(tgConnectionNeedsAttention, tgw.ConnectionNeedsAttention)
 
 	tags, err := flex.GetTagsUsingCRN(meta, *tgw.Crn)
 	if err != nil {
@@ -358,13 +403,20 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 			updateTransitGatewayOptions.Name = &name
 		}
 	}
+	// The API rejects global changes for gateways that are part of a redundancy group.
 	if d.HasChange(tgGlobal) {
-		global := d.Get(tgGlobal).(bool)
-		updateTransitGatewayOptions.Global = &global
+		if rg, ok := d.GetOk(tgRedundancyGroup); !ok || rg.(string) == "" {
+			global := d.Get(tgGlobal).(bool)
+			updateTransitGatewayOptions.Global = &global
+		}
 	}
 	if d.HasChange(tgGreEnhancedRoutePropagation) {
 		greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
 		updateTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
+	}
+	if d.HasChange(tgRedundancyGroup) {
+		rg := d.Get(tgRedundancyGroup).(string)
+		updateTransitGatewayOptions.RedundancyGroup = &rg
 	}
 	if d.HasChange(tgGatewayTags) {
 		oldList, newList := d.GetChange(tgGatewayTags)
@@ -438,6 +490,9 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 				return transitGateway, isTransitGatewayDeleted, nil
 			}
 			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+		}
+		if transitGateway.Status != nil && *transitGateway.Status == "failed" {
+			return transitGateway, isTransitGatewayDeleted, nil
 		}
 		return transitGateway, isTransitGatewayDeleting, err
 	}

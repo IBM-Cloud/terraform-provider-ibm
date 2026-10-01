@@ -253,3 +253,42 @@ func TestAccIBMTransitGatewayImport(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMTransitGateway_redundancyGroup(t *testing.T) {
+	var instance string
+	gatewayname := fmt.Sprintf("tg-rg-gw-%d", acctest.RandIntRange(10, 100))
+	rgName := fmt.Sprintf("tg-rg-%d", acctest.RandIntRange(10, 100))
+	location := "us-south-ngdc-test"
+	resourceGroup := "24c1da58523c4c1b88c1a660c366b0f2"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTransitGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create a global gateway in a new redundancy group and verify
+				// that redundancy_group and redundancy_group_id are populated.
+				Config: testAccCheckIBMTransitGatewayRedundancyGroupConfig(gatewayname, location, rgName, resourceGroup),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", gatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", "true"),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "redundancy_group", rgName),
+					resource.TestCheckResourceAttrSet("ibm_tg_gateway.test_tg_gateway", "redundancy_group_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMTransitGatewayRedundancyGroupConfig(name, location, rg, resourceGroup string) string {
+	return fmt.Sprintf(`
+resource "ibm_tg_gateway" "test_tg_gateway" {
+	name             = "%s"
+	location         = "%s"
+	global           = true
+	redundancy_group = "%s"
+	resource_group   = "%s"
+}`, name, location, rg, resourceGroup)
+}
