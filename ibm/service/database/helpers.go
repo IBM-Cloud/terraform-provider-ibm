@@ -1120,32 +1120,6 @@ func stringsFromInterfaceSlice(in []interface{}) []string {
 	return out
 }
 
-// memberZonesFromDiff reads member_zones and allocation_count from a raw diff group map.
-func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
-	tfGroup, ok := groupRaw.(map[string]interface{})
-	if !ok || tfGroup["group_id"].(string) != defaultGroupID {
-		return nil, 0, false
-	}
-	membersSet, ok := tfGroup["members"].(*schema.Set)
-	if !ok || membersSet.Len() == 0 {
-		return nil, 0, false
-	}
-	memberMap, ok := membersSet.List()[0].(map[string]interface{})
-	if !ok {
-		return nil, 0, false
-	}
-	zonesRaw, _ := memberMap["member_zones"].([]interface{})
-	if len(zonesRaw) == 0 {
-		return nil, 0, false
-	}
-	allocationCount, _ = memberMap["allocation_count"].(int)
-	zones = stringsFromInterfaceSlice(zonesRaw)
-	if len(zones) == 0 {
-		return nil, 0, false
-	}
-	return zones, allocationCount, true
-}
-
 // memberZonesInRawConfig calls fn for each group that has member_zones set in the raw config.
 func memberZonesInRawConfig(d *schema.ResourceDiff, fn func(zones []string, allocationCount int) error) error {
 	raw := d.GetRawConfig()
