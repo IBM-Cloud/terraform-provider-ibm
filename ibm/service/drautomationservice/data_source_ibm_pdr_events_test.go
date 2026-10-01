@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice_test
@@ -11,15 +11,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrEventsDataSourceBasic(t *testing.T) {
@@ -32,7 +31,7 @@ func TestAccIBMPdrEventsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "event.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "events.#"),
 				),
 			},
 		},
@@ -42,77 +41,77 @@ func TestAccIBMPdrEventsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrEventsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_events" "pdr_events_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
-			time = "2025-06-19T23:59:59Z"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			time = "2021-01-31T09:44:12Z"
 			from_time = "2025-06-19T00:00:00Z"
 			to_time = "2025-06-19T23:59:59Z"
-			Accept-Language = "Accept-Language"
+			Accept-Language = "en-US"
 		}
 	`)
 }
 
-func TestDataSourceIBMPdrGetEventsEventToMap(t *testing.T) {
+func TestDataSourceIBMPdrEventsEventToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		eventUserModel := make(map[string]interface{})
-		eventUserModel["email"] = "abcuser@ibm.com"
-		eventUserModel["name"] = "abcuser"
-		eventUserModel["user_id"] = "IBMid-695000abc7E"
+		eventUserModel["email"] = "testString"
+		eventUserModel["name"] = "testString"
+		eventUserModel["user_id"] = "testString"
 
 		model := make(map[string]interface{})
-		model["action"] = "create"
-		model["api_source"] = "dr-automation-api"
-		model["event_id"] = "1cecfe43-43cd-4b1b-86be-30c2d3d2a25f"
-		model["level"] = "info"
-		model["message"] = "Service Instance created successfully"
+		model["action"] = "testString"
+		model["api_source"] = "testString"
+		model["event_id"] = "testString"
+		model["level"] = "notice"
+		model["message"] = "testString"
 		model["message_data"] = map[string]interface{}{"anyKey": "anyValue"}
 		model["metadata"] = map[string]interface{}{"anyKey": "anyValue"}
-		model["resource"] = "ProvisionID"
-		model["time"] = "2025-06-23T07:12:49.840Z"
-		model["timestamp"] = "1750662769"
+		model["resource"] = "testString"
+		model["time"] = "2019-01-01T12:00:00.000Z"
+		model["timestamp"] = "1715251200"
 		model["user"] = []map[string]interface{}{eventUserModel}
 
 		assert.Equal(t, result, model)
 	}
 
 	eventUserModel := new(drautomationservicev1.EventUser)
-	eventUserModel.Email = core.StringPtr("abcuser@ibm.com")
-	eventUserModel.Name = core.StringPtr("abcuser")
-	eventUserModel.UserID = core.StringPtr("IBMid-695000abc7E")
+	eventUserModel.Email = core.StringPtr("testString")
+	eventUserModel.Name = core.StringPtr("testString")
+	eventUserModel.UserID = core.StringPtr("testString")
 
 	model := new(drautomationservicev1.Event)
-	model.Action = core.StringPtr("create")
-	model.APISource = core.StringPtr("dr-automation-api")
-	model.EventID = core.StringPtr("1cecfe43-43cd-4b1b-86be-30c2d3d2a25f")
-	model.Level = core.StringPtr("info")
-	model.Message = core.StringPtr("Service Instance created successfully")
+	model.Action = core.StringPtr("testString")
+	model.APISource = core.StringPtr("testString")
+	model.EventID = core.StringPtr("testString")
+	model.Level = core.StringPtr("notice")
+	model.Message = core.StringPtr("testString")
 	model.MessageData = map[string]interface{}{"anyKey": "anyValue"}
 	model.Metadata = map[string]interface{}{"anyKey": "anyValue"}
-	model.Resource = core.StringPtr("ProvisionID")
-	model.Time = CreateMockDateTime("2025-06-23T07:12:49.840Z")
-	model.Timestamp = core.StringPtr("1750662769")
+	model.Resource = core.StringPtr("testString")
+	model.Time = CreateMockDateTime("2019-01-01T12:00:00.000Z")
+	model.Timestamp = core.StringPtr("1715251200")
 	model.User = eventUserModel
 
-	result, err := drautomationservice.DataSourceIBMPdrGetEventsEventToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrEventsEventToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIBMPdrGetEventsEventUserToMap(t *testing.T) {
+func TestDataSourceIBMPdrEventsEventUserToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["email"] = "abcuser@ibm.com"
-		model["name"] = "abcuser"
-		model["user_id"] = "IBMid-695000abc7E"
+		model["email"] = "testString"
+		model["name"] = "testString"
+		model["user_id"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(drautomationservicev1.EventUser)
-	model.Email = core.StringPtr("abcuser@ibm.com")
-	model.Name = core.StringPtr("abcuser")
-	model.UserID = core.StringPtr("IBMid-695000abc7E")
+	model.Email = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.UserID = core.StringPtr("testString")
 
-	result, err := drautomationservice.DataSourceIBMPdrGetEventsEventUserToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrEventsEventUserToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

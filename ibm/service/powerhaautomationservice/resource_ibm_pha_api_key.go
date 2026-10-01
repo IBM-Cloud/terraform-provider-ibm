@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package powerhaautomationservice
@@ -18,8 +18,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func ResourceIBMPhaAPIKey() *schema.Resource {
@@ -27,47 +27,46 @@ func ResourceIBMPhaAPIKey() *schema.Resource {
 		CreateContext: resourceIBMPhaAPIKeyCreate,
 		ReadContext:   resourceIBMPhaAPIKeyRead,
 		DeleteContext: resourceIBMPhaAPIKeyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "instance_id"),
-				Description:  "Unique identifier of the provisioned instance.",
+			"pha_instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "pha_instance_id"),
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"accept_language": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "accept_language"),
-				Description:  "The language requested for the return document.",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "accept_language"),
+				Description: "The language requested for the return document.",
 			},
 			"if_none_match": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "if_none_match"),
-				Description:  "ETag for conditional requests (optional).",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "if_none_match"),
+				Description: "ETag for conditional requests (optional).",
 			},
 			"api_key": &schema.Schema{
-				Type:      schema.TypeString,
-				Optional:  true,
-				ForceNew:  true,
-				Sensitive: true,
-				// DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "api_key"),
-				Description:  "The API key associated with the request.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				ForceNew:    true,
+				Description: "api key",
+			},
+			"status": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the API key retrieval request.",
 			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique identifier for the API key record.",
-			},
-			"status": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the API key retrieval request",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -81,7 +80,7 @@ func ResourceIBMPhaAPIKeyValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "instance_id",
+			Identifier:                 "pha_instance_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -107,15 +106,6 @@ func ResourceIBMPhaAPIKeyValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             50,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "api_key",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[A-Za-z0-9._:-]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             2048,
-		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_pha_api_key", Schema: validateSchema}
@@ -132,15 +122,18 @@ func resourceIBMPhaAPIKeyCreate(context context.Context, d *schema.ResourceData,
 
 	createAPIKeyOptions := &powerhaautomationservicev1.CreateAPIKeyOptions{}
 
-	createAPIKeyOptions.SetPhaInstanceID(d.Get("instance_id").(string))
+	createAPIKeyOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
 	if _, ok := d.GetOk("api_key"); ok {
 		createAPIKeyOptions.SetAPIKey(d.Get("api_key").(string))
 	}
 	if _, ok := d.GetOk("accept_language"); ok {
 		createAPIKeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
+	if _, ok := d.GetOk("if_none_match"); ok {
+		createAPIKeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+	}
 
-	_, response, err := powerhaAutomationServiceClient.CreateAPIKeyWithContext(context, createAPIKeyOptions)
+	apiKeyResponse, response, err := powerhaAutomationServiceClient.CreateAPIKeyWithContext(context, createAPIKeyOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateAPIKeyWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -155,7 +148,7 @@ func resourceIBMPhaAPIKeyCreate(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *createAPIKeyOptions.PhaInstanceID))
+	d.SetId(fmt.Sprintf("%s", *apiKeyResponse.ID))
 
 	return resourceIBMPhaAPIKeyRead(context, d, meta)
 }
@@ -170,9 +163,12 @@ func resourceIBMPhaAPIKeyRead(context context.Context, d *schema.ResourceData, m
 
 	getAPIKeyOptions := &powerhaautomationservicev1.GetAPIKeyOptions{}
 
-	instanceID := d.Id()
+	parts, err := flex.SepIdParts(d.Id(), ":")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "sep-id-parts").GetDiag()
+	}
 
-	getAPIKeyOptions.SetPhaInstanceID(instanceID)
+	getAPIKeyOptions.SetPhaInstanceID(parts[7])
 	if _, ok := d.GetOk("accept_language"); ok {
 		getAPIKeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
@@ -186,7 +182,6 @@ func resourceIBMPhaAPIKeyRead(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-
 		detailedMsg := fmt.Sprintf("GetAPIKeyWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
 		if response != nil {
@@ -202,14 +197,14 @@ func resourceIBMPhaAPIKeyRead(context context.Context, d *schema.ResourceData, m
 
 	if !core.IsNil(apiKeyResponse.Status) {
 		if err = d.Set("status", apiKeyResponse.Status); err != nil {
-			err = fmt.Errorf("Error setting api_key: %s", err)
+			err = fmt.Errorf("Error setting status: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "set-status").GetDiag()
 		}
 	}
 	if !core.IsNil(apiKeyResponse.ID) {
-		if err = d.Set("instance_id", extractInstanceIDFromCRN(*apiKeyResponse.ID)); err != nil {
-			err = fmt.Errorf("Error setting instance_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "set-instance_id").GetDiag()
+		if err = d.Set("pha_instance_id", apiKeyResponse.ID); err != nil {
+			err = fmt.Errorf("Error setting pha_instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "set-pha_instance_id").GetDiag()
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

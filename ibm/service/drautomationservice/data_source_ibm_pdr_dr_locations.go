@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice
@@ -18,18 +18,18 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func dataSourceIBMPdrDrLocationsCommon() *schema.Resource {
+func DataSourceIBMPdrDrLocations() *schema.Resource {
 	return &schema.Resource{
+		ReadContext: dataSourceIBMPdrDrLocationsRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Service Instance ID.",
 			},
 			"accept_language": &schema.Schema{
 				Type:        schema.TypeString,
@@ -52,6 +52,11 @@ func dataSourceIBMPdrDrLocationsCommon() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the Power virtual server DR location .",
 						},
+						"power_edge_router": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the region is power edge router enabled or not.",
+						},
 					},
 				},
 			},
@@ -59,78 +64,55 @@ func dataSourceIBMPdrDrLocationsCommon() *schema.Resource {
 	}
 }
 
-func DataSourceIBMPdrDrLocations() *schema.Resource {
-	res := dataSourceIBMPdrDrLocationsCommon()
-	res.ReadContext = dataSourceIBMPdrDrLocationsRead
-	return res
-}
-
-func DataSourceIBMPdrGetDrLocations() *schema.Resource {
-	res := dataSourceIBMPdrDrLocationsCommon()
-	res.ReadContext = dataSourceIBMPdrGetDrLocationsRead
-	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_dr_locations` instead."
-	return res
-}
-
-func dataSourceIBMPdrDrLocationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrDrLocationsReadCommon(ctx, d, meta, "ibm_pdr_dr_locations")
-}
-
-func dataSourceIBMPdrGetDrLocationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrDrLocationsReadCommon(ctx, d, meta, "ibm_pdr_get_dr_locations")
-}
-
-func dataSourceIBMPdrDrLocationsReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
+func dataSourceIBMPdrDrLocationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_dr_locations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getDrLocationsOptions := &drautomationservicev1.GetDrLocationsOptions{}
+	getDrLocationOptions := &drautomationservicev1.GetDrLocationOptions{}
 
-	getDrLocationsOptions.SetInstanceID(d.Get("instance_id").(string))
+	getDrLocationOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getDrLocationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	getDrLocationsResponse, response, err := drAutomationServiceClient.GetDrLocationsWithContext(context, getDrLocationsOptions)
-
+	getDrLocationsResponse, response, err := drAutomationServiceClient.GetDrLocationWithContext(context, getDrLocationOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetDrLocationsWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
 		if response != nil {
 			detailedMsg = fmt.Sprintf(
-				"GetDrLocations failed: %s (status: %d, response: %s)",
+				"GetDrLocation failed: %s (status: %d, response: %s)",
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_dr_locations", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIBMPdrGetDrLocationsID(d))
+	d.SetId(dataSourceIBMPdrDrLocationsID(d))
 
 	drLocations := []map[string]interface{}{}
 	for _, drLocationsItem := range getDrLocationsResponse.DrLocations {
-		drLocationsItemMap, err := DataSourceIBMPdrGetDrLocationsDrLocationToMap(&drLocationsItem) // #nosec G601
+		drLocationsItemMap, err := DataSourceIBMPdrDrLocationsDrLocationToMap(&drLocationsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "dr_locations-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_dr_locations", "read", "dr_locations-to-map").GetDiag()
 		}
 		drLocations = append(drLocations, drLocationsItemMap)
 	}
-
 	if err = d.Set("dr_locations", drLocations); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) "+dsname, "read", "set-dr_locations").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pdr_dr_locations", "read", "set-dr_locations").GetDiag()
 	}
 
 	return nil
 }
 
-// dataSourceIBMPdrGetDrLocationsID returns a reasonable ID for the list.
-func dataSourceIBMPdrGetDrLocationsID(d *schema.ResourceData) string {
+// dataSourceIBMPdrDrLocationsID returns a reasonable ID for the list.
+func dataSourceIBMPdrDrLocationsID(d *schema.ResourceData) string {
 	parts := strings.Split(d.Get("instance_id").(string), ":")
 	if len(parts) > 7 {
 		return parts[7]
@@ -138,13 +120,16 @@ func dataSourceIBMPdrGetDrLocationsID(d *schema.ResourceData) string {
 	return d.Get("instance_id").(string)
 }
 
-func DataSourceIBMPdrGetDrLocationsDrLocationToMap(model *drautomationservicev1.DrLocation) (map[string]interface{}, error) {
+func DataSourceIBMPdrDrLocationsDrLocationToMap(model *drautomationservicev1.DrLocation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
+	}
+	if model.PowerEdgeRouter != nil {
+		modelMap["power_edge_router"] = *model.PowerEdgeRouter
 	}
 	return modelMap, nil
 }
