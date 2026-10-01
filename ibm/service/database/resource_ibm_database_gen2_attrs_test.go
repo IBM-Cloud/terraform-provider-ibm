@@ -88,12 +88,14 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
+			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
+		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("supported attr configuration does not return error", func(t *testing.T) {
