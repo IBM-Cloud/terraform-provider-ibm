@@ -1076,8 +1076,7 @@ func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *sc
 		serviceName = parts[0]
 	}
 
-	plan := d.Get("plan").(string)
-	dbType := getDatabaseTypeFromResourceID(serviceName, plan)
+	dbType := getDatabaseTypeFromResourceID(serviceName, d.Get("plan").(string))
 	if dbType == "" {
 		return diagError("unable to determine database type from resource plan ID for promotion")
 	}
