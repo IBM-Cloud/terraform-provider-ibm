@@ -896,7 +896,7 @@ Review the argument reference that you can specify for your resource.
     - `members` (Set, Optional)
       - Nested scheme for `members`:
         - `allocation_count` - (Optional, Integer) Allocated number of members. **Gen2: Supported.**
-        - `member_zones` - (Optional, List of Strings) Availability zones for the member. **Gen2 only.** Can only be set when `allocation_count` is `1`. Must contain exactly one zone entry (e.g. `["us-east-1"]`). Create-only. Cannot be changed after provisioning. To scale up, remove `member_zones` and increase `allocation_count` to N. Scale-down is not supported.
+        - `member_zones` - (Optional, List of Strings) Availability zones for the members. **Gen2 only.** Can only be set when `allocation_count` is `1`. Must contain exactly one zone entry (e.g. `["us-east-1"]`). Create-only. Cannot be changed after provisioning. To scale up, remove `member_zones` and increase `allocation_count` to N. Scale-down is not supported.
 
     - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
       - Nested scheme for `memory`:
