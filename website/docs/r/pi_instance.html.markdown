@@ -107,7 +107,8 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `pi_metadata_service`:
   - `enabled` - (Required, Boolean) Indicates whether the metadata service endpoint will be available to the virtual server.
-  - `force_disable` - (Optional, Boolean) When true, allow the metadata service to be disabled while the VM is active. Default value is `false`.
+  - `force_disable` - (Optional, Boolean) When true, allow the metadata service to be disabled while the VM is active. Default value is `false`. Conflicts with `force_enable`.
+  - `force_enable` - (Optional, Boolean) When true, allow the metadata service to be enabled while the VM is active. The user is responsible for manually configuring networking on the VSI after the update. Only supported on Linux VSIs. Default value is `false`. Conflicts with `force_disable`.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:

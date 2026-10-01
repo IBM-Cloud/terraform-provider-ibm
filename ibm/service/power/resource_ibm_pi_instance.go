@@ -316,10 +316,17 @@ func ResourceIBMPIInstance() *schema.Resource {
 							Type:        schema.TypeBool,
 						},
 						Attr_ForceDisable: {
-							Default:     false,
-							Description: "when true, allow the metadata service to be disabled while the VM is active.",
-							Optional:    true,
-							Type:        schema.TypeBool,
+							ConflictsWith: []string{Arg_MetadataService + ".0." + Attr_ForceEnable},
+							Default:       false,
+							Description:   "when true, allow the metadata service to be disabled while the VM is active.",
+							Optional:      true,
+							Type:          schema.TypeBool,
+						},
+						Attr_ForceEnable: {
+							ConflictsWith: []string{Arg_MetadataService + ".0." + Attr_ForceDisable},
+							Description:   "when true, allow the metadata service to be enabled while the VM is active. The user is responsible for manually configuring networking on the VSI after the update. Only supported on Linux VSIs.",
+							Optional:      true,
+							Type:          schema.TypeBool,
 						},
 					},
 				},
@@ -781,14 +788,15 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-	// Enabling is handled via the create; force is only valid for disabling.
+	// Enabling is handled via the create; force_disable and force_enable are only valid for live-instance updates.
 	if ms, ok := d.GetOk(Arg_MetadataService); ok {
 		msData := ms.([]any)
 		if len(msData) > 0 && msData[0] != nil {
 			data := msData[0].(map[string]any)
 			enabled, _ := data[Attr_Enabled].(bool)
-			force, _ := data[Attr_ForceDisable].(bool)
-			if !enabled && force {
+			forceDisable, _ := data[Attr_ForceDisable].(bool)
+			forceEnable, _ := data[Attr_ForceEnable].(bool)
+			if (!enabled && forceDisable) || (enabled && forceEnable) {
 				for _, s := range *pvmList {
 					body := &models.PVMInstanceUpdate{
 						MetadataService: expandUpdateMetadataService(ms),
@@ -980,6 +988,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		// preserve the current state value to prevent false drift.
 		if len(ms) > 0 {
 			ms[0][Attr_ForceDisable] = d.Get(Arg_MetadataService + ".0." + Attr_ForceDisable).(bool)
+			ms[0][Attr_ForceEnable] = d.Get(Arg_MetadataService + ".0." + Attr_ForceEnable).(bool)
 		}
 		d.Set(Arg_MetadataService, ms)
 	}
@@ -1485,8 +1494,10 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				if osType == OS_AIX && body.MetadataService.ForceDisable && !*body.MetadataService.Enabled && strings.EqualFold(status.(string), State_Active) {
 					return diag.Errorf("force-disabling the metadata service is not supported on AIX instances.")
 				}
+				if osType == OS_AIX && body.MetadataService.ForceEnable && *body.MetadataService.Enabled && strings.EqualFold(status.(string), State_Active) {
+					return diag.Errorf("force-enabling the metadata service is not supported on AIX instances.")
+				}
 			}
-
 		}
 		if body.MetadataService != nil {
 			_, err = client.Update(instanceID, body)
@@ -2686,8 +2697,12 @@ func expandUpdateMetadataService(input any) *models.UpdateMetadataService {
 	if v, ok := data[Attr_ForceDisable]; ok {
 		ms.ForceDisable = v.(bool)
 	}
+	if v, ok := data[Attr_ForceEnable]; ok {
+		ms.ForceEnable = v.(bool)
+	}
 	return ms
 }
+
 func isWaitForPIInstanceMetadataService(ctx context.Context, client *instance.IBMPIInstanceClient, id string, ms *models.UpdateMetadataService, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) metadata service to be updated", id)
 
