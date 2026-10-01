@@ -2233,7 +2233,7 @@ func TestGen2ElasticsearchStandardGen2PlanRecognized(t *testing.T) {
 // "databases-for-elasticsearch" resolves to the "elasticsearch" database type,
 // which is the key used when building Gen2 API parameters.
 func TestGen2ElasticsearchDatabaseTypeMapping(t *testing.T) {
-	dbType := getDatabaseTypeFromResourceID("databases-for-elasticsearch")
+	dbType := getDatabaseTypeFromResourceID("databases-for-elasticsearch", "standard-gen2")
 	assert.Equal(t, "elasticsearch", dbType,
 		"getDatabaseTypeFromResourceID should return 'elasticsearch' for databases-for-elasticsearch")
 }
