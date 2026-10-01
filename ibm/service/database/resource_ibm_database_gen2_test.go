@@ -2606,8 +2606,7 @@ func TestValidateMemberZones(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			group := &Group{MemberZones: c.zones}
-			err := validateMemberZones(group, c.memberCount)
+			err := validateMemberZones(c.zones, c.memberCount)
 			if c.wantErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), c.errContains)
@@ -2654,8 +2653,7 @@ func TestGen2ValidateMemberZonesDiff(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			// validateMemberZones is the core logic called by ValidateMemberZonesDiff
-			group := &Group{MemberZones: c.zones}
-			err := validateMemberZones(group, c.count)
+			err := validateMemberZones(c.zones, c.count)
 			if c.wantErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), c.errContains)

@@ -433,9 +433,10 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
-	// member_zones is create-only — omit it on updates.
+	// member_zones is create-only. Also validates here as a fallback — plan-time check
+	// (ValidateMemberZonesDiff) is skipped when members block is absent or count is unknown.
 	if d.Id() == "" && memberGroup != nil && len(memberGroup.MemberZones) > 0 {
-		if err := validateMemberZones(memberGroup, config.Members); err != nil {
+		if err := validateMemberZones(memberGroup.MemberZones, config.Members); err != nil {
 			return nil, err
 		}
 		config.MemberZones = memberGroup.MemberZones
@@ -1371,7 +1372,7 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 // ValidateMemberZonesDiff validates member_zones at plan time for Gen2 instances.
 func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	return memberZonesInRawConfig(d, func(zones []string, allocationCount int) error {
-		return validateMemberZones(&Group{MemberZones: zones}, allocationCount)
+		return validateMemberZones(zones, allocationCount)
 	})
 }
 

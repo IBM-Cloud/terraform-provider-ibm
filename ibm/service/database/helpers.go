@@ -1064,7 +1064,7 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 }
 
 // validateMemberZones checks that member_zones has allocation_count=1 and exactly one zone.
-func validateMemberZones(group *Group, memberCount int) error {
+func validateMemberZones(zones []string, memberCount int) error {
 	if memberCount != 1 {
 		return fmt.Errorf(
 			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
@@ -1076,16 +1076,16 @@ func validateMemberZones(group *Group, memberCount int) error {
 			memberCount,
 		)
 	}
-	if len(group.MemberZones) != 1 {
-		zones := make([]string, 0, len(group.MemberZones))
-		for _, z := range group.MemberZones {
-			zones = append(zones, fmt.Sprintf("%q", z))
+	if len(zones) != 1 {
+		quoted := make([]string, 0, len(zones))
+		for _, z := range zones {
+			quoted = append(quoted, fmt.Sprintf("%q", z))
 		}
 		return fmt.Errorf(
 			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
 				"Please specify a single availability zone.",
-			len(group.MemberZones),
-			strings.Join(zones, ", "),
+			len(zones),
+			strings.Join(quoted, ", "),
 		)
 	}
 	return nil
