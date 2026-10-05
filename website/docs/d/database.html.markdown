@@ -62,7 +62,7 @@ In addition to all argument references list, you can access the following attrib
 
     Nested scheme for `window`:
     - `start_time` - (String) Earliest time at which maintenance can begin (`hh:mmZ`).
-    - `days` - (String) Comma-separated day(s) on which maintenance can run.
+    - `days` - (Set of String) Day(s) of the week on which maintenance can run.
     - `system_assigned` - (Boolean) True when IBM Cloud controls the maintenance schedule.
 
 - `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
