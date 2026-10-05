@@ -1119,7 +1119,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
-	_, err = g.waitForGen2InstanceUpdate(d, meta)
+	_, err = waitForDatabaseInstanceUpdate(d, meta, false)
 	if err != nil {
 		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}
@@ -1166,8 +1166,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 // applyGroupAndMaintenanceWithDiagnostics applies group scaling and maintenance window updates in one RC call.
 // Wraps applyGroupAndMaintenanceUpdate to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupAndMaintenanceWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	_, hasGroup := d.GetOk("group")
-	if !hasGroup && !d.HasChange("maintenance") {
+	if !d.HasChange("group") && !d.HasChange("shards") && !d.HasChange("maintenance") {
 		return nil
 	}
 
