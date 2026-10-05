@@ -3415,7 +3415,7 @@ func validateMaintenanceDays(v interface{}, k string) (warnings []string, errors
 	val := v.(string)
 	if !allowed[val] {
 		errors = append(errors, fmt.Errorf(
-			"%s: unrecognised day %q — must be a full English day name (e.g. \"Wednesday\")",
+			"%s: unrecognised day %q - must be a full English day name (e.g. \"Wednesday\")",
 			k, val,
 		))
 	}

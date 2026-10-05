@@ -942,7 +942,7 @@ Review the argument reference that you can specify for your resource.
     Nested scheme for `window`:
     - `start_time` - (Optional, String) Earliest time at which maintenance can be initiated, in ISO 8601 UTC format (`hh:mmZ`). Example: `"05:00Z"`.
     - `days` - (Optional, Set of String) Day(s) of the week on which maintenance can be initiated. Example: `["Wednesday", "Thursday"]`.
-    - `system_assigned` - (Optional, Bool) When `true`, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be used together with `start_time` or `days`.
+    - `system_assigned` - (Optional, Bool) When `true`, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set to `true` with `start_time` or `days`.
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)

@@ -351,9 +351,12 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 										Description: "Earliest time at which maintenance can begin (hh:mmZ).",
 									},
 									"days": {
-										Type:        schema.TypeString,
+										Type:        schema.TypeSet,
 										Computed:    true,
-										Description: "Comma-separated day(s) on which maintenance can run.",
+										Description: "Day(s) of the week on which maintenance can run.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 									},
 									"system_assigned": {
 										Type:        schema.TypeBool,
