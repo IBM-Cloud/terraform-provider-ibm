@@ -514,6 +514,62 @@ output "analytics_connection" {
 
 ```
 
+### Sample MongoDB Enterprise Sharding Gen2 instance
+
+MongoDB Enterprise Edition Sharding Gen2 (`enterprise-sharding-gen2`) supports horizontal scale-out via the `shards` attribute. Shard count can be set from `1` to `3` and can be increased after provisioning, but **cannot be decreased**.
+
+* `enterprise-sharding-gen2` is a Gen2-only plan. Use `ibm_resource_key` for credentials — `adminpassword` and `users` are not supported.
+* Provisioning may take longer than the default timeout. Extend the `create` timeout as needed.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongo_sharded" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = "my-mongo-sharded"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise-sharding-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  shards = 2
+
+  group {
+    group_id = "member"
+    disk {
+      allocation_mb = 20480
+    }
+    host_flavor {
+      id = "bx3d.8x40"
+    }
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+resource "ibm_resource_key" "mongo_credentials" {
+  name                 = "mongo-sharded-credentials"
+  resource_instance_id = ibm_database.mongo_sharded.id
+}
+```
+
+### Scaling shards on an existing MongoDB Enterprise Sharding Gen2 instance
+
+To increase the shard count after provisioning, update the `shards` attribute. The plan will fail if you attempt to decrease the count.
+
+```terraform
+resource "ibm_database" "mongo_sharded" {
+  # ... other config unchanged ...
+  shards = 3  # increased from 2
+}
+```
+
 ### Sample EDB instance
 EDB takes more time than expected. It is always advisible to extend timeouts using timeouts block
 
@@ -650,6 +706,33 @@ resource "ibm_database" "es" {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+
+### Gen2 Elasticsearch Standard instance
+
+An example to configure and deploy an Elasticsearch Gen2 instance using the `standard-gen2` plan. This plan uses Gen2 infrastructure and requires a dedicated host flavor. Use `ibm_resource_key` for credentials instead of `adminpassword` or `users`.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "es_standard_gen2" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "<your_database_name>"
+  service           = "databases-for-elasticsearch"
+  plan              = "standard-gen2"
+  location          = "<gen2_location>"
+  service_endpoints = "private"
+
+  tags = ["tag1", "tag2"]
 
   timeouts {
     create = "120m"
@@ -877,7 +960,7 @@ Review the argument reference that you can specify for your resource.
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
-  `enterprise-gen2` is supported only for elasticsearch (`databases-for-elasticsearch`).
+  `enterprise-gen2` for elasticsearch (`databases-for-elasticsearch`). `standard-gen2` is supported for all services.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
@@ -885,16 +968,25 @@ Review the argument reference that you can specify for your resource.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
-- `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. Removing the `remote_leader_id` attribute from an existing read-only replica will promote the deployment to a standalone deployment. The deployment will restart and break its connection with the leader. This will disable all database users associated with this deployment. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+- `remote_leader_id` - (Optional, String) The CRN of the leader (source) database used to create a read-only replica. A read-only replica replicates all data from the leader asynchronously. Removing `remote_leader_id` from an existing replica promotes it to a standalone primary instance — the deployment restarts, its connection to the leader is broken, and all associated database users are disabled.
 
-  **Gen2:** Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.
+  **Classic:** Supported at provisioning time. Clear the attribute to promote the replica.
 
-- `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas]
+  **Gen2:** Supported. Set `remote_leader_id` to the CRN of an existing Gen1 (Classic) or Gen2 source instance to provision a Gen2 read-only replica. Clear the attribute on an existing Gen2 replica to promote it to a standalone primary instance.
 
-  **Gen2:** Accepted but ignored (Classic-only feature for read replica promotion).
+  For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+
+- `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+
+  **Gen2:** Accepted but ignored — promotion is triggered by clearing `remote_leader_id` and does not support skipping the initial backup.
 - `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance from `backup_id`.
 
-  **Gen2:** Accepted but ignored (Classic-only feature).
+- `shards` - (Optional, Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only supported for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Accepted values are `1`, `2`, or `3`. If omitted, defaults to `1`. The shard count can be increased after provisioning, but **cannot be decreased**.
+
+  **Gen2 (`enterprise-sharding-gen2` only):** Plan fails if `shards` is set on any other service or plan combination.
+
+  > ⚠️ **Warning:** Reducing the shard count is not allowed and will result in a plan-time error.
+  > Shard scale-out is an irreversible operation.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 
@@ -969,6 +1061,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
+| Shard scale-out (shards, MongoDB enterprise-sharding-gen2) | ❌ Not supported | ✅ Supported (1–3 shards, increase only) |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |
@@ -987,7 +1080,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
+  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`
