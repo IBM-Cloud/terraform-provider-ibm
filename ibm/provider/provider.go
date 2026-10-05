@@ -67,6 +67,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcemanager"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/satellite"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/scc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
@@ -739,6 +740,9 @@ func Provider() *schema.Provider {
 			"ibm_service_key":       cloudfoundry.DataSourceIBMServiceKey(),
 			"ibm_service_plan":      cloudfoundry.DataSourceIBMServicePlan(),
 			"ibm_space":             cloudfoundry.DataSourceIBMSpace(),
+
+			// Red Hat AI Inference
+			"ibm_rhaii_project": rhaii.DataSourceIBMRhaiiProject(),
 
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.DataSourceIBMSchematicsWorkspace(),
@@ -1679,6 +1683,9 @@ func Provider() *schema.Provider {
 
 			// //Added for Usage Reports
 			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
+
+			// Red Hat AI Inference
+			"ibm_rhaii_project": rhaii.ResourceIBMRhaiiProject(),
 
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),

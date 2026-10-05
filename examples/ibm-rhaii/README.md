@@ -1,0 +1,43 @@
+# Red Hat AI Inference project example
+
+This example creates a Red Hat AI Inference (RHAII) project and reads it back with the data source.
+
+It is the Terraform equivalent of:
+
+```sh
+ibmcloud resource service-instance-create my-rhaii-project instructlab instructlab-pricing-plan us-east -g Default
+```
+
+## Usage
+
+```sh
+export TF_VAR_ibmcloud_api_key=<your_api_key>
+terraform init
+terraform plan
+terraform apply
+```
+
+Run `terraform destroy` when you no longer need the project.
+
+## Resources and data sources
+
+* `ibm_rhaii_project` (resource)
+* `ibm_rhaii_project` (data source)
+
+## Inputs
+
+| Name | Description | Type | Default |
+|------|-------------|------|---------|
+| ibmcloud_api_key | IBM Cloud API key | `string` | n/a |
+| resource_group | Name of the resource group for the project | `string` | `Default` |
+| project_name | Name of the project | `string` | `my-rhaii-project` |
+| location | Region of the project | `string` | `us-east` |
+| tags | Tags for the project | `list(string)` | `[]` |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| project_id | ID of the project. Use it as `project_id` in the Red Hat AI Inference API. |
+| endpoint | Base URL of the Red Hat AI Inference API for this project |
+| crn | CRN of the project |
