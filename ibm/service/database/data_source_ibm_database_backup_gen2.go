@@ -16,37 +16,46 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-type dataSourceIBMDatabaseBackupGen2Backend struct{}
+// dataSourceIBMDatabaseBackupGen2Backend holds the backup resource instance and
+// its source database instance, both pre-fetched by pickDataSourceBackupBackend,
+// so Read can map attributes and check S2S authorization without any extra API calls.
+type dataSourceIBMDatabaseBackupGen2Backend struct {
+	backupInstance *rc.ResourceInstance
+	sourceInstance *rc.ResourceInstance
+}
 
-func newDataSourceIBMDatabaseBackupGen2Backend() dataSourceIBMDatabaseBackupBackend {
-	return &dataSourceIBMDatabaseBackupGen2Backend{}
+func newDataSourceIBMDatabaseBackupGen2Backend(backupInstance, sourceInstance *rc.ResourceInstance) dataSourceIBMDatabaseBackupBackend {
+	return &dataSourceIBMDatabaseBackupGen2Backend{
+		backupInstance: backupInstance,
+		sourceInstance: sourceInstance,
+	}
 }
 
 func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Gen2 databases use Resource Controller API
-	// Get the resource controller client to fetch instance details
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backup", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
 	backupID := d.Get("backup_id").(string)
 
-	// Get the instance to verify it exists and is accessible
-	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &backupID,
-	})
-	if err != nil {
-		if response != nil && response.StatusCode == httpNotFound {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Independent Backup not found: %s", backupID), "(Data) ibm_database_backup", "read")
+	// Use the pre-fetched backup instance when available; fall back to a live
+	// API call only when the router could not fetch it (e.g. auth failure).
+	instance := g.backupInstance
+	if instance == nil {
+		rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backup", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed: %s\n%s", err.Error(), response), "(Data) ibm_database_backup", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		resp, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &backupID})
+		if err != nil {
+			if response != nil && response.StatusCode == httpNotFound {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Independent Backup not found: %s", backupID), "(Data) ibm_database_backup", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed: %s\n%s", err.Error(), response), "(Data) ibm_database_backup", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		instance = resp
 	}
 
 	d.SetId(backupID)
@@ -70,11 +79,32 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 	}
 
 	for field, value := range fields {
-		if err = d.Set(field, value); err != nil {
+		if err := d.Set(field, value); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting %s: %s", field, err), "(Data) ibm_database_backup", "read")
 			return tfErr.GetDiag()
 		}
 	}
 
+	// Warn if S2S authorizations are not fully configured on the source database instance.
+	// S2S authorization lives on the source instance, not on the backup resource itself.
+	// Only applicable to instances using Independent Backups.
+	return s2sDiagForInstance(g.sourceInstance)
+}
+
+// s2sDiagForInstance returns a non-blocking S2S warning diagnostic when the
+// given instance has Independent Backups but the required S2S authorizations
+// are missing. Returns nil when no warning is needed.
+// Extracted so both the backup and backups Gen2 backends share the same logic
+// and unit tests can exercise this function directly.
+func s2sDiagForInstance(instance *rc.ResourceInstance) diag.Diagnostics {
+	if instance != nil &&
+		hasIndependentBackups(instance.Extensions) &&
+		!checkS2SAuthorization(instance.Extensions) {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		}}
+	}
 	return nil
 }
