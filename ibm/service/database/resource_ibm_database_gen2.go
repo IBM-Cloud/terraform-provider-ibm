@@ -581,13 +581,9 @@ func (g *resourceIBMDatabaseGen2Backend) addMaintenanceConfig(d *schema.Resource
 // []map[string]interface{} shape required by Terraform for TypeList/MaxItems:1 blocks.
 //
 // The RC API always returns days as []interface{} (one string element per day).
-//
-// d is used to read the raw HCL config intent, which resolves ambiguity in the API
-// response: the backend sometimes returns stale start_time/days even after switching to
-// system_assigned=true, and always returns system_assigned=true even after setting a
-// custom window. Without config intent, flattenMaintenance cannot tell which mode is now
-// active. Pass nil for d when the config is not available (e.g. data source reads).
-func flattenMaintenance(ext map[string]interface{}, d *schema.ResourceData) []map[string]interface{} {
+// Mutual-exclusion rule: if start_time or days are present, this is a custom window —
+// system_assigned is suppressed. If neither is present, system_assigned is used.
+func flattenMaintenance(ext map[string]interface{}) []map[string]interface{} {
 	// The API response nests maintenance under extensions["dataservices"]["maintenance"].
 	dataservices, ok := ext["dataservices"].(map[string]interface{})
 	if !ok {
@@ -606,46 +602,8 @@ func flattenMaintenance(ext map[string]interface{}, d *schema.ResourceData) []ma
 		return nil
 	}
 
-	// Determine config intent from raw HCL (not state) when available.
-	// This resolves two ambiguities in the API response:
-	//   1. After switching to system_assigned=true, the API may still return the old
-	//      start_time/days — we must not let those bleed into state.
-	//   2. After setting a custom window, the API always returns system_assigned=true
-	//      alongside start_time/days — we must suppress system_assigned from state.
-	var configSAVal, configSAInCfg, configSTInCfg, configDaysInCfg bool
-	if d != nil {
-		configSAVal, configSAInCfg, _, configSTInCfg, configDaysInCfg =
-			maintenanceWindowFieldsFromRawConfig(d.GetRawConfig())
-	}
-
 	window := map[string]interface{}{}
 
-	// system_assigned=true was explicitly written in config: that is the active mode.
-	// Do not include start_time or days, regardless of what the API returned.
-	if configSAInCfg && configSAVal {
-		window["system_assigned"] = true
-		return []map[string]interface{}{
-			{"window": []map[string]interface{}{window}},
-		}
-	}
-
-	// Custom window was explicitly written in config (start_time or days present):
-	// populate from API response and suppress system_assigned.
-	if configSTInCfg || configDaysInCfg {
-		if v, ok := wRaw["start_time"].(string); ok && v != "" {
-			window["start_time"] = v
-		}
-		if v, ok := wRaw["days"].([]interface{}); ok && len(v) > 0 {
-			window["days"] = v
-		}
-		// system_assigned is intentionally omitted — mutually exclusive with custom window.
-		return []map[string]interface{}{
-			{"window": []map[string]interface{}{window}},
-		}
-	}
-
-	// No config intent available (data source, import, or no maintenance block in HCL):
-	// use the API response as-is, with the mutual-exclusion rule applied.
 	if v, ok := wRaw["start_time"].(string); ok && v != "" {
 		window["start_time"] = v
 	}
@@ -976,34 +934,10 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	}
 
 	// Set maintenance window from instance extensions.
-	// flattenMaintenance uses d.GetRawConfig() to resolve config intent. When called
-	// from a standalone Read (import, refresh, plan), raw config is available and
-	// flattenMaintenance correctly applies it. When called from Update→Read, raw config
-	// is empty — but setMaintenanceStateFromConfig already wrote the correct state from
-	// config intent earlier in Update, so we skip overwriting it here.
-	_, _, _, stInCfg, daysInCfg := maintenanceWindowFieldsFromRawConfig(d.GetRawConfig())
-	saVal, saInCfg, _, _, _ := maintenanceWindowFieldsFromRawConfig(d.GetRawConfig())
-	maintenanceSetFromConfig := saInCfg || stInCfg || daysInCfg
-	_ = saVal
-
-	if !maintenanceSetFromConfig {
-		// Raw config is not available — standalone Read (import, refresh, terraform read).
-		// Use API response with mutual-exclusion rule applied.
-		if ext := instance.Extensions; ext != nil {
-			if flat := flattenMaintenance(ext, nil); flat != nil {
-				if err := d.Set("maintenance", flat); err != nil {
-					return diag.FromErr(fmt.Errorf("error setting maintenance: %w", err))
-				}
-			}
-		}
-	} else {
-		// Raw config is available — Create path or direct Apply.
-		// Use config-aware flattenMaintenance to resolve API ambiguity.
-		if ext := instance.Extensions; ext != nil {
-			if flat := flattenMaintenance(ext, d); flat != nil {
-				if err := d.Set("maintenance", flat); err != nil {
-					return diag.FromErr(fmt.Errorf("error setting maintenance: %w", err))
-				}
+	if ext := instance.Extensions; ext != nil {
+		if flat := flattenMaintenance(ext); flat != nil {
+			if err := d.Set("maintenance", flat); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting maintenance: %w", err))
 			}
 		}
 	}
@@ -1209,56 +1143,6 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
-// setMaintenanceStateFromConfig writes the maintenance window into Terraform state
-// directly from the raw HCL config, bypassing the API response entirely.
-// This is called during Update, before the final Read, because d.GetRawConfig() is
-// empty by the time Read runs — the SDK only populates it during Plan/Apply.
-// Without this, flattenMaintenance falls back to the ambiguous API response, which
-// may return stale start_time/days after switching to system_assigned=true, or always
-// returns system_assigned=true even alongside a newly-set custom window.
-func (g *resourceIBMDatabaseGen2Backend) setMaintenanceStateFromConfig(d *schema.ResourceData) error {
-	saVal, saInCfg, startTimeVal, startTimeInCfg, daysInCfg :=
-		maintenanceWindowFieldsFromRawConfig(d.GetRawConfig())
-
-	if !saInCfg && !startTimeInCfg && !daysInCfg {
-		// Nothing explicit in config — leave state as-is; Read will populate it.
-		return nil
-	}
-
-	window := map[string]interface{}{}
-
-	if saInCfg && saVal {
-		// system_assigned=true mode: only store system_assigned.
-		window["system_assigned"] = true
-	} else {
-		// Custom window mode: store start_time and days from current state
-		// (they were just confirmed valid by addMaintenanceConfig sending them to the API).
-		if startTimeInCfg && startTimeVal != "" {
-			window["start_time"] = startTimeVal
-		}
-		if daysInCfg {
-			// Read the actual schema.Set value from state (d.GetOk still has it).
-			raw, _ := d.GetOk("maintenance")
-			if list, _ := raw.([]interface{}); len(list) > 0 && list[0] != nil {
-				outer := list[0].(map[string]interface{})
-				if wList, _ := outer["window"].([]interface{}); len(wList) > 0 && wList[0] != nil {
-					wMap := wList[0].(map[string]interface{})
-					if daysSet, ok := wMap["days"].(*schema.Set); ok {
-						window["days"] = daysSet
-					}
-				}
-			}
-		}
-		// system_assigned is intentionally absent — mutually exclusive with custom window.
-	}
-
-	return d.Set("maintenance", []interface{}{
-		map[string]interface{}{
-			"window": []interface{}{window},
-		},
-	})
-}
-
 // promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
 // Triggered when remote_leader_id is cleared (set to "") on an existing replica.
 // Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
@@ -1352,19 +1236,6 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 
 	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
-	}
-
-	// Set maintenance state from config intent before Read.
-	// Read calls populateResourceData which calls flattenMaintenance with d — but by the
-	// time Read runs, d.GetRawConfig() is empty (the SDK only populates it during
-	// Plan/Apply, not during a Read triggered from Update). We therefore set the
-	// maintenance state directly here, while raw config is still available, so the
-	// post-update state reflects exactly what was configured rather than the ambiguous
-	// API response.
-	if d.HasChange("maintenance") {
-		if err := g.setMaintenanceStateFromConfig(d); err != nil {
-			return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(err), warnings)
-		}
 	}
 
 	readDiags := g.Read(ctx, d, meta)
@@ -1665,21 +1536,6 @@ func maintenanceWindowFieldsFromRawConfig(raw cty.Value) (
 		daysInConfig = it.Next()
 	}
 	return
-}
-
-// systemAssignedExplicitlySet returns the config value of system_assigned and whether
-// it was explicitly set by the user in HCL (not from state).
-func systemAssignedExplicitlySet(diff *schema.ResourceDiff) (bool, bool) {
-	sa, saInCfg, _, _, _ := maintenanceWindowFieldsFromRawConfig(diff.GetRawConfig())
-	return sa, saInCfg
-}
-
-// systemAssignedExplicitlySetFromRawConfig inspects a raw cty config value and
-// returns (value, true) when maintenance.window.system_assigned is explicitly set
-// (non-null) in config, or (false, false) when absent.
-func systemAssignedExplicitlySetFromRawConfig(raw cty.Value) (bool, bool) {
-	sa, saInCfg, _, _, _ := maintenanceWindowFieldsFromRawConfig(raw)
-	return sa, saInCfg
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {

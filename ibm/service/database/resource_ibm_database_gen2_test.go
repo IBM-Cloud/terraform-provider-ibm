@@ -2346,7 +2346,7 @@ func TestFlattenMaintenanceCustomWindowDaysSlice(t *testing.T) {
 		},
 	}
 
-	result := flattenMaintenance(ext, nil)
+	result := flattenMaintenance(ext)
 
 	assert.NotNil(t, result)
 	w := result[0]["window"].([]map[string]interface{})[0]
@@ -2365,7 +2365,7 @@ func TestFlattenMaintenanceMissing(t *testing.T) {
 		},
 	}
 
-	result := flattenMaintenance(ext, nil)
+	result := flattenMaintenance(ext)
 	assert.Nil(t, result)
 }
 
@@ -3222,7 +3222,7 @@ func TestFlattenMaintenanceSystemAssigned(t *testing.T) {
 		},
 	}
 
-	result := flattenMaintenance(ext, nil)
+	result := flattenMaintenance(ext)
 
 	assert.NotNil(t, result)
 	assert.Len(t, result, 1)
@@ -3236,7 +3236,7 @@ func TestFlattenMaintenanceNoDataservices(t *testing.T) {
 	ext := map[string]interface{}{
 		"someOtherKey": "value",
 	}
-	assert.Nil(t, flattenMaintenance(ext, nil))
+	assert.Nil(t, flattenMaintenance(ext))
 }
 
 // TestFlattenMaintenanceNoWindowKey verifies flattenMaintenance returns nil
@@ -3249,7 +3249,7 @@ func TestFlattenMaintenanceNoWindowKey(t *testing.T) {
 			},
 		},
 	}
-	assert.Nil(t, flattenMaintenance(ext, nil))
+	assert.Nil(t, flattenMaintenance(ext))
 }
 
 // TestMaintenanceSchemaDefinition verifies that the maintenance schema is
