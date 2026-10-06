@@ -927,7 +927,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	_, err = waitForDatabaseInstanceUpdate(d, meta, false)
 	if err != nil {
 		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}

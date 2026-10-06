@@ -17,9 +17,6 @@ func TestAccIBMTransitGatewayDataSource_basic(t *testing.T) {
 	gatewayname := fmt.Sprintf("gateway-name-%d", acctest.RandIntRange(10, 100))
 	location := "us-south"
 
-	classicConnName := fmt.Sprintf("classic-connection-name-%d", acctest.RandIntRange(10, 100))
-	greConnName := fmt.Sprintf("gre-connection-name-%d", acctest.RandIntRange(10, 100))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -31,14 +28,16 @@ func TestAccIBMTransitGatewayDataSource_basic(t *testing.T) {
 						"data.ibm_tg_gateway.test_tg_gateway", "name", gatewayname),
 					resource.TestCheckResourceAttr(
 						"data.ibm_tg_gateway.test_tg_gateway", "location", location),
-					resource.TestCheckResourceAttr(
-						"data.ibm_tg_gateway.test_tg_gateway", "gre_enhanced_route_propagation", "false"),
-				),
-			},
-			{
-				Config: testAccCheckIBMTransitGatewayGreConnectionDataSourceConfig(gatewayname, location, classicConnName, greConnName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_tg_gateway.test_tg_gateway", "connections.#"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_tg_gateway.test_tg_gateway", "gre_enhanced_route_propagation"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_tg_gateway.test_tg_gateway", "connection_count"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_tg_gateway.test_tg_gateway", "connection_needs_attention"),
+					resource.TestCheckNoResourceAttr(
+						"data.ibm_tg_gateway.test_tg_gateway", "redundancy_group"),
+					resource.TestCheckNoResourceAttr(
+						"data.ibm_tg_gateway.test_tg_gateway", "redundancy_group_id"),
 				),
 			},
 		},

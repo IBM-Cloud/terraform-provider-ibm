@@ -210,17 +210,52 @@ func enCustomSMSSubscriptionFlattenAttributes(result en.SubscriptionAttributesIn
 func enCustomSMSSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attributeMap map[string]interface{}) {
 	attributeMap = map[string]interface{}{}
 
-	invitedmap := make(map[string]interface{})
-	if attributeItem.Invited != nil {
-		invitedmap["invited"] = attributeItem.Invited
+	if len(attributeItem.Invited) > 0 {
+		invitedList := []map[string]interface{}{}
+		for _, item := range attributeItem.Invited {
+			invitedMap := map[string]interface{}{}
+			if item.PhoneNumber != nil {
+				invitedMap["phone_number"] = *item.PhoneNumber
+			}
+			if item.UpdatedAt != nil {
+				invitedMap["updated_at"] = item.UpdatedAt.String()
+			}
+			if item.ExpiresAt != nil {
+				invitedMap["expires_at"] = item.ExpiresAt.String()
+			}
+			invitedList = append(invitedList, invitedMap)
+		}
+		attributeMap["invited"] = invitedList
 	}
-	subscribedmap := make(map[string]interface{})
-	if attributeItem.Subscribed != nil {
-		subscribedmap["subscribed"] = attributeItem.Subscribed
+
+	if len(attributeItem.Subscribed) > 0 {
+		subscribedList := []map[string]interface{}{}
+		for _, item := range attributeItem.Subscribed {
+			subscribedMap := map[string]interface{}{}
+			if item.PhoneNumber != nil {
+				subscribedMap["phone_number"] = *item.PhoneNumber
+			}
+			if item.UpdatedAt != nil {
+				subscribedMap["updated_at"] = item.UpdatedAt.String()
+			}
+			subscribedList = append(subscribedList, subscribedMap)
+		}
+		attributeMap["subscribed"] = subscribedList
 	}
-	unsubscribedmap := make(map[string]interface{})
-	if attributeItem.Unsubscribed != nil {
-		unsubscribedmap["unsubscribed"] = attributeItem.Unsubscribed
+
+	if len(attributeItem.Unsubscribed) > 0 {
+		unsubscribedList := []map[string]interface{}{}
+		for _, item := range attributeItem.Unsubscribed {
+			unsubscribedMap := map[string]interface{}{}
+			if item.PhoneNumber != nil {
+				unsubscribedMap["phone_number"] = *item.PhoneNumber
+			}
+			if item.UpdatedAt != nil {
+				unsubscribedMap["updated_at"] = item.UpdatedAt.String()
+			}
+			unsubscribedList = append(unsubscribedList, unsubscribedMap)
+		}
+		attributeMap["unsubscribed"] = unsubscribedList
 	}
 
 	return attributeMap
