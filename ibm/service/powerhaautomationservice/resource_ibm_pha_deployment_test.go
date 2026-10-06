@@ -7,23 +7,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPhaDeploymentBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.PhaDeploymentResponse
-	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	primaryWorkspace := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxx21f3010"
-	// location_id := "us-south"
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
+	primaryWorkspace := fmt.Sprintf("tf_primary_workspace_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,10 +31,10 @@ func TestAccIBMPhaDeploymentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPhaDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaDeploymentConfigBasic(instanceID, primaryWorkspace),
+				Config: testAccCheckIBMPhaDeploymentConfigBasic(phaInstanceID, primaryWorkspace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaDeploymentExists("ibm_pha_deployment.pha_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "pha_instance_id", phaInstanceID),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "primary_workspace", primaryWorkspace),
 				),
 			},
@@ -44,13 +44,10 @@ func TestAccIBMPhaDeploymentBasic(t *testing.T) {
 
 func TestAccIBMPhaDeploymentAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.PhaDeploymentResponse
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
 	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
-	apiKey := fmt.Sprintf("tf_api_key_%d", acctest.RandIntRange(10, 100))
-	primaryLocation := fmt.Sprintf("tf_primary_location_%d", acctest.RandIntRange(10, 100))
 	primaryWorkspace := fmt.Sprintf("tf_primary_workspace_%d", acctest.RandIntRange(10, 100))
-	secondaryLocation := fmt.Sprintf("tf_secondary_location_%d", acctest.RandIntRange(10, 100))
 	secondaryWorkspace := fmt.Sprintf("tf_secondary_workspace_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -59,16 +56,13 @@ func TestAccIBMPhaDeploymentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPhaDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaDeploymentConfig(instanceID, acceptLanguage, ifNoneMatch, apiKey, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace),
+				Config: testAccCheckIBMPhaDeploymentConfig(phaInstanceID, acceptLanguage, ifNoneMatch, primaryWorkspace, secondaryWorkspace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaDeploymentExists("ibm_pha_deployment.pha_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "pha_instance_id", phaInstanceID),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "if_none_match", ifNoneMatch),
-					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "api_key", apiKey),
-					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "primary_location", primaryLocation),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "primary_workspace", primaryWorkspace),
-					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "secondary_location", secondaryLocation),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "secondary_workspace", secondaryWorkspace),
 				),
 			},
@@ -81,28 +75,26 @@ func TestAccIBMPhaDeploymentAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPhaDeploymentConfigBasic(instanceID string, primaryWorkspace string) string {
+func testAccCheckIBMPhaDeploymentConfigBasic(phaInstanceID string, primaryWorkspace string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_deployment" "pha_deployment_instance" {
-			instance_id = "%s"
+			pha_instance_id = "%s"
 			primary_workspace = "%s"
 		}
-	`, instanceID, primaryWorkspace)
+	`, phaInstanceID, primaryWorkspace)
 }
 
-func testAccCheckIBMPhaDeploymentConfig(instanceID string, acceptLanguage string, ifNoneMatch string, apiKey string, primaryLocation string, primaryWorkspace string, secondaryLocation string, secondaryWorkspace string) string {
+func testAccCheckIBMPhaDeploymentConfig(phaInstanceID string, acceptLanguage string, ifNoneMatch string, primaryWorkspace string, secondaryWorkspace string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_deployment" "pha_deployment_instance" {
-			instance_id = "%s"
+			pha_instance_id = "%s"
 			accept_language = "%s"
 			if_none_match = "%s"
-			primary_location = "%s"
 			primary_workspace = "%s"
-			secondary_location = "%s"
 			secondary_workspace = "%s"
 		}
-	`, instanceID, acceptLanguage, ifNoneMatch, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace)
+	`, phaInstanceID, acceptLanguage, ifNoneMatch, primaryWorkspace, secondaryWorkspace)
 }
 
 func testAccCheckIBMPhaDeploymentExists(n string, obj powerhaautomationservicev1.PhaDeploymentResponse) resource.TestCheckFunc {
@@ -120,13 +112,13 @@ func testAccCheckIBMPhaDeploymentExists(n string, obj powerhaautomationservicev1
 
 		getPhaDeploymentOptions := &powerhaautomationservicev1.GetPhaDeploymentOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		// getPhaDeploymentOptions.SetPhaInstanceID(parts[0])
-		getPhaDeploymentOptions.SetPhaInstanceID(rs.Primary.ID)
+		getPhaDeploymentOptions.SetPhaInstanceID(parts[0])
+		getPhaDeploymentOptions.SetPhaInstanceID(parts[1])
 
 		phaDeploymentResponse, _, err := powerhaAutomationServiceClient.GetPhaDeployment(getPhaDeploymentOptions)
 		if err != nil {
@@ -150,13 +142,13 @@ func testAccCheckIBMPhaDeploymentDestroy(s *terraform.State) error {
 
 		getPhaDeploymentOptions := &powerhaautomationservicev1.GetPhaDeploymentOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		// getPhaDeploymentOptions.SetPhaInstanceID(parts[0])
-		getPhaDeploymentOptions.SetPhaInstanceID(rs.Primary.ID)
+		getPhaDeploymentOptions.SetPhaInstanceID(parts[0])
+		getPhaDeploymentOptions.SetPhaInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := powerhaAutomationServiceClient.GetPhaDeployment(getPhaDeploymentOptions)
@@ -174,31 +166,31 @@ func testAccCheckIBMPhaDeploymentDestroy(s *terraform.State) error {
 func TestResourceIBMPhaDeploymentClusterNodeInfoToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["agent_status"] = "RUNNING"
-		model["cores"] = float64(8.0)
-		model["ip_address"] = "10.0.2.45"
-		model["memory"] = int(32)
-		model["pha_level"] = "7.2.1"
-		model["region"] = "us-south"
-		model["vm_id"] = "vm-3c91af27"
-		model["vm_name"] = "pha-node-01"
+		model["vm_name"] = "samplevm"
+		model["vm_id"] = "123e4567-e89b-12d3-a456-426614174000"
+		model["ip_address"] = "10.0.1.25"
+		model["cores"] = float64(1.5)
 		model["vm_status"] = "ACTIVE"
-		model["workspace_id"] = "workspace-pha-prod"
+		model["memory"] = int(32768)
+		model["region"] = "us-south"
+		model["workspace_id"] = "9f3c2b1a-4d56-789e-a123-bcdef4567890"
+		model["agent_status"] = "ACTIVE"
+		model["pha_level"] = "7.2.1"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(powerhaautomationservicev1.ClusterNodeInfo)
-	model.AgentStatus = core.StringPtr("RUNNING")
-	model.Cores = core.Float32Ptr(float32(8.0))
-	model.IPAddress = core.StringPtr("10.0.2.45")
-	model.Memory = core.Int64Ptr(int64(32))
-	model.PhaLevel = core.StringPtr("7.2.1")
-	model.Region = core.StringPtr("us-south")
-	model.VMID = core.StringPtr("vm-3c91af27")
-	model.VMName = core.StringPtr("pha-node-01")
+	model.VMName = core.StringPtr("samplevm")
+	model.VMID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+	model.IPAddress = core.StringPtr("10.0.1.25")
+	model.Cores = core.Float32Ptr(float32(1.5))
 	model.VMStatus = core.StringPtr("ACTIVE")
-	model.WorkspaceID = core.StringPtr("workspace-pha-prod")
+	model.Memory = core.Int64Ptr(int64(32768))
+	model.Region = core.StringPtr("us-south")
+	model.WorkspaceID = core.StringPtr("9f3c2b1a-4d56-789e-a123-bcdef4567890")
+	model.AgentStatus = core.StringPtr("ACTIVE")
+	model.PhaLevel = core.StringPtr("7.2.1")
 
 	result, err := powerhaautomationservice.ResourceIBMPhaDeploymentClusterNodeInfoToMap(model)
 	assert.Nil(t, err)

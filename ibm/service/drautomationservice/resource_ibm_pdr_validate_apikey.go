@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
@@ -80,7 +81,7 @@ func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	createApikeyOptions := &drautomationservicev1.CreateApikeyOptions{}
+	createApikeyOptions := &drautomationservicev1.ValidateApikeyOptions{}
 
 	createApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
 	createApikeyOptions.SetAPIKey(d.Get("api_key").(string))
@@ -88,7 +89,7 @@ func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		createApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	_, response, err := drAutomationServiceClient.CreateApikeyWithContext(context, createApikeyOptions)
+	_, response, err := drAutomationServiceClient.ValidateApikeyWithContext(context, createApikeyOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateApikeyWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -174,7 +175,7 @@ func resourceIBMPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	updateApikeyOptions := &drautomationservicev1.UpdateApikeyOptions{}
+	updateApikeyOptions := &drautomationservicev1.ReplaceApikeyOptions{}
 
 	updateApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
@@ -182,7 +183,7 @@ func resourceIBMPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 	}
 	updateApikeyOptions.SetAPIKey(d.Get("api_key").(string))
 
-	_, response, err := drAutomationServiceClient.UpdateApikeyWithContext(context, updateApikeyOptions)
+	_, response, err := drAutomationServiceClient.ReplaceApikeyWithContext(context, updateApikeyOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("UpdateApikeyWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available

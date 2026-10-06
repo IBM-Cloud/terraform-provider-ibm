@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice
@@ -19,17 +19,19 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func dataSourceIBMPdrManagedVMListCommon() *schema.Resource {
+func DataSourceIBMPdrManagedVMList() *schema.Resource {
 	return &schema.Resource{
+		ReadContext: dataSourceIBMPdrManagedVMListRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Service Instance ID.",
 			},
 			"accept_language": &schema.Schema{
 				Type:        schema.TypeString,
@@ -57,31 +59,10 @@ func dataSourceIBMPdrManagedVMListCommon() *schema.Resource {
 	}
 }
 
-func DataSourceIBMPdrManagedVMList() *schema.Resource {
-	res := dataSourceIBMPdrManagedVMListCommon()
-	res.ReadContext = dataSourceIBMPdrManagedVMListRead
-	return res
-}
-
-func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
-	res := dataSourceIBMPdrManagedVMListCommon()
-	res.ReadContext = dataSourceIBMPdrGetManagedVMListRead
-	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_managed_vm_list` instead."
-	return res
-}
-
-func dataSourceIBMPdrManagedVMListRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrManagedVMListReadCommon(ctx, d, meta, "ibm_pdr_managed_vm_list")
-}
-
-func dataSourceIBMPdrGetManagedVMListRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrManagedVMListReadCommon(ctx, d, meta, "ibm_pdr_get_managed_vm_list")
-}
-
-func dataSourceIBMPdrManagedVMListReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
+func dataSourceIBMPdrManagedVMListRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_managed_vm_list", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -103,12 +84,20 @@ func dataSourceIBMPdrManagedVMListReadCommon(context context.Context, d *schema.
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_managed_vm_list", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
+	fmt.Println("==============================================")
+	fmt.Println("==============================================")
+	fmt.Println("==============================================")
+	fmt.Println("form terraform")
+	fmt.Println(managedVMMapResponse.ManagedVMList)
+	fmt.Println("==============================================")
+	fmt.Println("==============================================")
+	fmt.Println("==============================================")
 
-	d.SetId(dataSourceIBMPdrGetManagedVMListID(d))
+	d.SetId(dataSourceIBMPdrManagedVMListID(d))
 
 	// convertedMap := make(map[string]interface{}, len(managedVMMapResponse.ManagedVMList))
 	list := make([]map[string]interface{}, 0, len(managedVMMapResponse.ManagedVMList))
@@ -148,14 +137,14 @@ func dataSourceIBMPdrManagedVMListReadCommon(context context.Context, d *schema.
 	}
 
 	if err = d.Set("managed_vm_list", list); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) "+dsname, "read", "set-managed_vm_list").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
 	}
 
 	return nil
 }
 
-// dataSourceIBMPdrGetManagedVMListID returns a reasonable ID for the list.
-func dataSourceIBMPdrGetManagedVMListID(d *schema.ResourceData) string {
+// dataSourceIBMPdrManagedVMListID returns a reasonable ID for the list.
+func dataSourceIBMPdrManagedVMListID(d *schema.ResourceData) string {
 	parts := strings.Split(d.Get("instance_id").(string), ":")
 	if len(parts) > 7 {
 		return parts[7]
@@ -163,7 +152,7 @@ func dataSourceIBMPdrGetManagedVMListID(d *schema.ResourceData) string {
 	return d.Get("instance_id").(string)
 }
 
-func DataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(model *drautomationservicev1.ManagedVMDetails) (map[string]interface{}, error) {
+func DataSourceIBMPdrManagedVMListManagedVMDetailsToMap(model *drautomationservicev1.ManagedVMDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Core != nil {
 		modelMap["core"] = *model.Core
@@ -171,23 +160,23 @@ func DataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(model *drautomationse
 	if model.DrAverageTime != nil {
 		modelMap["dr_average_time"] = *model.DrAverageTime
 	}
-	if model.DrRegion != nil {
-		modelMap["dr_region"] = *model.DrRegion
-	}
 	if model.Memory != nil {
 		modelMap["memory"] = *model.Memory
 	}
 	if model.Region != nil {
 		modelMap["region"] = *model.Region
 	}
-	if model.VMName != nil {
-		modelMap["vm_name"] = *model.VMName
-	}
 	if model.WorkgroupName != nil {
 		modelMap["workgroup_name"] = *model.WorkgroupName
 	}
 	if model.WorkspaceName != nil {
 		modelMap["workspace_name"] = *model.WorkspaceName
+	}
+	if model.DrRegion != nil {
+		modelMap["dr_region"] = *model.DrRegion
+	}
+	if model.VMName != nil {
+		modelMap["vm_name"] = *model.VMName
 	}
 	return modelMap, nil
 }
