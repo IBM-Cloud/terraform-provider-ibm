@@ -28,9 +28,9 @@ Review the argument reference that you can specify for your data source.
 
 - `search_key` - (Optional, String) Filter the template by name or type.
 
-- `source` - (Required, String) Source Type.
+- `source` - (Optional, String) Source Type.
 
-- `type` - (Required, String) Template type.
+- `type` - (Optional, String) Template type.
 
 ## Attribute reference
 
