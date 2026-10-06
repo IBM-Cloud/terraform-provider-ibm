@@ -9,6 +9,16 @@ set -euo pipefail
 # pip --user installs land here on some runners and local machines.
 export PATH="${HOME}/.local/bin:${PATH}"
 
+# Always scan from the repository root so the committed .secrets.baseline is
+# the one that gets updated and audited, no matter where the script is
+# invoked from (make target, GitHub Actions, or a manual run).
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [ ! -f .secrets.baseline ]; then
+  echo ".secrets.baseline not found in $(pwd); refusing to create a new baseline."
+  exit 1
+fi
+
 if ! command -v detect-secrets >/dev/null 2>&1; then
   echo "detect-secrets is not installed."
   echo "Install it with:"

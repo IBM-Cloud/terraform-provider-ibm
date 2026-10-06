@@ -128,7 +128,7 @@ Working on an existing resources is a great way to start as a Terraform contribu
 
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
 
- - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys. Known false positives are tracked in `.secrets.baseline`; if CI reports a false positive, run `detect-secrets audit .secrets.baseline` and commit the updated baseline.
+ - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys. Known false positives are tracked in `.secrets.baseline`. If CI reports a false positive, run `make detect-secrets` to refresh the baseline, then `detect-secrets audit .secrets.baseline` to mark the entry as not a secret, and commit the updated baseline.
 
 #### New resource
 
@@ -425,4 +425,3 @@ Note: You can use the existing GitHub actions to run the release workflows, in y
     }
   } 
   ```
-

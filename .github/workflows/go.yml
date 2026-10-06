@@ -8,9 +8,10 @@ on:
 
 jobs:
 
-  # IBM Cloud providers and SDKs (go-sdk-core, openapi-validator, softlayer-go)
-  # run ibm/detect-secrets as a dedicated CI job on push and pull_request.
-  # Keep this job independent of the Go build so secret leaks fail fast.
+  # Run ibm/detect-secrets as a dedicated job on push and pull_request.
+  # It is independent of the Go build so a leaked secret fails fast, and the
+  # pinned detect-secrets ref matches rev in .pre-commit-config.yaml and the
+  # version recorded in .secrets.baseline.
   detect-secrets:
     name: Detect Secrets
     runs-on: ubuntu-latest
