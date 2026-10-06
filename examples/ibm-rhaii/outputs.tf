@@ -12,3 +12,13 @@ output "crn" {
   description = "CRN of the project"
   value       = ibm_rhaii_project.project.crn
 }
+
+output "model_ids" {
+  description = "IDs of the inference models available in the project"
+  value       = data.ibm_rhaii_inference_models.models.models[*].id
+}
+
+output "model_status" {
+  description = "Status of the selected inference model"
+  value       = data.ibm_rhaii_inference_model.model.status
+}

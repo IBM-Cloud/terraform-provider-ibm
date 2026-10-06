@@ -34,8 +34,8 @@ data "ibm_rhaii_project" "by_id" {
 You can specify the following arguments for this data source. You must set exactly one of `name` or `identifier`.
 
 * `name` - (Optional, String) The name of the project.
-* `identifier` - (Optional, String) The ID (GUID) of the project. Conflicts with `name`, `resource_group_id`, and `location`.
-* `resource_group_id` - (Optional, String) The ID of the resource group to search in. Use it when more than one project has the same name.
+* `identifier` - (Optional, String) The ID (GUID) or CRN of the project. Conflicts with `resource_group_id` and `location`.
+* `resource_group_id` - (Optional, String) The ID of the resource group to search in. When not set, all resource groups are searched. Use it when more than one project has the same name.
 * `location` - (Optional, String) The region of the project, for example `us-east`.
 
 ## Attribute Reference
@@ -47,8 +47,19 @@ After your data source is created, you can read values from the following attrib
 * `endpoint` - (String) The base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
 * `guid` - (String) The GUID of the resource instance.
 * `crn` - (String) The CRN of the project.
-* `service` - (String) The service name of the instance. Always `instructlab`.
+* `service` - (String) The service name of the project. Always `instructlab`.
 * `plan` - (String) The pricing plan of the project.
-* `status` - (String) The status of the project.
-* `tags` - (Array of Strings) The tags of the project.
-* `extensions` - (Map) The extended metadata of the project.
+* `state` - (String) The state of the project, for example `active`.
+* `tags` - (Array of Strings) The user tags of the project.
+* `access_tags` - (Array of Strings) The access management tags of the project.
+* `dashboard_url` - (String) The relative URL of the project in the IBM Cloud console.
+* `account_id` - (String) The ID of the account that owns the project.
+* `resource_group_crn` - (String) The CRN of the resource group.
+* `resource_plan_id` - (String) The catalog ID of the plan of the project.
+* `target_crn` - (String) The deployment CRN of the project in the global catalog.
+* `created_at` - (String) The date when the project was created.
+* `created_by` - (String) The subject who created the project.
+* `updated_at` - (String) The date when the project was last updated.
+* `updated_by` - (String) The subject who last updated the project.
+* `locked` - (Boolean) Whether the project is locked.
+* `last_operation` - (List) The last operation on the project, with `type`, `state`, `async` and `description`.

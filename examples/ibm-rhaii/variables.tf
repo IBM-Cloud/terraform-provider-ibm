@@ -27,3 +27,15 @@ variable "tags" {
   type        = list(string)
   default     = []
 }
+
+variable "access_tags" {
+  description = "Access management tags for the project, in key:value format. The tags must already exist in the account."
+  type        = list(string)
+  default     = []
+}
+
+variable "model" {
+  description = "ID of the inference model to read"
+  type        = string
+  default     = "llama-3-3-70b-instruct"
+}

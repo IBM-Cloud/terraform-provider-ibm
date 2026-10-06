@@ -30,7 +30,8 @@ data "ibm_resource_group" "group" {
 resource "ibm_rhaii_project" "project" {
   name              = "my-rhaii-project"
   resource_group_id = data.ibm_resource_group.group.id
-  tags              = ["env:dev"]
+  tags              = ["env:dev", "team:ai"]
+  access_tags       = ["project:rhaii"]
 }
 
 output "rhaii_project_id" {
@@ -55,13 +56,11 @@ The `ibm_rhaii_project` resource provides the following [Timeouts](https://devel
 You can specify the following arguments for this resource.
 
 * `name` - (Required, String) The name of the project.
-* `location` - (Optional, Forces new resource, String) The region where the project is created. The default value is `us-east`, which is the only region where the service is available today.
-* `plan` - (Optional, String) The pricing plan of the project. The default value is `instructlab-pricing-plan`.
+* `location` - (Optional, Forces new resource, String) The region where the project is created. The default value is `us-east`, which is the only region where the service is available today. If you set a region where the service is not deployed, the error lists the valid regions.
+* `plan` - (Optional, String) The pricing plan of the project. The default value is `instructlab-pricing-plan`. You can set the plan name or the plan ID from the global catalog.
 * `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. If you do not set it, the default resource group of the account is used.
-* `tags` - (Optional, Array of Strings) The tags that you want to add to the project.
-* `parameters` - (Optional, Map) Arbitrary parameters to pass to the service broker. Conflicts with `parameters_json`.
-* `parameters_json` - (Optional, String) Arbitrary parameters to pass to the service broker, in JSON string format. Conflicts with `parameters`.
-* `service_endpoints` - (Optional, String) The types of the service endpoints. Supported values are `public`, `private`, and `public-and-private`.
+* `tags` - (Optional, Array of Strings) The user tags of the project. User tags help you organize and search for resources. They do not control access. Each tag can have up to 128 characters, and can contain letters, numbers, spaces, `_`, `.`, `-` and `:`.
+* `access_tags` - (Optional, Array of Strings) The access management tags of the project, in `key:value` format. Use them in IAM access policies to control who can work with the project. The tags must already exist in the account. You can create them with the `ibm_resource_tag` resource or in the console.
 
 ## Attribute Reference
 
@@ -72,24 +71,28 @@ After your resource is created, you can read values from the listed arguments an
 * `endpoint` - (String) The base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
 * `guid` - (String) The GUID of the resource instance.
 * `crn` - (String) The CRN of the project.
-* `service` - (String) The service name of the instance. Always `instructlab`.
-* `status` - (String) The status of the project.
-* `state` - (String) The current state of the project, for example `active`.
+* `service` - (String) The service name of the project. Always `instructlab`.
+* `state` - (String) The state of the project, for example `active`.
 * `dashboard_url` - (String) The relative URL of the project in the IBM Cloud console.
 * `account_id` - (String) The ID of the account that owns the project.
 * `resource_group_crn` - (String) The CRN of the resource group.
-* `resource_plan_id` - (String) The ID of the plan of the project.
-* `target_crn` - (String) The deployment CRN in the global catalog.
+* `resource_plan_id` - (String) The catalog ID of the plan of the project.
+* `target_crn` - (String) The deployment CRN of the project in the global catalog.
 * `created_at` - (String) The date when the project was created.
 * `created_by` - (String) The subject who created the project.
-* `last_operation` - (Map) The status of the last operation on the project.
-* `plan_history` - (List) The plan history of the project.
-
-The resource also exports the other attributes of the [`ibm_resource_instance`](resource_instance.html) resource.
+* `updated_at` - (String) The date when the project was last updated.
+* `updated_by` - (String) The subject who last updated the project.
+* `locked` - (Boolean) Whether the project is locked.
+* `last_operation` - (List) The last operation on the project.
+  Nested schema for **last_operation**:
+  * `type` - (String) The type of the operation, for example `create`.
+  * `state` - (String) The state of the operation, for example `succeeded`.
+  * `async` - (Boolean) Whether the operation is asynchronous.
+  * `description` - (String) The description of the operation.
 
 ## Import
 
-You can import the `ibm_rhaii_project` resource by using the CRN of the project.
+You can import the `ibm_rhaii_project` resource by using the CRN or the GUID (project ID) of the project. After the import, the ID in the state is always the CRN.
 
 # Syntax
 <pre>

@@ -5,6 +5,7 @@ package rhaii_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -43,16 +44,48 @@ func TestAccIBMRhaiiProject_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMRhaiiProjectConfig(updateName),
+				Config: testAccCheckIBMRhaiiProjectTagsConfig(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", updateName),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"parameters"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccIBMRhaiiProject_accessTags needs an access management tag that already
+// exists in the account, set in IBM_RHAII_ACCESS_TAG (for example "project:rhaii").
+func TestAccIBMRhaiiProject_accessTags(t *testing.T) {
+	accessTag := os.Getenv("IBM_RHAII_ACCESS_TAG")
+	if accessTag == "" {
+		t.Skip("Set IBM_RHAII_ACCESS_TAG to an existing access management tag to run this test")
+	}
+	resourceName := "ibm_rhaii_project.project"
+	name := fmt.Sprintf("tf-rhaii-%s", acctest.RandString(8))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMRhaiiProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMRhaiiProjectAccessTagsConfig(name, accessTag),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "access_tags.#", "1"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "access_tags.*", accessTag),
+				),
+			},
+			{
+				Config: testAccCheckIBMRhaiiProjectConfig(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "access_tags.#", "0"),
+				),
 			},
 		},
 	})
@@ -64,6 +97,24 @@ func testAccCheckIBMRhaiiProjectConfig(name string) string {
 		name = "%s"
 	}
 	`, name)
+}
+
+func testAccCheckIBMRhaiiProjectTagsConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_rhaii_project" "project" {
+		name = "%s"
+		tags = ["env:test", "team:terraform"]
+	}
+	`, name)
+}
+
+func testAccCheckIBMRhaiiProjectAccessTagsConfig(name, accessTag string) string {
+	return fmt.Sprintf(`
+	resource "ibm_rhaii_project" "project" {
+		name        = "%s"
+		access_tags = ["%s"]
+	}
+	`, name, accessTag)
 }
 
 func testAccCheckIBMRhaiiProjectDestroy(s *terraform.State) error {
