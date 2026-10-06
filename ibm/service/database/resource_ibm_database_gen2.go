@@ -30,7 +30,6 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
-	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
 }
@@ -63,6 +62,7 @@ const (
 type DBConfig struct {
 	Version    string `json:"version,omitempty"`
 	Members    int    `json:"members"`
+	Shards     int    `json:"shards,omitempty"`
 	StorageGB  int    `json:"storage_gb,omitempty"`
 	HostFlavor string `json:"host_flavor,omitempty"`
 }
@@ -122,9 +122,6 @@ var gen2AttrGuidance = map[string]string{
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"backup_encryption_key_crn": "Gen2 databases do not support backup_encryption_key_crn at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
-
-	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"logical_replication_slot":    "logical replication slot creation is currently ignored",
@@ -341,16 +338,12 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 // Includes database configuration, encryption settings, and backup_id for restore.
 // Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
-	// Get the database type for the dataservices key
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	// Get the database type for the dataservices key.
+	// getDatabaseTypeFromResourceID handles the enterprise-sharding-gen2 → "mongodbees" override.
+	plan := d.Get("plan").(string)
+	dbType := getDatabaseTypeFromResourceID(serviceName, plan)
 	if dbType == "" {
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
-	}
-
-	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
 	}
 
 	// Build database configuration using typed struct
@@ -371,6 +364,28 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		dataservices["restore_backup_id"] = backupID.(string)
+	}
+
+	// Add read_replica block if remote_leader_id is set (for read replica creation).
+	// The dbConfig map already exists as dataservices[dbType]; inject read_replica into it.
+	// source_type is derived by looking up the source instance's plan: Gen2 plans contain
+	// "-gen2-"; anything else is treated as "gen1" (Classic).
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok {
+		if dbCfg, ok := dataservices[dbType].(map[string]interface{}); ok {
+			sourceType := "gen1"
+			if rsConClient, err := g.getResourceControllerClient(meta); err == nil {
+				srcCRNStr := sourceCRN.(string)
+				if srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &srcCRNStr}); err == nil {
+					if srcInst.ResourcePlanID != nil && isGen2Plan(*srcInst.ResourcePlanID) {
+						sourceType = "gen2"
+					}
+				}
+			}
+			dbCfg["read_replica"] = map[string]interface{}{
+				"source_crn":  sourceCRN.(string),
+				"source_type": sourceType,
+			}
+		}
 	}
 
 	// Build final parameters structure
@@ -402,6 +417,10 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		return nil, err
 	}
 	config.Members = members
+
+	if dbType == "mongodbees" {
+		config.Shards = d.Get("shards").(int)
+	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
 	if memberGroup != nil && memberGroup.Disk != nil {
@@ -439,7 +458,7 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
 // Only includes non-zero values to avoid sending unnecessary fields.
-// The dbType parameter controls which fields are included: "mongodbees" does not accept "members".
+// The dbType parameter controls which fields are included: "mongodbees" adds "shards" instead of members.
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -448,6 +467,8 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
+	} else if config.Shards > 0 {
+		result["shards"] = config.Shards
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -603,7 +624,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
 // Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
 // This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
-	if _, ok := configCtx.d.GetOk("group"); !ok {
+	if _, ok := configCtx.d.GetOk("group"); !ok && !isShardAttrConfigured(configCtx.d) {
 		return nil
 	}
 
@@ -803,6 +824,9 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	if err := g.setGroupsInfo(d, instance, meta); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := g.setShardsInfo(d, instance); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
@@ -853,6 +877,10 @@ func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, i
 	return setGen2GroupsInfo(d, instance, meta)
 }
 
+func (g *resourceIBMDatabaseGen2Backend) setShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	return sharedSetShardsInfo(d, instance)
+}
+
 // clearUnsupportedAttributes clears attributes not supported in Gen2.
 // Sets auto_scaling, allowlist, users, and configuration_schema to nil.
 func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.ResourceData) {
@@ -899,7 +927,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	_, err = waitForDatabaseInstanceUpdate(d, meta, false)
 	if err != nil {
 		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}
@@ -946,7 +974,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
 // Wraps applyGroupScaling to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") {
+	if !d.HasChange("group") && !d.HasChange("shards") {
 		return nil
 	}
 
@@ -1001,9 +1029,66 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
+// Triggered when remote_leader_id is cleared (set to "") on an existing replica.
+// Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
+func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange(remoteLeaderIDKey) {
+		return nil
+	}
+
+	newVal := d.Get(remoteLeaderIDKey).(string)
+	if newVal != "" {
+		// remote_leader_id is being set on an existing instance — not supported as an update.
+		return diagError("remote_leader_id cannot be changed after creation; it can only be cleared to promote the replica to a standalone instance")
+	}
+
+	instanceID := d.Id()
+
+	// Retrieve the instance to extract service name for the dataservices key.
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance for promotion: %s", err)
+	}
+
+	serviceName := ""
+	if instance.ResourcePlanID != nil {
+		// Extract service name from resource plan ID (e.g. "databases-for-postgresql-gen2-standard" → "databases-for-postgresql")
+		parts := strings.SplitN(*instance.ResourcePlanID, "-gen2", 2)
+		serviceName = parts[0]
+	}
+
+	dbType := getDatabaseTypeFromResourceID(serviceName, d.Get("plan").(string))
+	if dbType == "" {
+		return diagError("unable to determine database type from resource plan ID for promotion")
+	}
+
+	parameters := map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			dbType: map[string]interface{}{
+				"read_replica": map[string]interface{}{
+					"promoted": true,
+				},
+			},
+		},
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
+		return diagError("error promoting read replica: %s", err)
+	}
+
+	_, err = g.waitForGen2InstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("error waiting for read replica promotion to complete: %s", err)
+	}
+
+	return nil
+}
+
 // Update modifies an existing IBM Cloud Database Gen2 instance.
-// Supports updates to name, tags, and group scaling.
-// Many features are not yet supported in Gen2 and will return errors if modified.
+// Supports updates to name, tags, group scaling, and read replica promotion.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	warnings := g.WarnIgnoredAttrs(d)
 
@@ -1015,6 +1100,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	instanceID := d.Id()
 
 	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.promoteReadReplicaWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
@@ -1206,11 +1295,54 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 	return nil
 }
 
+func isShardAttrConfigured(d *schema.ResourceData) bool {
+	if d == nil {
+		return false
+	}
+	shards, ok := d.GetOk("shards")
+	if !ok {
+		return false
+	}
+	return normalizeShardValue(shards) > 0
+}
+
+func normalizeShardValue(v interface{}) int {
+	if val, ok := v.(int); ok {
+		return val
+	}
+	return 0
+}
+
 func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	serviceEndpoint, serviceEndpointOk := d.GetOk("service_endpoints")
 	if serviceEndpointOk && serviceEndpoint.(string) != "" && serviceEndpoint.(string) != "private" {
 		return fmt.Errorf("service_endpoints for Gen2 instances is optional, but if set it must be 'private'")
 	}
+	return nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	shardsConfigured := isShardAttrConfiguredInDiff(d, "shards")
+	if !shardsConfigured {
+		return nil
+	}
+
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
+	}
+
+	if d.HasChange("shards") {
+		oldVal, newVal := d.GetChange("shards")
+		oldShards := normalizeShardValue(oldVal)
+		newShards := normalizeShardValue(newVal)
+		if oldShards > 0 && newShards < oldShards {
+			return fmt.Errorf("[ERROR] Shard count cannot be decreased. Current: %d, Requested: %d", oldShards, newShards)
+		}
+	}
+
 	return nil
 }
 

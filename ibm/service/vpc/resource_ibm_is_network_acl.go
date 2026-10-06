@@ -145,10 +145,12 @@ func ResourceIBMISNetworkACL() *schema.Resource {
 				Description: "The resource group name in which resource is provisioned",
 			},
 			isNetworkACLRuleUpdateMode: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "When set to true, enables surgical inline rule updates (add, remove, reorder, patch, recreate only changed rules). When false (default), any change to inline rules deletes all existing rules and recreates them from the configuration.",
+				Type:     schema.TypeBool,
+				Optional: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return old == "" && new == "false" && d.Id() != ""
+				},
+				Description: "When set to true, enables surgical inline rule updates (add, remove, reorder, patch, recreate only changed rules). When false (the behaviour when omitted), any change to inline rules deletes all existing rules and recreates them from the configuration.",
 			},
 			isNetworkACLRules: {
 				Type:     schema.TypeList,
@@ -571,7 +573,7 @@ func nwaclCreate(context context.Context, d *schema.ResourceData, meta interface
 	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
 	nwaclid := *nwacl.ID
 
-	//Remove default rules
+	// Remove default rules
 	err = clearRules(sess, nwaclid)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("clearRules failed: %s", err.Error()), "ibm_is_network_acl", "create")
@@ -680,6 +682,10 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 	if err = d.Set("crn", nwacl.CRN); err != nil {
 		err = fmt.Errorf("Error setting crn: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set(isNetworkACLRuleUpdateMode, d.Get(isNetworkACLRuleUpdateMode).(bool)); err != nil {
+		err = fmt.Errorf("Error setting incremental_rule_update: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl", "read", "set-incremental_rule_update").GetDiag()
 	}
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {

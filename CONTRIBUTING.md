@@ -118,9 +118,9 @@ Working on an existing resources is a great way to start as a Terraform contribu
 
  - [ ] __Acceptance test coverage of new behavior__: Existing resources each have a set of [acceptance tests][acctests] covering their functionality. These tests  exercises all the behavior of the resource. Whether you are adding something or fixing a bug, the idea is to have an acceptance test that fails if your code are removed. Sometimes it is sufficient to **enhance** an existing test by adding an assertion or tweaking the configuration that are used, but often a new test is better to add. You can copy or paste an existing test and follow the conventions you see there, modifying the test to exercise the behavior of your code.
 
- - [ ] __Documentation updates__: If your code makes any changes that need to be documented, you should include those documentation updates in the same PR.
+ - [ ] __Documentation updates__: If your code makes any changes that need to be documented, you should include those documentation updates in the same PR. Resource `ibm_<resource_name>` maps to `website/docs/r/<resource_name>.html.markdown`; data source `ibm_<datasource_name>` maps to `website/docs/d/<datasource_name>.html.markdown`. Service code lives under `ibm/service/<service>/`.
    
- - [ ] __Well-formed Code__: Do your best to follow an existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The Travis CI build fails if **go fmt** has not been run on incoming code.) The PR reviewers can help out on this front, and may provide comments with suggestions on how to improve the code.
+ - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The GitHub Actions CI build fails if **go fmt** has not been run on incoming code.) The PR reviewers can help out on this front, and may provide comments with suggestions on how to improve the code.
 
  - [ ] __Run go mod tidy__: If you update dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
 
@@ -134,8 +134,8 @@ Implementing a new resource is a good way to learn more about how Terraform inte
 
  - [ ] __Minimal LOC__: It can be inefficient for both the reviewer and author to go through long feedback cycles on a big PR with many resources. We therefore encourage you to only submit **one resource at a time**.
  - [ ] __Acceptance tests__: New resources should include acceptance tests covering their behavior. See [Writing Acceptance Tests](#writing-acceptance-tests) below for a detailed guide on how to approach these.
- - [ ] __Documentation__: Each resource gets a page in the Terraform documentation. The [Terraform website](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs) source is in this repository and includes instructions for getting a local copy of the site up and running if you would like to preview your changes. For a resource, you will want to add a new file in the appropriate place and add a link to the sidebar for that page.
- - [ ] __Well-formed Code__: Do your best to follow an existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The Travis CI build fail if **go fmt** has not been run on incoming code.) The PR reviewers help out on this front, and may provide comments with suggestions on how to improve the code.
+ - [ ] __Documentation__: Each resource gets a page in the Terraform documentation. The [Terraform Registry](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs) is generated from this repository (`website/docs/r/` for resources, `website/docs/d/` for data sources). For a resource, add a new `*.html.markdown` file at the canonical slug (`ibm_foo` → `foo.html.markdown`) with valid `layout`, `page_title`, `description`, and an allowed `subcategory` from `website/allowed-subcategories.txt`.
+ - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The GitHub Actions CI build fails if **go fmt** has not been run on incoming code.) The PR reviewers help out on this front, and may provide comments with suggestions on how to improve the code.
  - [ ] __Run go mod tidy__: If you add new dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
  - [ ] __Run go vet__: Before submitting your PR, run `go vet ./...` to catch common Go programming errors. The CI build will fail if `go vet` reports any issues.
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
@@ -179,29 +179,39 @@ export TF_LOG=DEBUG
 Tests can then be run by specifying the target provider and a regular expression defining the tests to run:
 
 ```sh
-$ make testacc TEST=./ibm TESTARGS='-run=TestAccIBMComputeVmInstance_basic'
+$ make testacc TEST=./ibm/service/vpc TESTARGS='-run=TestAccIBMISImageDataSourceMinimumProvisionedSize'
 ==> Checking that code complies with gofmt requirements...
-go generate ./...
-TF_ACC=1 go test ./ibm -v -run=TestAccIBMComputeVmInstance_basic -timeout 700m
-=== RUN   TestAccIBMComputeVmInstance_basic
---- PASS: TestAccIBMComputeVmInstance_basic (177.48s)
+TF_ACC=1 go test ./ibm/service/vpc -v -run=TestAccIBMISImageDataSourceMinimumProvisionedSize -timeout 700m 
+=== RUN   TestAccIBMISImageDataSourceMinimumProvisionedSize
+--- PASS: TestAccIBMISImageDataSourceMinimumProvisionedSize (19.95s)
 PASS
-ok      github.com/terraform-providers/terraform-provider-ibm/ibm   177.504s
+ok      github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc     21.813s
 ```
 
-Entire resource test suites can be targeted by using the naming convention to write the regular expression. For example, to run all tests of the `ibm_compute_vm_instance` resource rather than just the update test, you can start testing like this:
+Entire resource test suites can be targeted by using the naming convention to write the regular expression. For example, to run all tests of the `ibm_is_instance_profiles` datasource, you can start testing like this:
 
 ```sh
-$ make testacc TEST=./ibm TESTARGS='-run=TestAccIBMComputeVmInstance'
+$ make testacc TEST=./ibm/service/vpc TESTARGS='-run=TestAccIBMISInstanceProfilesDataSource*'
 ==> Checking that code complies with gofmt requirements...
-go generate ./...
-TF_ACC=1 go test ./builtin/providers/azurerm -v -run=TestAccIBMComputeVmInstance -timeout 700m
-=== RUN   TestAccIBMComputeVmInstance_basic
---- PASS: TestAccIBMComputeVmInstance_basic (137.74s)
-=== RUN   TestAccIBMComputeVmInstance_basic_import
---- PASS: TestAccIBMComputeVmInstance_basic_import (180.63s)
+TF_ACC=1 go test ./ibm/service/vpc -v -run=TestAccIBMISInstanceProfilesDataSource* -timeout 700m 
+=== RUN   TestAccIBMISInstanceProfilesDataSource_basic
+--- PASS: TestAccIBMISInstanceProfilesDataSource_basic (79.73s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_QoS
+--- PASS: TestAccIBMISInstanceProfilesDataSource_QoS (76.53s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_cluster
+--- PASS: TestAccIBMISInstanceProfilesDataSource_cluster (73.66s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_concom
+--- PASS: TestAccIBMISInstanceProfilesDataSource_concom (81.54s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_sharedcore
+--- PASS: TestAccIBMISInstanceProfilesDataSource_sharedcore (78.52s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_AvailabilityClass
+--- PASS: TestAccIBMISInstanceProfilesDataSource_AvailabilityClass (72.74s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_ThreadsPerCore
+--- PASS: TestAccIBMISInstanceProfilesDataSource_ThreadsPerCore (76.88s)
+=== RUN   TestAccIBMISInstanceProfilesDataSource_SupportedVcpuCountBackfill
+--- PASS: TestAccIBMISInstanceProfilesDataSource_SupportedVcpuCountBackfill (69.23s)
 PASS
-ok      github.com/terraform-providers/terraform-provider-ibm/ibm   318.392s
+ok      github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc     610.672s
 ```
 
 #### Writing an acceptance test
@@ -330,7 +340,7 @@ The `IBM Cloud Provider for Terraform` release can be mainly classified in to th
 
 ### Production release
 
-Typically, the production release of the `IBM Cloud Provider for Terraform` will be made, once in a month. The release can be major or minor based on the PR's commited. The production release is targetted from branch **release**. Once the release is published, users can download the binary from [Terraform registry](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest).
+Typically, a production release of the `IBM Cloud Provider for Terraform` is made twice a month: one beta release followed by a general availability release based on the beta. The release can be major or minor, depending on the PRs included in the release. The production release is targetted from the branch **release**. Once the release is published, users can download the provider binary from the [Terraform Registry](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest).
 
 #### How to use this provider
 
