@@ -21,8 +21,12 @@ covers them. The client follows the layout of the generated IBM Cloud Go SDKs an
 is created in `ibm/conns/config.go` with the shared provider authenticator,
 retries and headers. Replace it with the official SDK if one is published.
 
-The endpoint can be overridden with `IBMCLOUD_RHAII_API_ENDPOINT` (environment
-variable or endpoints file).
+The API endpoint follows the provider `visibility` setting: public
+(`https://<region>.rhai.ibm.com/v1`), private (`https://private.<region>.rhai.ibm.com/v1`)
+or public-and-private (private when available). The rules are in
+`rhaiiv1.GetServiceURLForVisibility`, which both `ibm/conns/config.go` and the
+data sources use. The endpoint can be overridden with `IBMCLOUD_RHAII_API_ENDPOINT`
+(environment variable or endpoints file).
 
 ## Tests
 

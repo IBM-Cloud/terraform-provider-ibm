@@ -133,3 +133,24 @@ func TestClone(t *testing.T) {
 		t.Error("changing the clone URL must not change the original client")
 	}
 }
+
+func TestServiceURLsForVisibility(t *testing.T) {
+	cases := []struct {
+		region, visibility, want string
+		wantErr                  bool
+	}{
+		{"us-east", "public", "https://us-east.rhai.ibm.com/v1", false},
+		{"us-east", "", "https://us-east.rhai.ibm.com/v1", false},
+		{"us-east", "private", "https://private.us-east.rhai.ibm.com/v1", false},
+		{"us-east", "public-and-private", "https://private.us-east.rhai.ibm.com/v1", false},
+		{"us-south", "public", "", true},
+		{"us-south", "private", "", true},
+		{"us-south", "public-and-private", "", true},
+	}
+	for _, c := range cases {
+		got, err := rhaiiv1.GetServiceURLForVisibility(c.region, c.visibility)
+		if (err != nil) != c.wantErr || got != c.want {
+			t.Errorf("GetServiceURLForVisibility(%q, %q) = %q, %v; want %q, error %v", c.region, c.visibility, got, err, c.want, c.wantErr)
+		}
+	}
+}

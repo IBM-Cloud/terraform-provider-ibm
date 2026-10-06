@@ -3771,11 +3771,15 @@ func (c *Config) ClientSession() (*clientSession, error) {
 
 	// Construct an instance of the 'Red Hat AI Inference' service.
 	if session.rhaiiClientErr == nil {
-		rhaiiURL, err := rhaiiv1.GetServiceURLForRegion(c.Region)
-		if err != nil {
-			// The service is not available in every region; use the default endpoint.
-			rhaiiURL = rhaiiv1.DefaultServiceURL
+		// The service is deployed in few regions (us-east today). When the
+		// provider region has no deployment, use the default region of the service.
+		rhaiiRegion := c.Region
+		if _, err := rhaiiv1.GetServiceURLForRegion(rhaiiRegion); err != nil {
+			rhaiiRegion = rhaiiv1.DefaultRegion
 		}
+		// public: public endpoint; private: private endpoint only;
+		// public-and-private: private endpoint when the region has one.
+		rhaiiURL, rhaiiURLErr := rhaiiv1.GetServiceURLForVisibility(rhaiiRegion, c.Visibility)
 		if fileMap != nil && c.Visibility != "public-and-private" {
 			rhaiiURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RHAII_API_ENDPOINT", c.Region, rhaiiURL)
 		}
@@ -3784,8 +3788,11 @@ func (c *Config) ClientSession() (*clientSession, error) {
 			URL:           EnvFallBack([]string{"IBMCLOUD_RHAII_API_ENDPOINT"}, rhaiiURL),
 		}
 
-		session.rhaiiClient, err = rhaiiv1.NewRhaiiV1(rhaiiClientOptions)
-		if err == nil {
+		if rhaiiClientOptions.URL == "" {
+			// Only possible with visibility "private" in a region without a private
+			// endpoint and no endpoint override. Never fall back to the public endpoint.
+			session.rhaiiClientErr = fmt.Errorf("error occurred while configuring 'Red Hat AI Inference' service: %q", rhaiiURLErr)
+		} else if session.rhaiiClient, err = rhaiiv1.NewRhaiiV1(rhaiiClientOptions); err == nil {
 			// Enable retries for API calls
 			session.rhaiiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 			// Add custom header for analytics

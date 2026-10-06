@@ -43,7 +43,8 @@ Run `terraform destroy` when you no longer need the project.
 | Name | Description |
 |------|-------------|
 | project_id | ID of the project. Use it as `project_id` in the Red Hat AI Inference API. |
-| endpoint | Base URL of the Red Hat AI Inference API for this project |
+| endpoint | Public base URL of the Red Hat AI Inference API for this project |
+| private_endpoint | Private base URL of the Red Hat AI Inference API for this project |
 | crn | CRN of the project |
 | model_ids | IDs of the inference models available in the project |
 | model_status | Status of the selected inference model |

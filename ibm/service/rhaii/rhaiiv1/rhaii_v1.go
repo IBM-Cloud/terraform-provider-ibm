@@ -24,6 +24,8 @@ import (
 const (
 	// DefaultServiceURL is the default URL of the Red Hat AI Inference API.
 	DefaultServiceURL = "https://us-east.rhai.ibm.com/v1"
+	// DefaultRegion is the region of DefaultServiceURL.
+	DefaultRegion = "us-east"
 	// DefaultServiceName is the default key used to find external configuration information.
 	DefaultServiceName = "rhaii"
 )
@@ -94,16 +96,40 @@ func NewRhaiiV1(options *RhaiiV1Options) (service *RhaiiV1, err error) {
 	return
 }
 
-// GetServiceURLForRegion returns the service URL to be used for the specified region.
+// GetServiceURLForRegion returns the service URL to be used for the specified
+// region. Private endpoints use the "private." prefix, for example
+// "private.us-east", in the same way as the generated IBM Cloud Go SDKs.
 func GetServiceURLForRegion(region string) (string, error) {
 	var endpoints = map[string]string{
-		"us-east": "https://us-east.rhai.ibm.com/v1",
+		"us-east":         "https://us-east.rhai.ibm.com/v1",         // The public server in the us-east region.
+		"private.us-east": "https://private.us-east.rhai.ibm.com/v1", // The private (service endpoint) server in the us-east region.
 	}
 
 	if url, ok := endpoints[region]; ok {
 		return url, nil
 	}
 	return "", fmt.Errorf("service URL for region '%s' not found", region)
+}
+
+// GetServiceURLForVisibility returns the service URL for a region and an IBM
+// Cloud provider visibility setting:
+//   - "public": the public endpoint of the region.
+//   - "private": the private endpoint of the region. It is an error when the
+//     region has no private endpoint, so traffic never falls back to public.
+//   - "public-and-private": the private endpoint when the region has one,
+//     otherwise the public endpoint.
+func GetServiceURLForVisibility(region, visibility string) (string, error) {
+	switch visibility {
+	case "private":
+		return GetServiceURLForRegion("private." + region)
+	case "public-and-private":
+		if url, err := GetServiceURLForRegion("private." + region); err == nil {
+			return url, nil
+		}
+		return GetServiceURLForRegion(region)
+	default:
+		return GetServiceURLForRegion(region)
+	}
 }
 
 // Clone makes a copy of "rhaii" suitable for processing requests.
@@ -375,8 +401,10 @@ type InferenceModelMetadata struct {
 	ModelCard *string `json:"model_card,omitempty"`
 
 	// Pricing measures of the model.
-	// Note: the published spec defines this under the key "validation" in
-	// IBMMetadataPricingField, while the service and the spec examples return "pricing".
+	// Note: in the published spec, IBMMetadataPricingField defines the
+	// ModelPricing object under the key "validation", which clashes with
+	// IBMMetadataValidationField. The spec response examples use "pricing",
+	// so this client reads "pricing".
 	Pricing *ModelPricing `json:"pricing,omitempty"`
 
 	// Validation information of a custom model.

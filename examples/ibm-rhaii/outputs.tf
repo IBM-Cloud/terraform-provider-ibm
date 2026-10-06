@@ -8,6 +8,11 @@ output "endpoint" {
   value       = ibm_rhaii_project.project.endpoint
 }
 
+output "private_endpoint" {
+  description = "Private base URL of the Red Hat AI Inference API for this project, reachable from the IBM Cloud private network"
+  value       = ibm_rhaii_project.project.private_endpoint
+}
+
 output "crn" {
   description = "CRN of the project"
   value       = ibm_rhaii_project.project.crn

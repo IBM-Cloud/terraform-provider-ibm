@@ -20,7 +20,9 @@ func rhaiiInferenceModelMetadataSchema(withModelCard bool) map[string]*schema.Sc
 		"display_name": computed(schema.TypeString, "The display name of the model."),
 		"state":        computed(schema.TypeString, "The state of the model, for example `model_loaded`."),
 		"status":       computed(schema.TypeString, "The status of the model, for example `loaded`."),
-		"total_params": computed(schema.TypeInt, "The total number of parameters of the model."),
+		// TypeFloat, not TypeInt: values such as 70553706496 overflow int on
+		// 32-bit builds, and the spec maximum (2^53-1) fits a float64 exactly.
+		"total_params": computed(schema.TypeFloat, "The total number of parameters of the model."),
 		"config_json":  computed(schema.TypeString, "The model configuration (architecture details and hyperparameters) as a JSON string."),
 		"pricing": {
 			Type:        schema.TypeList,
@@ -65,7 +67,7 @@ func flattenRhaiiInferenceModelMetadata(m *rhaiiv1.InferenceModelMetadata, withM
 	out["state"] = strDeref(m.State)
 	out["status"] = strDeref(m.Status)
 	if m.TotalParams != nil {
-		out["total_params"] = int(*m.TotalParams)
+		out["total_params"] = float64(*m.TotalParams)
 	}
 
 	configJSON, err := rhaiiToJSON(m.Config)

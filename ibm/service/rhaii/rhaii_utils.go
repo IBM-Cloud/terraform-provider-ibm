@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -28,6 +29,10 @@ const (
 	// rhaiiDefaultLocation is the only region that the service is deployed to today.
 	rhaiiDefaultLocation = "us-east"
 
+	// rhaiiEndpointEnv overrides the RHAII API URL, as an environment variable
+	// or as a key of the endpoints file.
+	rhaiiEndpointEnv = "IBMCLOUD_RHAII_API_ENDPOINT"
+
 	// Tag types of the Global Tagging API.
 	rhaiiAccessTagType = "access"
 
@@ -46,11 +51,23 @@ const (
 	rhaiiWaitDone     = "done"
 )
 
-// rhaiiProjectEndpoint builds the Red Hat AI Inference API base URL for a project.
+// rhaiiProjectEndpoint builds the public Red Hat AI Inference API base URL for a project.
 func rhaiiProjectEndpoint(location, projectID string) string {
 	serviceURL, err := rhaiiv1.GetServiceURLForRegion(location)
 	if err != nil {
+		// Region not known to rhaiiv1 yet: use the host pattern of the known regions.
 		serviceURL = fmt.Sprintf("https://%s.rhai.ibm.com/v1", location)
+	}
+	return rhaiiv1.ProjectServiceURL(serviceURL, projectID)
+}
+
+// rhaiiProjectPrivateEndpoint builds the private (service endpoint) Red Hat AI
+// Inference API base URL for a project.
+func rhaiiProjectPrivateEndpoint(location, projectID string) string {
+	serviceURL, err := rhaiiv1.GetServiceURLForRegion("private." + location)
+	if err != nil {
+		// Region not known to rhaiiv1 yet: use the host pattern of the known regions.
+		serviceURL = fmt.Sprintf("https://private.%s.rhai.ibm.com/v1", location)
 	}
 	return rhaiiv1.ProjectServiceURL(serviceURL, projectID)
 }
@@ -173,6 +190,7 @@ func setRhaiiProjectAttributes(ctx context.Context, d *schema.ResourceData, meta
 	}
 	if projectID != "" && location != "" {
 		values["endpoint"] = rhaiiProjectEndpoint(location, projectID)
+		values["private_endpoint"] = rhaiiProjectPrivateEndpoint(location, projectID)
 	}
 	if instance.CreatedAt != nil {
 		values["created_at"] = instance.CreatedAt.String()
@@ -228,7 +246,8 @@ func rhaiiProjectComputedSchema() map[string]*schema.Schema {
 	}
 	return map[string]*schema.Schema{
 		"project_id":         computed(schema.TypeString, "The ID of the project. Use this value as `project_id` in the Red Hat AI Inference API."),
-		"endpoint":           computed(schema.TypeString, "The base URL of the Red Hat AI Inference API for this project."),
+		"endpoint":           computed(schema.TypeString, "The public base URL of the Red Hat AI Inference API for this project."),
+		"private_endpoint":   computed(schema.TypeString, "The private base URL of the Red Hat AI Inference API for this project. It can be reached only from the IBM Cloud private network."),
 		"guid":               computed(schema.TypeString, "The GUID of the resource instance. Same value as `project_id`."),
 		"crn":                computed(schema.TypeString, "The CRN of the project."),
 		"service":            computed(schema.TypeString, "The service name of the project. Always `instructlab`."),
@@ -342,9 +361,13 @@ func rhaiiToJSON(v map[string]interface{}) (string, error) {
 	return string(b), nil
 }
 
-// rhaiiClientForLocation returns an RHAII API client. When a location is set,
-// the client points to the endpoint of that region; otherwise the endpoint from
-// the provider configuration (IBMCLOUD_RHAII_API_ENDPOINT or endpoints file) is kept.
+// rhaiiClientForLocation returns an RHAII API client. When location is empty,
+// the client from the provider configuration is used as is. When location is
+// set, the URL is built for that region with the same rules as the provider
+// configuration (ibm/conns/config.go), in this order:
+//  1. the IBMCLOUD_RHAII_API_ENDPOINT environment variable
+//  2. the IBMCLOUD_RHAII_API_ENDPOINT key of the endpoints file (not for public-and-private)
+//  3. the public or private endpoint of the region, based on the provider visibility
 func rhaiiClientForLocation(meta interface{}, location string) (*rhaiiv1.RhaiiV1, error) {
 	client, err := meta.(conns.ClientSession).RhaiiV1()
 	if err != nil {
@@ -353,7 +376,12 @@ func rhaiiClientForLocation(meta interface{}, location string) (*rhaiiv1.RhaiiV1
 	if strings.TrimSpace(location) == "" {
 		return client, nil
 	}
-	serviceURL, err := rhaiiv1.GetServiceURLForRegion(location)
+
+	sess, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return nil, err
+	}
+	serviceURL, err := rhaiiServiceURLForLocation(location, sess.Config.Visibility, sess.Config.EndpointsFile)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +389,22 @@ func rhaiiClientForLocation(meta interface{}, location string) (*rhaiiv1.RhaiiV1
 		return nil, err
 	}
 	return client, nil
+}
+
+// rhaiiServiceURLForLocation resolves the RHAII API URL of a region. See rhaiiClientForLocation.
+func rhaiiServiceURLForLocation(location, visibility, endpointsFile string) (string, error) {
+	if v := os.Getenv(rhaiiEndpointEnv); v != "" {
+		return v, nil
+	}
+	serviceURL, urlErr := rhaiiv1.GetServiceURLForVisibility(location, visibility)
+	if visibility != "public-and-private" {
+		// FileFallBack also reads IBMCLOUD_ENDPOINTS_FILE_PATH and returns serviceURL when no entry matches.
+		serviceURL = conns.FileFallBack(endpointsFile, visibility, rhaiiEndpointEnv, location, serviceURL)
+	}
+	if serviceURL == "" {
+		return "", fmt.Errorf("no %s endpoint of the Red Hat AI Inference API for location %q: %v", visibility, location, urlErr)
+	}
+	return serviceURL, nil
 }
 
 func ptr(s string) *string { return &s }

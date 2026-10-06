@@ -27,11 +27,15 @@ data "ibm_resource_group" "group" {
   name = "Default"
 }
 
+resource "ibm_iam_access_tag" "rhaii" {
+  name = "project:rhaii"
+}
+
 resource "ibm_rhaii_project" "project" {
   name              = "my-rhaii-project"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["env:dev", "team:ai"]
-  access_tags       = ["project:rhaii"]
+  access_tags       = [ibm_iam_access_tag.rhaii.name]
 }
 
 output "rhaii_project_id" {
@@ -45,10 +49,10 @@ output "rhaii_endpoint" {
 
 ## Timeouts
 
-The `ibm_rhaii_project` resource provides the following [Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) configuration options:
+The `ibm_rhaii_project` resource provides the following [Timeouts](https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/retries-and-customizable-timeouts) configuration options:
 
 * `create` - (Default 10 minutes) Used for creating the project.
-* `update` - (Default 10 minutes) Used for updating the project.
+* `update` - (Default 10 minutes) Used for renaming the project.
 * `delete` - (Default 10 minutes) Used for deleting the project.
 
 ## Argument Reference
@@ -56,11 +60,12 @@ The `ibm_rhaii_project` resource provides the following [Timeouts](https://devel
 You can specify the following arguments for this resource.
 
 * `name` - (Required, String) The name of the project.
+  * Constraints: The maximum length is `180` characters. The minimum length is `1` character. Letters, numbers, spaces, `-`, `.`, `_` and `:` are allowed.
 * `location` - (Optional, Forces new resource, String) The region where the project is created. The default value is `us-east`, which is the only region where the service is available today. If you set a region where the service is not deployed, the error lists the valid regions.
-* `plan` - (Optional, String) The pricing plan of the project. The default value is `instructlab-pricing-plan`. You can set the plan name or the plan ID from the global catalog.
+* `plan` - (Optional, Forces new resource, String) The pricing plan of the project. The default value is `instructlab-pricing-plan`, which is the only plan today. You can set the plan name or the plan ID from the global catalog. The service does not support plan changes, so a new plan replaces the project.
 * `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. If you do not set it, the default resource group of the account is used.
 * `tags` - (Optional, Array of Strings) The user tags of the project. User tags help you organize and search for resources. They do not control access. Each tag can have up to 128 characters, and can contain letters, numbers, spaces, `_`, `.`, `-` and `:`.
-* `access_tags` - (Optional, Array of Strings) The access management tags of the project, in `key:value` format. Use them in IAM access policies to control who can work with the project. The tags must already exist in the account. You can create them with the `ibm_resource_tag` resource or in the console.
+* `access_tags` - (Optional, Array of Strings) The access management tags of the project, in `key:value` format. Use them in IAM access policies to control who can work with the project. The tags must already exist in the account. You can create them with the `ibm_iam_access_tag` resource or in the console.
 
 ## Attribute Reference
 
@@ -68,7 +73,8 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - (String) The unique identifier of the project. This is the CRN of the resource instance.
 * `project_id` - (String) The ID of the project. Use this value as `project_id` in the Red Hat AI Inference API. It is the same value as `guid`.
-* `endpoint` - (String) The base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
+* `endpoint` - (String) The public base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
+* `private_endpoint` - (String) The private base URL of the Red Hat AI Inference API for this project, for example `https://private.us-east.rhai.ibm.com/v1/projects/<project_id>`. It can be reached only from the IBM Cloud private network, for example from a VPC.
 * `guid` - (String) The GUID of the resource instance.
 * `crn` - (String) The CRN of the project.
 * `service` - (String) The service name of the project. Always `instructlab`.

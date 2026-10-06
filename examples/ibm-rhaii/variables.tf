@@ -29,7 +29,7 @@ variable "tags" {
 }
 
 variable "access_tags" {
-  description = "Access management tags for the project, in key:value format. The tags must already exist in the account."
+  description = "Access management tags for the project, in key:value format. The tags must already exist in the account (create them with ibm_iam_access_tag)."
   type        = list(string)
   default     = []
 }

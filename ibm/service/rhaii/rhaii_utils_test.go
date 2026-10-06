@@ -8,13 +8,16 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii/rhaiiv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const testProjectID = "917bc95a-fef0-4039-b936-e0b6fb17b721"
@@ -140,6 +143,12 @@ func TestRhaiiProjectEndpoint(t *testing.T) {
 	if got, want := rhaiiProjectEndpoint("eu-de", testProjectID), "https://eu-de.rhai.ibm.com/v1/projects/"+testProjectID; got != want {
 		t.Errorf("rhaiiProjectEndpoint(eu-de) = %q, want %q", got, want)
 	}
+	if got, want := rhaiiProjectPrivateEndpoint("us-east", testProjectID), "https://private.us-east.rhai.ibm.com/v1/projects/"+testProjectID; got != want {
+		t.Errorf("rhaiiProjectPrivateEndpoint(us-east) = %q, want %q", got, want)
+	}
+	if got, want := rhaiiProjectPrivateEndpoint("eu-de", testProjectID), "https://private.eu-de.rhai.ibm.com/v1/projects/"+testProjectID; got != want {
+		t.Errorf("rhaiiProjectPrivateEndpoint(eu-de) = %q, want %q", got, want)
+	}
 }
 
 func TestRhaiiRefreshFunctions(t *testing.T) {
@@ -203,7 +212,7 @@ func TestFlattenRhaiiInferenceModelMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out["config_json"] != `{"model_type":"llama"}` || out["total_params"] != 70553706496 {
+	if out["config_json"] != `{"model_type":"llama"}` || out["total_params"] != float64(70553706496) {
 		t.Errorf("unexpected flatten result: %v", out)
 	}
 	if _, ok := out["model_card"]; ok {
@@ -251,5 +260,93 @@ func TestRhaiiSchemas(t *testing.T) {
 	}
 	if err := DataSourceIBMRhaiiInferenceModel().InternalValidate(nil, false); err != nil {
 		t.Errorf("ibm_rhaii_inference_model data source schema is not valid: %s", err)
+	}
+}
+
+func TestRhaiiProjectValidators(t *testing.T) {
+	validate.SetValidatorDict(validate.ValidatorDict{
+		ResourceValidatorDictionary: map[string]*validate.ResourceValidator{
+			rhaiiProjectResourceName: ResourceIBMRhaiiProjectValidator(),
+		},
+		DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
+			rhaiiInferenceModelDataSourceName: DataSourceIBMRhaiiInferenceModelValidator(),
+		},
+	})
+	r := ResourceIBMRhaiiProject()
+	model := DataSourceIBMRhaiiInferenceModel()
+
+	cases := []struct {
+		name  string
+		fn    func(interface{}, string) ([]string, []error)
+		value string
+		valid bool
+	}{
+		{"name simple", r.Schema["name"].ValidateFunc, "rhaii-nkashyap", true},
+		{"name allowed specials", r.Schema["name"].ValidateFunc, "my project_1.dev:a", true},
+		{"name non ascii letters", r.Schema["name"].ValidateFunc, "projet-été", true},
+		{"name 180 chars", r.Schema["name"].ValidateFunc, strings.Repeat("a", 180), true},
+		{"name 181 chars", r.Schema["name"].ValidateFunc, strings.Repeat("a", 181), false},
+		{"name slash", r.Schema["name"].ValidateFunc, "a/b", false},
+		{"name empty", r.Schema["name"].ValidateFunc, "", false},
+		{"tag", r.Schema["tags"].Elem.(*schema.Schema).ValidateFunc, "env:dev", true},
+		{"tag bad char", r.Schema["tags"].Elem.(*schema.Schema).ValidateFunc, "env=dev", false},
+		{"access tag", r.Schema["access_tags"].Elem.(*schema.Schema).ValidateFunc, "project:rhaii", true},
+		{"access tag without value", r.Schema["access_tags"].Elem.(*schema.Schema).ValidateFunc, "project", false},
+		{"model", model.Schema["model"].ValidateFunc, "llama-3-3-70b-instruct", true},
+		{"model uppercase", model.Schema["model"].ValidateFunc, "Llama", false},
+	}
+	for _, c := range cases {
+		if c.fn == nil {
+			t.Fatalf("%s: no validate function", c.name)
+		}
+		_, errs := c.fn(c.value, "field")
+		if (len(errs) == 0) != c.valid {
+			t.Errorf("%s: value %q valid = %v, want %v (%v)", c.name, c.value, len(errs) == 0, c.valid, errs)
+		}
+	}
+
+	if !r.Schema["plan"].ForceNew {
+		t.Error("plan must force a new resource, the service does not support plan updates")
+	}
+}
+
+func TestRhaiiServiceURLForLocation(t *testing.T) {
+	t.Setenv("IBMCLOUD_ENDPOINTS_FILE_PATH", "")
+	t.Setenv("IC_ENDPOINTS_FILE_PATH", "")
+	t.Setenv(rhaiiEndpointEnv, "")
+
+	dir := t.TempDir()
+	endpointsFile := dir + "/endpoints.json"
+	if err := os.WriteFile(endpointsFile, []byte(`{"IBMCLOUD_RHAII_API_ENDPOINT":{"private":{"us-east":"https://custom-private.example.com/v1"}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name, visibility, file, want string
+		wantErr                      bool
+	}{
+		{"public", "public", "", "https://us-east.rhai.ibm.com/v1", false},
+		{"private", "private", "", "https://private.us-east.rhai.ibm.com/v1", false},
+		{"public and private", "public-and-private", "", "https://private.us-east.rhai.ibm.com/v1", false},
+		{"private from endpoints file", "private", endpointsFile, "https://custom-private.example.com/v1", false},
+		{"public not in endpoints file", "public", endpointsFile, "https://us-east.rhai.ibm.com/v1", false},
+		{"public and private ignores endpoints file", "public-and-private", endpointsFile, "https://private.us-east.rhai.ibm.com/v1", false},
+	}
+	for _, c := range cases {
+		got, err := rhaiiServiceURLForLocation("us-east", c.visibility, c.file)
+		if (err != nil) != c.wantErr || got != c.want {
+			t.Errorf("%s: got %q, %v; want %q", c.name, got, err, c.want)
+		}
+	}
+
+	// A private request in a region without a private endpoint fails instead of going public.
+	if _, err := rhaiiServiceURLForLocation("eu-de", "private", ""); err == nil {
+		t.Error("expected an error for a private endpoint in an unknown region")
+	}
+
+	// The environment variable wins over everything else.
+	t.Setenv(rhaiiEndpointEnv, "https://override.example.com/v1")
+	if got, _ := rhaiiServiceURLForLocation("us-east", "private", endpointsFile); got != "https://override.example.com/v1" {
+		t.Errorf("environment override not used, got %q", got)
 	}
 }

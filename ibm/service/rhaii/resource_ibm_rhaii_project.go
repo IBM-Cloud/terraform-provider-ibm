@@ -28,9 +28,10 @@ const rhaiiProjectResourceName = "ibm_rhaii_project"
 func ResourceIBMRhaiiProject() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The name of the project.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validate.InvokeValidator(rhaiiProjectResourceName, "name"),
+			Description:  "The name of the project.",
 		},
 		"location": {
 			Type:        schema.TypeString,
@@ -39,9 +40,12 @@ func ResourceIBMRhaiiProject() *schema.Resource {
 			Default:     rhaiiDefaultLocation,
 			Description: "The region where the project is created.",
 		},
+		// The catalog marks the service with plan_updateable=false, so a plan
+		// change replaces the project.
 		"plan": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			ForceNew:    true,
 			Default:     rhaiiDefaultPlan,
 			Description: "The pricing plan of the project.",
 		},
@@ -101,6 +105,17 @@ func ResourceIBMRhaiiProject() *schema.Resource {
 // ResourceIBMRhaiiProjectValidator validates the arguments of ibm_rhaii_project.
 func ResourceIBMRhaiiProjectValidator() *validate.ResourceValidator {
 	validateSchema := []validate.ValidateSchema{
+		{
+			// Resource controller rule: 180 characters or less, no special
+			// characters other than space - . _ :
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[\p{L}\p{N} ._:-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             180,
+		},
 		{
 			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
@@ -168,8 +183,9 @@ func resourceIBMRhaiiProjectCreate(ctx context.Context, d *schema.ResourceData, 
 		return rhaiiDiag(fmt.Errorf("error waiting for project (%s) to be active: %s", d.Id(), err), "create", "wait-for-state")
 	}
 
-	// Tag errors are logged and not returned, so that a created project is
-	// never lost from the state. The next plan shows the difference.
+	// Tag errors are logged and not returned. Returning an error here would mark
+	// the new project as tainted, and the next apply would destroy and recreate
+	// it. The next plan shows the tag difference instead.
 	if _, ok := d.GetOk("tags"); ok || os.Getenv("IC_ENV_TAGS") != "" {
 		oldList, newList := d.GetChange("tags")
 		if err := flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN); err != nil {
@@ -237,21 +253,10 @@ func resourceIBMRhaiiProjectUpdate(ctx context.Context, d *schema.ResourceData, 
 		return rhaiiDiag(err, "update", "initialize-client")
 	}
 
-	if d.HasChange("name") || d.HasChange("plan") {
-		updateOptions := &rc.UpdateResourceInstanceOptions{ID: ptr(d.Id())}
-		if d.HasChange("name") {
-			updateOptions.Name = ptr(d.Get("name").(string))
-		}
-		if d.HasChange("plan") {
-			gcClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
-			if err != nil {
-				return rhaiiDiag(err, "update", "initialize-client")
-			}
-			planID, err := rhaiiResolvePlanID(ctx, gcClient, d.Get("plan").(string))
-			if err != nil {
-				return rhaiiDiag(err, "update", "resolve-plan")
-			}
-			updateOptions.ResourcePlanID = &planID
+	if d.HasChange("name") {
+		updateOptions := &rc.UpdateResourceInstanceOptions{
+			ID:   ptr(d.Id()),
+			Name: ptr(d.Get("name").(string)),
 		}
 
 		if _, _, err := rcClient.UpdateResourceInstanceWithContext(ctx, updateOptions); err != nil {

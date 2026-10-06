@@ -34,7 +34,17 @@ output "model_ids" {
 You can specify the following arguments for this data source.
 
 * `project_id` - (Required, String) The ID of the Red Hat AI Inference project. Use the `project_id` attribute of the `ibm_rhaii_project` resource or data source.
-* `location` - (Optional, String) The region of the project, for example `us-east`. When not set, the endpoint from the provider configuration is used. You can override the endpoint with the `IBMCLOUD_RHAII_API_ENDPOINT` environment variable or the `IBMCLOUD_RHAII_API_ENDPOINT` key in the endpoints file.
+* `location` - (Optional, String) The region of the project, for example `us-east`. When not set, the region of the provider is used, or `us-east` when the service is not available in that region.
+
+## Endpoints
+
+The data source calls the Red Hat AI Inference API on the endpoint that matches the `visibility` argument of the provider:
+
+* `public` (default): `https://<location>.rhai.ibm.com/v1`
+* `private`: `https://private.<location>.rhai.ibm.com/v1`. Terraform must run on the IBM Cloud private network, for example in a VPC.
+* `public-and-private`: the private endpoint when the region has one, otherwise the public endpoint.
+
+To use another endpoint, set the `IBMCLOUD_RHAII_API_ENDPOINT` environment variable, or the `IBMCLOUD_RHAII_API_ENDPOINT` key in the [endpoints file](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints).
 
 ## Attribute Reference
 
@@ -51,7 +61,7 @@ After your data source is created, you can read values from the following attrib
   * `display_name` - (String) The display name of the model.
   * `state` - (String) The state of the model, for example `model_loaded`.
   * `status` - (String) The status of the model, for example `loaded`.
-  * `total_params` - (Integer) The total number of parameters of the model.
+  * `total_params` - (Float) The total number of parameters of the model, for example `70553706496`.
   * `config_json` - (String) The model configuration (architecture details and hyperparameters) as a JSON string. Use `jsondecode()` to read it.
   * `pricing` - (List) The pricing measures of the model.
     Nested schema for **pricing**:

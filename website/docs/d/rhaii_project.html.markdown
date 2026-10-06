@@ -44,7 +44,8 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - (String) The unique identifier of the project. This is the CRN of the resource instance.
 * `project_id` - (String) The ID of the project. Use this value as `project_id` in the Red Hat AI Inference API.
-* `endpoint` - (String) The base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
+* `endpoint` - (String) The public base URL of the Red Hat AI Inference API for this project, for example `https://us-east.rhai.ibm.com/v1/projects/<project_id>`.
+* `private_endpoint` - (String) The private base URL of the Red Hat AI Inference API for this project, for example `https://private.us-east.rhai.ibm.com/v1/projects/<project_id>`. It can be reached only from the IBM Cloud private network, for example from a VPC.
 * `guid` - (String) The GUID of the resource instance.
 * `crn` - (String) The CRN of the project.
 * `service` - (String) The service name of the project. Always `instructlab`.
@@ -62,4 +63,9 @@ After your data source is created, you can read values from the following attrib
 * `updated_at` - (String) The date when the project was last updated.
 * `updated_by` - (String) The subject who last updated the project.
 * `locked` - (Boolean) Whether the project is locked.
-* `last_operation` - (List) The last operation on the project, with `type`, `state`, `async` and `description`.
+* `last_operation` - (List) The last operation on the project.
+  Nested schema for **last_operation**:
+  * `type` - (String) The type of the operation, for example `create`.
+  * `state` - (String) The state of the operation, for example `succeeded`.
+  * `async` - (Boolean) Whether the operation is asynchronous.
+  * `description` - (String) The description of the operation.
