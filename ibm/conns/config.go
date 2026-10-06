@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,6 +18,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
 
 	"github.com/IBM/cloud-db2-go-sdk/db2saasv1"
 
@@ -129,6 +130,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii/rhaiiv1"
 	codeengine "github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
@@ -355,6 +357,7 @@ type ClientSession interface {
 	LogsV0() (*logsv0.LogsV0, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
+	RhaiiV1() (*rhaiiv1.RhaiiV1, error)
 	PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error)
 	PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error)
 	SecretsManagerInstanceManagementV2() (*secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2, error)
@@ -755,6 +758,10 @@ type clientSession struct {
 	drAutomationServiceClient    *drautomationservicev1.DrAutomationServiceV1
 	drAutomationServiceClientErr error
 
+	// Red Hat AI Inference
+	rhaiiClient    *rhaiiv1.RhaiiV1
+	rhaiiClientErr error
+
 	// Platform Notifications
 	platformNotificationsClient    *platformnotificationsv1.PlatformNotificationsV1
 	platformNotificationsClientErr error
@@ -1153,6 +1160,14 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 // DrAutomation Service
 func (session clientSession) DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error) {
 	return session.drAutomationServiceClient, session.drAutomationServiceClientErr
+}
+
+// Red Hat AI Inference
+func (session clientSession) RhaiiV1() (*rhaiiv1.RhaiiV1, error) {
+	if session.rhaiiClientErr != nil {
+		return session.rhaiiClient, session.rhaiiClientErr
+	}
+	return session.rhaiiClient.Clone(), nil
 }
 
 // PowerhaAutomation Service
@@ -1679,6 +1694,7 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		session.mqcloudClientErr = errEmptyBluemixCredentials
 		session.logsClientErr = errEmptyBluemixCredentials
 		session.ibmCloudLogsRoutingClientErr = errEmptyBluemixCredentials
+		session.rhaiiClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -3750,6 +3766,41 @@ func (c *Config) ClientSession() (*clientSession, error) {
 			})
 		} else {
 			session.drAutomationServiceClientErr = fmt.Errorf("error occurred while constructing 'DrAutomation Service' service client: %q", err)
+		}
+	}
+
+	// Construct an instance of the 'Red Hat AI Inference' service.
+	if session.rhaiiClientErr == nil {
+		// The service is deployed in few regions (us-east today). When the
+		// provider region has no deployment, use the default region of the service.
+		rhaiiRegion := c.Region
+		if _, err := rhaiiv1.GetServiceURLForRegion(rhaiiRegion); err != nil {
+			rhaiiRegion = rhaiiv1.DefaultRegion
+		}
+		// public: public endpoint; private: private endpoint only;
+		// public-and-private: private endpoint when the region has one.
+		rhaiiURL, rhaiiURLErr := rhaiiv1.GetServiceURLForVisibility(rhaiiRegion, c.Visibility)
+		if fileMap != nil && c.Visibility != "public-and-private" {
+			rhaiiURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RHAII_API_ENDPOINT", c.Region, rhaiiURL)
+		}
+		rhaiiClientOptions := &rhaiiv1.RhaiiV1Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_RHAII_API_ENDPOINT"}, rhaiiURL),
+		}
+
+		if rhaiiClientOptions.URL == "" {
+			// Only possible with visibility "private" in a region without a private
+			// endpoint and no endpoint override. Never fall back to the public endpoint.
+			session.rhaiiClientErr = fmt.Errorf("error occurred while configuring 'Red Hat AI Inference' service: %q", rhaiiURLErr)
+		} else if session.rhaiiClient, err = rhaiiv1.NewRhaiiV1(rhaiiClientOptions); err == nil {
+			// Enable retries for API calls
+			session.rhaiiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.rhaiiClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.rhaiiClientErr = fmt.Errorf("error occurred while constructing 'Red Hat AI Inference' service client: %q", err)
 		}
 	}
 
