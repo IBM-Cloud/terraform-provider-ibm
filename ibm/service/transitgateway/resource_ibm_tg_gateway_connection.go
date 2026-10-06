@@ -148,6 +148,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 			tgRemoteBgpAsn: {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The remote network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
