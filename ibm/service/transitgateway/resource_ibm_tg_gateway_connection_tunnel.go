@@ -348,6 +348,10 @@ func resourceIBMTransitGatewayConnectionRgreTunnelRead(d *schema.ResourceData, m
 
 func resourceIBMTransitGatewayConnectionRgreTunnelUpdate(d *schema.ResourceData, meta interface{}) error {
 
+	if !d.HasChange(tgconTunnelName) {
+		return resourceIBMTransitGatewayConnectionRgreTunnelRead(d, meta)
+	}
+
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -362,12 +366,9 @@ func resourceIBMTransitGatewayConnectionRgreTunnelUpdate(d *schema.ResourceData,
 	rGRETunnelID := parts[2]
 
 	tunnelPatchModel := &transitgatewayapisv1.TransitGatewayTunnelPatch{}
-	if d.HasChange(tgconTunnelName) {
-		if d.Get(tgconTunnelName) != nil {
-			name := d.Get(tgconTunnelName).(string)
-			tunnelPatchModel.Name = &name
-		}
-	}
+	name := d.Get(tgconTunnelName).(string)
+	tunnelPatchModel.Name = &name
+
 	tunnelPatch, err := tunnelPatchModel.AsPatch()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error building Transit Gateway Connection Tunnel patch: %s", err)

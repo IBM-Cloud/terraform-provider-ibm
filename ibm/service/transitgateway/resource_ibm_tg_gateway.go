@@ -131,16 +131,19 @@ func ResourceIBMTransitGateway() *schema.Resource {
 			},
 
 			tgRedundancyGroup: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The redundancy group name for this global transit gateway",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{tgRedundancyGroupID},
+				Description:   "The name of the redundancy group for this global transit gateway. Creates the group if it does not exist. Cannot be specified together with redundancy_group_id.",
 			},
 
 			tgRedundancyGroupID: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier of the redundancy group for this global transit gateway",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{tgRedundancyGroup},
+				Description:   "The unique identifier of an existing redundancy group to add this global transit gateway to. Cannot be specified together with redundancy_group.",
 			},
 
 			tgConnectionCount: {
@@ -248,6 +251,10 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk(tgRedundancyGroup); ok {
 		rg := v.(string)
 		createTransitGatewayOptions.RedundancyGroup = &rg
+	}
+	if v, ok := d.GetOk(tgRedundancyGroupID); ok {
+		rgID := v.(string)
+		createTransitGatewayOptions.RedundancyGroupID = &rgID
 	}
 
 	//log.Println("going to create tgw now with options", *createTransitGatewayOptions.ResourceGroup)
@@ -405,18 +412,21 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 	// The API rejects global changes for gateways that are part of a redundancy group.
 	if d.HasChange(tgGlobal) {
-		if rg, ok := d.GetOk(tgRedundancyGroup); !ok || rg.(string) == "" {
-			global := d.Get(tgGlobal).(bool)
-			updateTransitGatewayOptions.Global = &global
+		if rg, ok := d.GetOk(tgRedundancyGroup); ok && rg.(string) != "" {
+			return flex.FmtErrorf("[ERROR] Cannot change 'global' on a transit gateway that belongs to a redundancy group (%s)", rg.(string))
 		}
+		global := d.Get(tgGlobal).(bool)
+		updateTransitGatewayOptions.Global = &global
 	}
 	if d.HasChange(tgGreEnhancedRoutePropagation) {
 		greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
 		updateTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
 	}
 	if d.HasChange(tgRedundancyGroup) {
-		rg := d.Get(tgRedundancyGroup).(string)
-		updateTransitGatewayOptions.RedundancyGroup = &rg
+		if rg, ok := d.GetOk(tgRedundancyGroup); ok && rg.(string) != "" {
+			rgStr := rg.(string)
+			updateTransitGatewayOptions.RedundancyGroup = &rgStr
+		}
 	}
 	if d.HasChange(tgGatewayTags) {
 		oldList, newList := d.GetChange(tgGatewayTags)
@@ -492,7 +502,7 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 		}
 		if transitGateway.Status != nil && *transitGateway.Status == "failed" {
-			return transitGateway, isTransitGatewayDeleted, nil
+			return transitGateway, *transitGateway.Status, flex.FmtErrorf("[ERROR] Transit Gateway (%s) deletion failed, status: %s", id, *transitGateway.Status)
 		}
 		return transitGateway, isTransitGatewayDeleting, err
 	}

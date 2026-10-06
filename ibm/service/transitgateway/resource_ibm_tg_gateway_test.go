@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -291,4 +292,80 @@ resource "ibm_tg_gateway" "test_tg_gateway" {
 	redundancy_group = "%s"
 	resource_group   = "%s"
 }`, name, location, rg, resourceGroup)
+}
+
+func testAccCheckIBMTransitGatewayRedundancyGroupGlobalConfig(name, location, rg, resourceGroup string, global bool) string {
+	return fmt.Sprintf(`
+resource "ibm_tg_gateway" "test_tg_gateway" {
+	name             = "%s"
+	location         = "%s"
+	global           = %t
+	redundancy_group = "%s"
+	resource_group   = "%s"
+}`, name, location, global, rg, resourceGroup)
+}
+
+// TestAccIBMTransitGateway_redundancyGroupGlobalUpdateError verifies that attempting
+// to change the `global` attribute on a gateway that belongs to a redundancy group
+// returns the expected provider-level error.
+func TestAccIBMTransitGateway_redundancyGroupGlobalUpdateError(t *testing.T) {
+	var instance string
+	gatewayname := fmt.Sprintf("tg-rg-gw-%d", acctest.RandIntRange(10, 100))
+	rgName := fmt.Sprintf("tg-rg-%d", acctest.RandIntRange(10, 100))
+	location := "us-south-ngdc-test"
+	resourceGroup := "24c1da58523c4c1b88c1a660c366b0f2"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTransitGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create gateway in a redundancy group with global=true (required by API).
+				Config: testAccCheckIBMTransitGatewayRedundancyGroupConfig(gatewayname, location, rgName, resourceGroup),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "redundancy_group", rgName),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", "true"),
+				),
+			},
+			{
+				// Attempt to change global from true → false — provider must return an error
+				// because global cannot be updated on a gateway that belongs to a redundancy group.
+				Config:      testAccCheckIBMTransitGatewayRedundancyGroupGlobalConfig(gatewayname, location, rgName, resourceGroup, false),
+				ExpectError: regexp.MustCompile(`Cannot change 'global' on a transit gateway that belongs to a redundancy group`),
+			},
+		},
+	})
+}
+
+// TestAccIBMTransitGateway_redundancyGroupConflict verifies that specifying both
+// redundancy_group and redundancy_group_id in the same config is rejected at plan time.
+func TestAccIBMTransitGateway_redundancyGroupConflict(t *testing.T) {
+	gatewayname := fmt.Sprintf("tg-rg-gw-%d", acctest.RandIntRange(10, 100))
+	location := "us-south-ngdc-test"
+	resourceGroup := "24c1da58523c4c1b88c1a660c366b0f2"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: nil, // resource never created — conflict caught at plan time
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMTransitGatewayRedundancyGroupConflictConfig(gatewayname, location, resourceGroup),
+				ExpectError: regexp.MustCompile(`conflicts with`),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMTransitGatewayRedundancyGroupConflictConfig(name, location, resourceGroup string) string {
+	return fmt.Sprintf(`
+resource "ibm_tg_gateway" "test_tg_gateway" {
+	name                = "%s"
+	location            = "%s"
+	redundancy_group    = "some-rg-name"
+	redundancy_group_id = "00000000-0000-0000-0000-000000000000"
+	resource_group      = "%s"
+}`, name, location, resourceGroup)
 }

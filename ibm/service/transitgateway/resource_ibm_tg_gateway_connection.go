@@ -139,6 +139,12 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				ForceNew:    true,
 				Description: "The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
+			tgLocalBgpAsn: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The local network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+			},
 			tgRemoteBgpAsn: {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -592,12 +598,8 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		d.Set(tgCidr, *instance.Cidr)
 	}
 
-	if instance.Zone != nil {
-		d.Set(tgZone, *instance.Zone)
-	}
-
-	if instance.Cidr != nil {
-		d.Set(tgCidr, *instance.Cidr)
+	if instance.Zone != nil && instance.Zone.Name != nil {
+		d.Set(tgZone, *instance.Zone.Name)
 	}
 
 	d.Set(tgConnectionId, *instance.ID)
