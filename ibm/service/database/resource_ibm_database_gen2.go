@@ -580,6 +580,8 @@ func (g *resourceIBMDatabaseGen2Backend) addMaintenanceConfig(d *schema.Resource
 // flattenMaintenance converts the maintenance map from instance.Extensions into the
 // []map[string]interface{} shape required by Terraform for TypeList/MaxItems:1 blocks.
 //
+// The RC API always returns days as []interface{} (one string element per day).
+//
 // d is used to read the raw HCL config intent, which resolves ambiguity in the API
 // response: the backend sometimes returns stale start_time/days even after switching to
 // system_assigned=true, and always returns system_assigned=true even after setting a
@@ -633,15 +635,8 @@ func flattenMaintenance(ext map[string]interface{}, d *schema.ResourceData) []ma
 		if v, ok := wRaw["start_time"].(string); ok && v != "" {
 			window["start_time"] = v
 		}
-		switch v := wRaw["days"].(type) {
-		case string:
-			if v != "" {
-				window["days"] = []interface{}{v}
-			}
-		case []interface{}:
-			if len(v) > 0 {
-				window["days"] = v
-			}
+		if v, ok := wRaw["days"].([]interface{}); ok && len(v) > 0 {
+			window["days"] = v
 		}
 		// system_assigned is intentionally omitted — mutually exclusive with custom window.
 		return []map[string]interface{}{
@@ -654,15 +649,8 @@ func flattenMaintenance(ext map[string]interface{}, d *schema.ResourceData) []ma
 	if v, ok := wRaw["start_time"].(string); ok && v != "" {
 		window["start_time"] = v
 	}
-	switch v := wRaw["days"].(type) {
-	case string:
-		if v != "" {
-			window["days"] = []interface{}{v}
-		}
-	case []interface{}:
-		if len(v) > 0 {
-			window["days"] = v
-		}
+	if v, ok := wRaw["days"].([]interface{}); ok && len(v) > 0 {
+		window["days"] = v
 	}
 	_, hasStartTime := window["start_time"]
 	_, hasDays := window["days"]

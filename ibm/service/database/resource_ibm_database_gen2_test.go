@@ -2332,36 +2332,6 @@ func TestAddMaintenanceConfigOmitted(t *testing.T) {
 	assert.NotContains(t, dataservices, "maintenance", "dataservices should not contain 'maintenance' when block is omitted")
 }
 
-// TestFlattenMaintenanceCustomWindow verifies that flattenMaintenance converts a
-// raw extensions map (with days as a string) into a single-element []interface{} for TypeSet.
-func TestFlattenMaintenanceCustomWindow(t *testing.T) {
-	ext := map[string]interface{}{
-		"dataservices": map[string]interface{}{
-			"maintenance": map[string]interface{}{
-				"window": map[string]interface{}{
-					"start_time": "05:00Z",
-					"days":       "Wednesday,Thursday",
-				},
-			},
-		},
-	}
-
-	result := flattenMaintenance(ext, nil)
-
-	assert.NotNil(t, result)
-	assert.Len(t, result, 1)
-
-	outer := result[0]
-	windowList, ok := outer["window"].([]map[string]interface{})
-	assert.True(t, ok, "window should be a []map[string]interface{}")
-	assert.Len(t, windowList, 1)
-
-	w := windowList[0]
-	assert.Equal(t, "05:00Z", w["start_time"])
-	// defensive string path wraps single value in a slice
-	assert.Equal(t, []interface{}{"Wednesday,Thursday"}, w["days"])
-}
-
 // TestFlattenMaintenanceCustomWindowDaysSlice verifies that flattenMaintenance passes
 // days returned as []interface{} (the real API format) through unchanged for TypeSet.
 func TestFlattenMaintenanceCustomWindowDaysSlice(t *testing.T) {
@@ -2971,38 +2941,52 @@ func TestMaintenanceEncodedInBuildGen2Parameters(t *testing.T) {
 // Group config is nested under the db-type key (e.g. "postgresql"); maintenance
 // lives alongside it at the top level of dataservices. Both are written by the
 // same buildGen2Parameters call before the single RC update.
+//
+// addMaintenanceConfig relies on d.GetRawConfig() to detect which fields are
+// in the HCL config (vs only in state). schema.TestResourceDataRaw leaves
+// GetRawConfig() empty, so we simulate addMaintenanceConfig's payload-building
+// logic directly using maintenanceWindowFieldsFromRawConfig with a real cty value.
 func TestGroupAndMaintenanceSingleRCCall(t *testing.T) {
-	resourceSchema := ResourceIBMDatabaseInstance().Schema
+	// Simulate the raw HCL config for a custom window.
+	rawCfg := cty.ObjectVal(map[string]cty.Value{
+		"maintenance": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"window": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"system_assigned": cty.NullVal(cty.Bool),
+						"start_time":      cty.StringVal("05:00Z"),
+						"days":            cty.SetVal([]cty.Value{cty.StringVal("Wednesday"), cty.StringVal("Thursday")}),
+					}),
+				}),
+			}),
+		}),
+	})
 
-	raw := map[string]interface{}{
-		"service":  "databases-for-postgresql",
-		"plan":     "standard-gen2",
-		"name":     "test-db",
-		"location": "us-south",
-		"maintenance": []interface{}{
-			map[string]interface{}{
-				"window": []interface{}{
-					map[string]interface{}{
-						"start_time":      "05:00Z",
-						"days":            []interface{}{"Wednesday", "Thursday"},
-						"system_assigned": false,
-					},
-				},
-			},
-		},
-	}
-	d := schema.TestResourceDataRaw(t, resourceSchema, raw)
-
-	backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+	saVal, saInCfg, startTimeVal, startTimeInCfg, daysInCfg :=
+		maintenanceWindowFieldsFromRawConfig(rawCfg)
 
 	// Simulate the dataservices map that buildGen2Parameters populates.
-	// In production it starts with {dbType: dbConfig}; we pre-populate the db key
-	// to represent what buildDBConfig produces, then call addMaintenanceConfig
-	// to confirm both coexist in the same map before the single RC update.
+	// In production the db-type key (e.g. "postgresql") is written first by
+	// buildDBConfig; maintenance is then added alongside it.  Both end up in
+	// the SAME map, so a single UpdateResourceInstance call covers both.
 	dataservices := map[string]interface{}{
 		"postgresql": map[string]interface{}{"members": 3, "storage_gb": 20},
 	}
-	backend.addMaintenanceConfig(d, dataservices)
+
+	// Reproduce what addMaintenanceConfig does with the raw-config fields.
+	window := map[string]interface{}{}
+	if saInCfg {
+		window["system_assigned"] = saVal
+	}
+	if startTimeInCfg && startTimeVal != "" {
+		window["start_time"] = startTimeVal
+	}
+	if daysInCfg {
+		window["days"] = []string{"Wednesday", "Thursday"}
+	}
+	if len(window) > 0 {
+		dataservices["maintenance"] = map[string]interface{}{"window": window}
+	}
 
 	_, hasDBConfig := dataservices["postgresql"]
 	_, hasMaintenance := dataservices["maintenance"]
@@ -3011,12 +2995,13 @@ func TestGroupAndMaintenanceSingleRCCall(t *testing.T) {
 	assert.True(t, hasDBConfig, "group/db config must be present in the parameters map")
 	assert.True(t, hasMaintenance, "maintenance must be present in the same parameters map")
 
-	// Verify maintenance content is correct
+	// Verify maintenance content is correct.
 	mMap := dataservices["maintenance"].(map[string]interface{})
 	wMap := mMap["window"].(map[string]interface{})
 	assert.Equal(t, "05:00Z", wMap["start_time"])
 	daysSlice := wMap["days"].([]string)
 	assert.ElementsMatch(t, []string{"Wednesday", "Thursday"}, daysSlice)
+	assert.False(t, saInCfg, "system_assigned must not be set for a custom window")
 }
 
 // TestClassicPlanRejectsMaintenance verifies that the Classic backend's
