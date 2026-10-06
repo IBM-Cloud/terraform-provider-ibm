@@ -129,8 +129,8 @@ github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2y
 github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
 github.com/IBM/go-sdk-core/v5 v5.23.4 h1:pxQuxcRSuQYHf6HsWDKKQHU7cMjl817bqvFGiu53p5k=
 github.com/IBM/go-sdk-core/v5 v5.23.4/go.mod h1:STTfOZKIy3y4WowRDXYQTXb24nrAnIcm0dcxRXrinTk=
-github.com/IBM/ibm-backup-recovery-sdk-go v1.4.0 h1:ltAd1pGOMa8RDcUwSlwbSVqnlkR3oLECuxkRPHrAUJM=
-github.com/IBM/ibm-backup-recovery-sdk-go v1.4.0/go.mod h1:gJLisdDfBVW45F3f+zpg50rVdo7hH2ybWBKRemz9O5o=
+github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0 h1:/AiWPMsBkxSjZtPURCzj6oyWero0mJcUqThi6UVt6gM=
+github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0/go.mod h1:H8l2csoqJu2tOH/JpUMtbHK+Y2+vfY0POZCT8XfZP5U=
 github.com/IBM/ibm-cos-sdk-go v1.12.2 h1:71A4tDl8u6BZ548h71ecEe7fw5bBA7ECTVqYmeSQWQA=
 github.com/IBM/ibm-cos-sdk-go v1.12.2/go.mod h1:ODYcmrmdpjo5hVguq9RbD6xmC8xb1XZMG7NefUbJNcc=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0 h1:956Nqk0eKI3lq+AkzWXZDid4UZHRz0wWh1LwkleBsWk=
@@ -361,8 +361,8 @@ github.com/form3tech-oss/jwt-go v3.2.3+incompatible/go.mod h1:pbq4aXjuKjdthFRnoD
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
-github.com/fsnotify/fsnotify v1.8.0 h1:dAwr6QBTBZIkG8roQaJjGof0pp0EeF+tNV7YBP3F/8M=
-github.com/fsnotify/fsnotify v1.8.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
+github.com/fsnotify/fsnotify v1.10.1 h1:b0/UzAf9yR5rhf3RPm9gf3ehBPpf0oZKIjtpKrx59Ho=
+github.com/fsnotify/fsnotify v1.10.1/go.mod h1:TLheqan6HD6GBK6PrDWyDPBaEV8LspOxvPSjC+bVfgo=
 github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sapM=
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
 github.com/gabriel-vasile/mimetype v1.4.3/go.mod h1:d8uq/6HKRL6CGdk+aubisF/M5GcPfT7nKyLpA0lbSSk=
