@@ -51,6 +51,26 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			tgRedundancyGroup: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The redundancy group name for this global transit gateway",
+			},
+			tgRedundancyGroupID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier of the redundancy group for this global transit gateway",
+			},
+			tgConnectionCount: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of connections associated with this Transit Gateway",
+			},
+			tgConnectionNeedsAttention: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates if this Transit Gateway has a connection that needs attention (such as cross account approval)",
+			},
 			tgStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -263,6 +283,16 @@ func dataSourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) e
 			d.Set(tgGlobal, tgw.Global)
 			d.Set(tgGreEnhancedRoutePropagation, tgw.GreEnhancedRoutePropagation)
 			d.Set(tgStatus, tgw.Status)
+			if tgw.RedundancyGroup != nil {
+				d.Set(tgRedundancyGroup, *tgw.RedundancyGroup)
+			}
+			if tgw.RedundancyGroupID != nil {
+				d.Set(tgRedundancyGroupID, *tgw.RedundancyGroupID)
+			}
+			if tgw.ConnectionCount != nil {
+				d.Set(tgConnectionCount, int(*tgw.ConnectionCount))
+			}
+			d.Set(tgConnectionNeedsAttention, tgw.ConnectionNeedsAttention)
 
 			if tgw.ResourceGroup != nil {
 				rg := tgw.ResourceGroup
