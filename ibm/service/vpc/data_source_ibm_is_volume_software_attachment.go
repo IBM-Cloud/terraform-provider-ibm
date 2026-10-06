@@ -30,7 +30,7 @@ func DataSourceIBMIsVolumeSoftwareAttachment() *schema.Resource {
 				Required:    true,
 				Description: "The volume identifier.",
 			},
-			"is_volume_software_attachment_id": &schema.Schema{
+			"volume_software_attachment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The volume software attachment identifier.",
@@ -144,7 +144,7 @@ func dataSourceIBMIsVolumeSoftwareAttachmentRead(context context.Context, d *sch
 	getVolumeSoftwareAttachmentOptions := &vpcv1.GetVolumeSoftwareAttachmentOptions{}
 
 	getVolumeSoftwareAttachmentOptions.SetVolumeID(d.Get("volume_id").(string))
-	getVolumeSoftwareAttachmentOptions.SetID(d.Get("is_volume_software_attachment_id").(string))
+	getVolumeSoftwareAttachmentOptions.SetID(d.Get("volume_software_attachment_id").(string))
 
 	volumeSoftwareAttachment, _, err := vpcClient.GetVolumeSoftwareAttachmentWithContext(context, getVolumeSoftwareAttachmentOptions)
 	if err != nil {

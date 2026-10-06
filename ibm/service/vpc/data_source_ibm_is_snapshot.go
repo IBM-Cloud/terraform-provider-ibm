@@ -724,6 +724,18 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 				if err = d.Set("allowed_use", allowedUsed); err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_snapshot", "read", "set-allowed_use").GetDiag()
 				}
+				// software attachments
+				softwareAttachments := []map[string]interface{}{}
+				for _, softwareAttachmentsItem := range snapshot.SoftwareAttachments {
+					softwareAttachmentsItemMap, err := DataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot", "read", "software_attachments-to-map").GetDiag()
+					}
+					softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+				}
+				if err = d.Set("software_attachments", softwareAttachments); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting software_attachments: %s", err), "(Data) ibm_is_snapshot", "read", "set-software_attachments").GetDiag()
+				}
 				accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 				if err != nil {
 					log.Printf(

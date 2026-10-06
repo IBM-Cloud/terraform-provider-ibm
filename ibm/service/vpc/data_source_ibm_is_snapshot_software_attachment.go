@@ -30,7 +30,7 @@ func DataSourceIBMIsSnapshotSoftwareAttachment() *schema.Resource {
 				Required:    true,
 				Description: "The snapshot identifier.",
 			},
-			"is_snapshot_software_attachment_id": &schema.Schema{
+			"snapshot_software_attachment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The snapshot software attachment identifier.",
@@ -144,7 +144,7 @@ func dataSourceIBMIsSnapshotSoftwareAttachmentRead(context context.Context, d *s
 	getSnapshotSoftwareAttachmentOptions := &vpcv1.GetSnapshotSoftwareAttachmentOptions{}
 
 	getSnapshotSoftwareAttachmentOptions.SetSnapshotID(d.Get("snapshot_id").(string))
-	getSnapshotSoftwareAttachmentOptions.SetID(d.Get("is_snapshot_software_attachment_id").(string))
+	getSnapshotSoftwareAttachmentOptions.SetID(d.Get("snapshot_software_attachment_id").(string))
 
 	snapshotSoftwareAttachment, _, err := vpcClient.GetSnapshotSoftwareAttachmentWithContext(context, getSnapshotSoftwareAttachmentOptions)
 	if err != nil {

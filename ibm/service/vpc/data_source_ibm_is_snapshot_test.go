@@ -11,8 +11,12 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMISSnapshotDatasource_basic(t *testing.T) {
@@ -47,6 +51,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.instance"),
 					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.api_version"),
 					// resource.TestCheckResourceAttrSet(snpName, "captured_at"), // Commented as the attribute is optional.
+					resource.TestCheckResourceAttr(snpName, "software_attachments.#", "0"),
 				),
 			},
 		},
@@ -166,6 +171,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.#"),
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.0.plan_crn"),
+					// lookup by name
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.#"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.name"),
+					resource.TestCheckResourceAttr(snpName, "software_attachments.0.resource_type", "snapshot_software_attachment"),
+					// lookup by identifier must return the same software attachments
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.ds_snapshot_id", "software_attachments.#", snpName, "software_attachments.#"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.ds_snapshot_id", "software_attachments.0.id", snpName, "software_attachments.0.id"),
 				),
 			},
 		},
@@ -214,6 +228,9 @@ func testDSCheckIBMISSnapshotConfigWithCatalogOffering(vpcname, subnetname, sshn
 	data "ibm_is_snapshot" "ds_snapshot" {
 		depends_on 	= [ibm_is_snapshot.testacc_snapshot]
 		name 		= "%s"
+	}
+	data "ibm_is_snapshot" "ds_snapshot_id" {
+		identifier 	= ibm_is_snapshot.testacc_snapshot.id
 	}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, versionCrn, planCrn, sname, sname)
 }
@@ -311,4 +328,33 @@ func testDSCheckIBMISSnapshotClonesBasicConfig(vpcname, subnetname, sshname, pub
 		name 		= "%s"
 	}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname, acc.ISZoneName, acc.ISZoneName2, sname)
+}
+
+func TestDataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(t *testing.T) {
+	href := "https://us-south.iaas.cloud.ibm.com/v1/snapshots/r006-7ec86020-1c6e-4889-b3f0-a15f2e50f87e/software_attachments/r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1"
+
+	// Active reference: "deleted" must be left out.
+	model := new(vpcv1.SnapshotSoftwareAttachmentReference)
+	model.Href = core.StringPtr(href)
+	model.ID = core.StringPtr("r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1")
+	model.Name = core.StringPtr("my-software-attachment")
+	model.ResourceType = core.StringPtr("snapshot_software_attachment")
+
+	result, err := vpc.DataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{
+		"href":          href,
+		"id":            "r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1",
+		"name":          "my-software-attachment",
+		"resource_type": "snapshot_software_attachment",
+	}, result)
+
+	// Deleted reference: "deleted" is a single element list with more_info.
+	deletedModel := new(vpcv1.Deleted)
+	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+	model.Deleted = deletedModel
+
+	result, err = vpc.DataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, []map[string]interface{}{{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}}, result["deleted"])
 }

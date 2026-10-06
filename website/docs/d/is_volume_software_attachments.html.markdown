@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a VolumeSoftwareA
 
 ```hcl
 data "ibm_is_volume_software_attachments" "is_volume_software_attachments" {
-	volume_id = ibm_is_volume_software_attachment.is_volume_software_attachment_instance.volume_id
+	volume_id = ibm_is_instance.example.boot_volume.0.volume_id
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_is_volume_software_attachments" "is_volume_software_attachments" {
 
 You can specify the following arguments for this data source.
 
-* `volume_id` - (Required, Forces new resource, String) The volume identifier.
+* `volume_id` - (Required, String) The volume identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 
 ## Attribute Reference
@@ -30,11 +30,11 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the VolumeSoftwareAttachmentCollection.
-* `software_attachments` - (List) The software attachments for the volume.
+* `software_attachments` - (List) The software attachments for the volume. The list is empty if the volume has no software attachments.
 Nested schema for **software_attachments**:
 	* `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user)offering for this volume software attachment. May be absent if`software_attachment.lifecycle_state` is not `stable`.
 	Nested schema for **catalog_offering**:
-		* `plan` - (List) The billing plan for the catalog offering version associated with this volume softwareattachment.If absent, no billing plan is associated with the catalog offering version (free).
+		* `plan` - (List) The billing plan for the catalog offering version associated with this volume software attachment. If absent, no billing plan is associated with the catalog offering version (free).
 		Nested schema for **plan**:
 			* `crn` - (String) The CRN for this[catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version's billing plan.
 			  * Constraints: The maximum length is `512` characters. The minimum length is `17` characters. The value must match regular expression `/^crn:v[0-9]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]*:([a-z]\/[a-z0-9-]+)?:[a-z0-9-]*:[a-z0-9-]*:[a-zA-Z0-9-_\\.\/]*$/`.
@@ -59,7 +59,6 @@ Nested schema for **software_attachments**:
 	* `id` - (String) The unique identifier for this volume software attachment.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 	* `name` - (String) The name for this volume software attachment. The name is unique across all software attachments for the volume.
-	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
 	* `resource_type` - (String) The resource type.
 	  * Constraints: Allowable values are: `volume_software_attachment`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-

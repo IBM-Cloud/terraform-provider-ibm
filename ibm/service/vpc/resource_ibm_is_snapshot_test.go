@@ -12,10 +12,13 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMISSnapshot_basic(t *testing.T) {
@@ -42,6 +45,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
 					resource.TestCheckResourceAttr(
 						"ibm_is_snapshot.testacc_snapshot", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "software_attachments.#", "0"),
 				),
 			},
 			{
@@ -636,4 +641,68 @@ func testAccCheckIBMISSnapshotConfigCRC(copySnapshotName string) string {
 	}
 `, copySnapshotName, acc.ISSnapshotCRN)
 
+}
+
+func TestResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(t *testing.T) {
+	href := "https://us-south.iaas.cloud.ibm.com/v1/snapshots/r006-7ec86020-1c6e-4889-b3f0-a15f2e50f87e/software_attachments/r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1"
+
+	// Active reference: "deleted" must be left out.
+	model := new(vpcv1.SnapshotSoftwareAttachmentReference)
+	model.Href = core.StringPtr(href)
+	model.ID = core.StringPtr("r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1")
+	model.Name = core.StringPtr("my-software-attachment")
+	model.ResourceType = core.StringPtr("snapshot_software_attachment")
+
+	result, err := vpc.ResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{
+		"href":          href,
+		"id":            "r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1",
+		"name":          "my-software-attachment",
+		"resource_type": "snapshot_software_attachment",
+	}, result)
+
+	// Deleted reference: "deleted" is a single element list with more_info.
+	deletedModel := new(vpcv1.Deleted)
+	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+	model.Deleted = deletedModel
+
+	result, err = vpc.ResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, []map[string]interface{}{{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}}, result["deleted"])
+}
+
+// A snapshot of the boot volume of an instance provisioned from a software-licensed
+// catalog offering carries the software attachments of that volume.
+func TestAccIBMISSnapshot_softwareAttachments(t *testing.T) {
+	var snapshot string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.resource_type", "snapshot_software_attachment"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance", "software_attachments.0.id"),
+				),
+			},
+			// software_attachments is computed only, so a second plan must be empty.
+			{
+				Config:   testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
+				PlanOnly: true,
+			},
+		},
+	})
 }

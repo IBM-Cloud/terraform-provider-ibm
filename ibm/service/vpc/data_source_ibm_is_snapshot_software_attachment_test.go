@@ -9,6 +9,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -22,22 +23,28 @@ import (
 )
 
 func TestAccIBMIsSnapshotSoftwareAttachmentDataSourceBasic(t *testing.T) {
-	snapshotSoftwareAttachmentSnapshotID := fmt.Sprintf("tf_snapshot_id_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfigBasic(snapshotSoftwareAttachmentSnapshotID),
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfigBasic(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "is_snapshot_software_attachment_id"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.testacc_snapshot", "id"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance", "software_attachments.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "resource_type"),
+					resource.TestCheckResourceAttr("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "resource_type", "snapshot_software_attachment"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "catalog_offering.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "catalog_offering.0.version.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "entitlement.#"),
 				),
 			},
 		},
@@ -45,56 +52,65 @@ func TestAccIBMIsSnapshotSoftwareAttachmentDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMIsSnapshotSoftwareAttachmentDataSourceAllArgs(t *testing.T) {
-	snapshotSoftwareAttachmentSnapshotID := fmt.Sprintf("tf_snapshot_id_%d", acctest.RandIntRange(10, 100))
-	snapshotSoftwareAttachmentName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotSoftwareAttachmentName := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfig(snapshotSoftwareAttachmentSnapshotID, snapshotSoftwareAttachmentName),
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfig(vpcname, subnetname, sshname, instanceName, snapshotSoftwareAttachmentName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "is_snapshot_software_attachment_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "catalog_offering.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "entitlement.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "resource_type"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href", "ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at", "ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at"),
+					resource.TestCheckResourceAttr("data.ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", snapshotSoftwareAttachmentName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfigBasic(snapshotSoftwareAttachmentSnapshotID string) string {
-	return fmt.Sprintf(`
-		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id = "%s"
-		}
-
-		data "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.snapshot_id
-			is_snapshot_software_attachment_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.is_snapshot_software_attachment_id
-		}
-	`, snapshotSoftwareAttachmentSnapshotID)
+func TestAccIBMIsSnapshotSoftwareAttachmentDataSourceNotFound(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: `
+					data "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
+						snapshot_id                     = "r006-00000000-0000-0000-0000-000000000000"
+						snapshot_software_attachment_id = "r006-00000000-0000-0000-0000-000000000001"
+					}
+				`,
+				ExpectError: regexp.MustCompile("GetSnapshotSoftwareAttachmentWithContext failed"),
+			},
+		},
+	})
 }
 
-func testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfig(snapshotSoftwareAttachmentSnapshotID string, snapshotSoftwareAttachmentName string) string {
-	return fmt.Sprintf(`
-		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id = "%s"
-			name = "%s"
-		}
-
+func testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
+	return testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
 		data "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.snapshot_id
-			is_snapshot_software_attachment_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.is_snapshot_software_attachment_id
+			snapshot_id                     = ibm_is_snapshot.testacc_snapshot.id
+			snapshot_software_attachment_id = data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance.software_attachments.0.id
 		}
-	`, snapshotSoftwareAttachmentSnapshotID, snapshotSoftwareAttachmentName)
+	`
+}
+
+func testAccCheckIBMIsSnapshotSoftwareAttachmentDataSourceConfig(vpcname, subnetname, sshname, instanceName, snapshotSoftwareAttachmentName string) string {
+	return testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, snapshotSoftwareAttachmentName) + `
+		data "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
+			snapshot_id                     = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.snapshot_id
+			snapshot_software_attachment_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.snapshot_software_attachment_id
+		}
+	`
 }
 
 func TestDataSourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentCatalogOfferingToMap(t *testing.T) {

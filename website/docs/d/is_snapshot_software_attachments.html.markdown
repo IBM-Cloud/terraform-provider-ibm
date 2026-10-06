@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a SnapshotSoftwar
 
 ```hcl
 data "ibm_is_snapshot_software_attachments" "is_snapshot_software_attachments" {
-	snapshot_id = ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance.snapshot_id
+	snapshot_id = ibm_is_snapshot.example.id
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_is_snapshot_software_attachments" "is_snapshot_software_attachments" {
 
 You can specify the following arguments for this data source.
 
-* `snapshot_id` - (Required, Forces new resource, String) The snapshot identifier.
+* `snapshot_id` - (Required, String) The snapshot identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 
 ## Attribute Reference
@@ -30,11 +30,11 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the SnapshotSoftwareAttachmentCollection.
-* `software_attachments` - (List) The software attachments for the snapshot.
+* `software_attachments` - (List) The software attachments for the snapshot. The list is empty if the snapshot has no software attachments.
 Nested schema for **software_attachments**:
 	* `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user)offering for this snapshot software attachment. May be absent if`software_attachment.lifecycle_state` is not `stable`.
 	Nested schema for **catalog_offering**:
-		* `plan` - (List) The billing plan for the catalog offering version associated with this snapshot softwareattachment.If absent, no billing plan is associated with the catalog offering version (free).
+		* `plan` - (List) The billing plan for the catalog offering version associated with this snapshot software attachment. If absent, no billing plan is associated with the catalog offering version (free).
 		Nested schema for **plan**:
 			* `crn` - (String) The CRN for this[catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version's billing plan.
 			  * Constraints: The maximum length is `512` characters. The minimum length is `17` characters. The value must match regular expression `/^crn:v[0-9]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]*:([a-z]\/[a-z0-9-]+)?:[a-z0-9-]*:[a-z0-9-]*:[a-zA-Z0-9-_\\.\/]*$/`.
@@ -59,7 +59,6 @@ Nested schema for **software_attachments**:
 	* `id` - (String) The unique identifier for this snapshot software attachment.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 	* `name` - (String) The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.
-	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
 	* `resource_type` - (String) The resource type.
 	  * Constraints: Allowable values are: `snapshot_software_attachment`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-

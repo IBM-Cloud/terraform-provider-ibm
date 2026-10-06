@@ -474,7 +474,7 @@ func ResourceIBMSnapshot() *schema.Resource {
 					},
 				},
 			},
-			// software attachements
+			// software attachments
 			"software_attachments": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -483,7 +483,6 @@ func ResourceIBMSnapshot() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
 							Elem: &schema.Resource{

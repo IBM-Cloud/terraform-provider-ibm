@@ -969,7 +969,8 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 	for _, softwareAttachmentsItem := range volumesItem.SoftwareAttachments {
 		softwareAttachmentsItemMap, err := DataSourceIBMIsVolumesVolumeSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
 		if err != nil {
-			return volumesMap
+			log.Printf("[ERROR] Error on reading software attachments of volume (%s): %s", *volumesItem.ID, err)
+			continue
 		}
 		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
 	}

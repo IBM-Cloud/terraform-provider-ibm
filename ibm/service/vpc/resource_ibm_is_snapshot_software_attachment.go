@@ -37,9 +37,17 @@ func ResourceIBMIsSnapshotSoftwareAttachment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_snapshot_software_attachment", "snapshot_id"),
 				Description:  "The snapshot identifier.",
 			},
+			"snapshot_software_attachment_id": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_snapshot_software_attachment", "snapshot_software_attachment_id"),
+				Description:  "The unique identifier for the snapshot software attachment to manage. The attachment is created automatically when the snapshot is taken from a volume that has software attachments (for example, the boot volume of an instance provisioned from a software-licensed catalog offering); this resource manages the mutable properties (such as the name) of that existing attachment.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_snapshot_software_attachment", "name"),
 				Description:  "The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.",
 			},
@@ -51,7 +59,6 @@ func ResourceIBMIsSnapshotSoftwareAttachment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"plan": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "The billing plan for the catalog offering version associated with this snapshot softwareattachment.If absent, no billing plan is associated with the catalog offering version (free).",
 							Elem: &schema.Resource{
@@ -133,11 +140,6 @@ func ResourceIBMIsSnapshotSoftwareAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The resource type.",
 			},
-			"is_snapshot_software_attachment_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier for this snapshot software attachment.",
-			},
 		},
 	}
 }
@@ -147,6 +149,15 @@ func ResourceIBMIsSnapshotSoftwareAttachmentValidator() *validate.ResourceValida
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "snapshot_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[-0-9a-z_]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             64,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "snapshot_software_attachment_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -177,23 +188,31 @@ func resourceIBMIsSnapshotSoftwareAttachmentCreate(context context.Context, d *s
 		return tfErr.GetDiag()
 	}
 
-	updateSnapshotSoftwareAttachmentOptions := &vpcv1.UpdateSnapshotSoftwareAttachmentOptions{}
+	// A software attachment cannot be created through the API. It is created
+	// automatically when the snapshot is taken from a volume that has software
+	// attachments.
+	// This resource adopts an existing attachment identified by
+	// (snapshot_id, snapshot_software_attachment_id) and manages its mutable
+	// properties (currently only the name).
+	snapshotID := d.Get("snapshot_id").(string)
+	attachmentID := d.Get("snapshot_software_attachment_id").(string)
 
-	updateSnapshotSoftwareAttachmentOptions.SetSnapshotID(d.Get("snapshot_id").(string))
-	snapshotSoftwareAttachmentPatch := &vpcv1.SnapshotSoftwareAttachmentPatch{}
 	if _, ok := d.GetOk("name"); ok {
+		updateSnapshotSoftwareAttachmentOptions := &vpcv1.UpdateSnapshotSoftwareAttachmentOptions{}
+		updateSnapshotSoftwareAttachmentOptions.SetSnapshotID(snapshotID)
+		updateSnapshotSoftwareAttachmentOptions.SetID(attachmentID)
+		snapshotSoftwareAttachmentPatch := &vpcv1.SnapshotSoftwareAttachmentPatch{}
 		snapshotSoftwareAttachmentPatch.Name = core.StringPtr(d.Get("name").(string))
-	}
-	snapshotSoftwareAttachmentPatchAsPatch := ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentPatchAsPatch(snapshotSoftwareAttachmentPatch, d)
-	updateSnapshotSoftwareAttachmentOptions.SnapshotSoftwareAttachmentPatch = snapshotSoftwareAttachmentPatchAsPatch
-	snapshotSoftwareAttachment, _, err := vpcClient.UpdateSnapshotSoftwareAttachmentWithContext(context, updateSnapshotSoftwareAttachmentOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSnapshotSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_snapshot_software_attachment", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		updateSnapshotSoftwareAttachmentOptions.SnapshotSoftwareAttachmentPatch = ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentPatchAsPatch(snapshotSoftwareAttachmentPatch, d)
+		_, _, err = vpcClient.UpdateSnapshotSoftwareAttachmentWithContext(context, updateSnapshotSoftwareAttachmentOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSnapshotSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_snapshot_software_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *updateSnapshotSoftwareAttachmentOptions.SnapshotID, *snapshotSoftwareAttachment.ID))
+	d.SetId(fmt.Sprintf("%s/%s", snapshotID, attachmentID))
 
 	return resourceIBMIsSnapshotSoftwareAttachmentRead(context, d, meta)
 }
@@ -225,6 +244,11 @@ func resourceIBMIsSnapshotSoftwareAttachmentRead(context context.Context, d *sch
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSnapshotSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_snapshot_software_attachment", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("snapshot_id", parts[0]); err != nil {
+		err = fmt.Errorf("Error setting snapshot_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_software_attachment", "read", "set-snapshot_id").GetDiag()
 	}
 
 	if !core.IsNil(snapshotSoftwareAttachment.Name) {
@@ -265,9 +289,9 @@ func resourceIBMIsSnapshotSoftwareAttachmentRead(context context.Context, d *sch
 		err = fmt.Errorf("Error setting resource_type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_software_attachment", "read", "set-resource_type").GetDiag()
 	}
-	if err = d.Set("is_snapshot_software_attachment_id", snapshotSoftwareAttachment.ID); err != nil {
-		err = fmt.Errorf("Error setting is_snapshot_software_attachment_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_software_attachment", "read", "set-is_snapshot_software_attachment_id").GetDiag()
+	if err = d.Set("snapshot_software_attachment_id", snapshotSoftwareAttachment.ID); err != nil {
+		err = fmt.Errorf("Error setting snapshot_software_attachment_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_software_attachment", "read", "set-snapshot_software_attachment_id").GetDiag()
 	}
 
 	return nil
@@ -323,7 +347,11 @@ func resourceIBMIsSnapshotSoftwareAttachmentUpdate(context context.Context, d *s
 }
 
 func resourceIBMIsSnapshotSoftwareAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// A software attachment cannot be deleted through the API; its lifecycle is
+	// bound to the snapshot it belongs to. Destroying this resource only removes
+	// it from Terraform state and leaves the attachment (and any name set on it)
+	// in place on the snapshot.
+	log.Printf("[INFO] The snapshot software attachment %q is not deleted from the snapshot; it is only removed from Terraform state.", d.Id())
 	d.SetId("")
 	return nil
 }

@@ -37,9 +37,17 @@ func ResourceIBMIsVolumeSoftwareAttachment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_volume_software_attachment", "volume_id"),
 				Description:  "The volume identifier.",
 			},
+			"volume_software_attachment_id": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_volume_software_attachment", "volume_software_attachment_id"),
+				Description:  "The unique identifier for the volume software attachment to manage. The attachment is created automatically when the volume is created from a software-licensed source (for example, the boot volume of an instance provisioned from a software-licensed catalog offering, or a volume restored from a snapshot of such a volume); this resource manages the mutable properties (such as the name) of that existing attachment.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_volume_software_attachment", "name"),
 				Description:  "The name for this volume software attachment. The name is unique across all software attachments for the volume.",
 			},
@@ -51,7 +59,6 @@ func ResourceIBMIsVolumeSoftwareAttachment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"plan": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "The billing plan for the catalog offering version associated with this volume softwareattachment.If absent, no billing plan is associated with the catalog offering version (free).",
 							Elem: &schema.Resource{
@@ -133,11 +140,6 @@ func ResourceIBMIsVolumeSoftwareAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The resource type.",
 			},
-			"is_volume_software_attachment_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier for this volume software attachment.",
-			},
 		},
 	}
 }
@@ -147,6 +149,15 @@ func ResourceIBMIsVolumeSoftwareAttachmentValidator() *validate.ResourceValidato
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "volume_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[-0-9a-z_]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             64,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "volume_software_attachment_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -177,24 +188,30 @@ func resourceIBMIsVolumeSoftwareAttachmentCreate(context context.Context, d *sch
 		return tfErr.GetDiag()
 	}
 
-	updateVolumeSoftwareAttachmentOptions := &vpcv1.UpdateVolumeSoftwareAttachmentOptions{}
-	volumeSoftwareAttachmentPatch := &vpcv1.VolumeSoftwareAttachmentPatch{}
-	updateVolumeSoftwareAttachmentOptions.SetVolumeID(d.Get("volume_id").(string))
+	// A software attachment cannot be created through the API. It is created
+	// automatically when the volume is created from a software-licensed source.
+	// This resource adopts an existing attachment identified by
+	// (volume_id, volume_software_attachment_id) and manages its mutable
+	// properties (currently only the name).
+	volumeID := d.Get("volume_id").(string)
+	attachmentID := d.Get("volume_software_attachment_id").(string)
 
 	if _, ok := d.GetOk("name"); ok {
+		updateVolumeSoftwareAttachmentOptions := &vpcv1.UpdateVolumeSoftwareAttachmentOptions{}
+		updateVolumeSoftwareAttachmentOptions.SetVolumeID(volumeID)
+		updateVolumeSoftwareAttachmentOptions.SetID(attachmentID)
+		volumeSoftwareAttachmentPatch := &vpcv1.VolumeSoftwareAttachmentPatch{}
 		volumeSoftwareAttachmentPatch.Name = core.StringPtr(d.Get("name").(string))
+		updateVolumeSoftwareAttachmentOptions.VolumeSoftwareAttachmentPatch = ResourceIBMIsVolumeSoftwareAttachmentVolumeSoftwareAttachmentPatchAsPatch(volumeSoftwareAttachmentPatch, d)
+		_, _, err = vpcClient.UpdateVolumeSoftwareAttachmentWithContext(context, updateVolumeSoftwareAttachmentOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_volume_software_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
-	volumeSoftwareAttachmentPatchAsPatch := ResourceIBMIsVolumeSoftwareAttachmentVolumeSoftwareAttachmentPatchAsPatch(volumeSoftwareAttachmentPatch, d)
-	updateVolumeSoftwareAttachmentOptions.VolumeSoftwareAttachmentPatch = volumeSoftwareAttachmentPatchAsPatch
-	volumeSoftwareAttachment, _, err := vpcClient.UpdateVolumeSoftwareAttachmentWithContext(context, updateVolumeSoftwareAttachmentOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVolumeSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_volume_software_attachment", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	d.SetId(fmt.Sprintf("%s/%s", *updateVolumeSoftwareAttachmentOptions.VolumeID, *volumeSoftwareAttachment.ID))
+	d.SetId(fmt.Sprintf("%s/%s", volumeID, attachmentID))
 
 	return resourceIBMIsVolumeSoftwareAttachmentRead(context, d, meta)
 }
@@ -226,6 +243,11 @@ func resourceIBMIsVolumeSoftwareAttachmentRead(context context.Context, d *schem
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_volume_software_attachment", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("volume_id", parts[0]); err != nil {
+		err = fmt.Errorf("Error setting volume_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_software_attachment", "read", "set-volume_id").GetDiag()
 	}
 
 	if !core.IsNil(volumeSoftwareAttachment.Name) {
@@ -266,9 +288,9 @@ func resourceIBMIsVolumeSoftwareAttachmentRead(context context.Context, d *schem
 		err = fmt.Errorf("Error setting resource_type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_software_attachment", "read", "set-resource_type").GetDiag()
 	}
-	if err = d.Set("is_volume_software_attachment_id", volumeSoftwareAttachment.ID); err != nil {
-		err = fmt.Errorf("Error setting is_volume_software_attachment_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_software_attachment", "read", "set-is_volume_software_attachment_id").GetDiag()
+	if err = d.Set("volume_software_attachment_id", volumeSoftwareAttachment.ID); err != nil {
+		err = fmt.Errorf("Error setting volume_software_attachment_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_software_attachment", "read", "set-volume_software_attachment_id").GetDiag()
 	}
 
 	return nil
@@ -324,7 +346,11 @@ func resourceIBMIsVolumeSoftwareAttachmentUpdate(context context.Context, d *sch
 }
 
 func resourceIBMIsVolumeSoftwareAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// A software attachment cannot be deleted through the API; its lifecycle is
+	// bound to the volume it belongs to. Destroying this resource only removes
+	// it from Terraform state and leaves the attachment (and any name set on it)
+	// in place on the volume.
+	log.Printf("[INFO] The volume software attachment %q is not deleted from the volume; it is only removed from Terraform state.", d.Id())
 	d.SetId("")
 	return nil
 }
