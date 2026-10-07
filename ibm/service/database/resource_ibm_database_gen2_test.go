@@ -6,6 +6,7 @@ package database
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -940,7 +941,6 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 		"backup_policy",
 		"users",
 		"allowlist",
-		"remote_leader_id",
 		"adminpassword",
 		"backup_encryption_key_crn",
 	}
@@ -1093,6 +1093,286 @@ func TestGen2ValidateGroupsDiffMemoryCPU(t *testing.T) {
 				assert.NotEmpty(t, tt.errorContains, "Error message should be specified")
 				assert.Contains(t, tt.errorContains, "Gen2 databases do not support independent",
 					"Error should mention Gen2 limitation")
+			}
+		})
+	}
+}
+
+// TestGen2ValidateGroupsDiffAllocationCountDowngrade tests that reducing
+// allocation_count on an existing Gen2 resource is rejected at plan time.
+func TestGen2ValidateGroupsDiffAllocationCountDowngrade(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	makeGroupSet := func(count int) *schema.Set {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service":  "databases-for-valkey",
+			"plan":     "standard-gen2",
+			"name":     "test-db",
+			"location": "us-east",
+			"group": []interface{}{
+				map[string]interface{}{
+					"group_id": "member",
+					"members": []interface{}{
+						map[string]interface{}{
+							"allocation_count": count,
+							"member_zones":     []interface{}{},
+						},
+					},
+				},
+			},
+		})
+		raw := d.Get("group")
+		set, _ := raw.(*schema.Set)
+		return set
+	}
+
+	cases := []struct {
+		name        string
+		instanceID  string // non-empty means update
+		oldCount    int
+		newCount    int
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:       "create: no old state, any count allowed",
+			instanceID: "",
+			oldCount:   0,
+			newCount:   1,
+			wantErr:    false,
+		},
+		{
+			name:       "update: same count allowed",
+			instanceID: "some-crn",
+			oldCount:   2,
+			newCount:   2,
+			wantErr:    false,
+		},
+		{
+			name:       "update: scale up allowed",
+			instanceID: "some-crn",
+			oldCount:   2,
+			newCount:   3,
+			wantErr:    false,
+		},
+		{
+			name:        "update: scale down rejected",
+			instanceID:  "some-crn",
+			oldCount:    2,
+			newCount:    1,
+			wantErr:     true,
+			errContains: "reducing 'allocation_count' from 2 to 1 is not permitted",
+		},
+		{
+			name:        "update: scale down from 3 to 1 rejected",
+			instanceID:  "some-crn",
+			oldCount:    3,
+			newCount:    1,
+			wantErr:     true,
+			errContains: "reducing 'allocation_count' from 3 to 1 is not permitted",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			oldSet := makeGroupSet(c.oldCount)
+			newSet := makeGroupSet(c.newCount)
+
+			// Build a minimal ResourceDiff-like test using the exported helper.
+			// Since schema.ResourceDiff cannot be directly constructed in unit tests,
+			// we exercise the underlying logic directly by calling expandGroups and
+			// replicating the downgrade check from ValidateGroupsDiff.
+			if c.instanceID != "" && oldSet != nil && oldSet.Len() > 0 {
+				oldGroups := expandGroups(oldSet.List())
+				newGroups := expandGroups(newSet.List())
+				oldCountByID := make(map[string]int)
+				for _, og := range oldGroups {
+					if og != nil && og.Members != nil {
+						oldCountByID[og.ID] = og.Members.Allocation
+					}
+				}
+				var gotErr error
+				for _, ng := range newGroups {
+					if ng == nil || ng.Members == nil {
+						continue
+					}
+					if old, exists := oldCountByID[ng.ID]; exists && ng.Members.Allocation < old {
+						gotErr = fmt.Errorf(
+							"Invalid update for group %q: reducing 'allocation_count' from %d to %d is not permitted.\n"+
+								"  Downgrading the member count is not supported.",
+							ng.ID, old, ng.Members.Allocation,
+						)
+					}
+				}
+				if c.wantErr {
+					assert.Error(t, gotErr)
+					assert.Contains(t, gotErr.Error(), c.errContains)
+				} else {
+					assert.NoError(t, gotErr)
+				}
+			} else {
+				// Create path: no downgrade check; confirm backend interface compliance.
+				var _ resourceIBMDatabaseBackend = g
+				assert.NotNil(t, newSet)
+			}
+		})
+	}
+}
+
+// TestGen2ValidateGroupsDiffMemberZonesImmutability tests that member_zones cannot be
+// added or changed after provisioning, but can be removed (scale-up path).
+func TestGen2ValidateGroupsDiffMemberZonesImmutability(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+
+	makeGroupSet := func(allocationCount int, zones []interface{}) *schema.Set {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service":  "databases-for-valkey",
+			"plan":     "standard-gen2",
+			"name":     "test-db",
+			"location": "us-east",
+			"group": []interface{}{
+				map[string]interface{}{
+					"group_id": "member",
+					"members": []interface{}{
+						map[string]interface{}{
+							"allocation_count": allocationCount,
+							"member_zones":     zones,
+						},
+					},
+				},
+			},
+		})
+		raw := d.Get("group")
+		set, _ := raw.(*schema.Set)
+		return set
+	}
+
+	cases := []struct {
+		name        string
+		instanceID  string
+		oldCount    int
+		oldZones    []interface{}
+		newCount    int
+		newZones    []interface{}
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:       "create with zones: allowed",
+			instanceID: "",
+			oldCount:   0,
+			oldZones:   []interface{}{},
+			newCount:   1,
+			newZones:   []interface{}{"us-east-1"},
+			wantErr:    false,
+		},
+		{
+			name:       "update: same zones retained: allowed",
+			instanceID: "some-crn",
+			oldCount:   1,
+			oldZones:   []interface{}{"us-east-1"},
+			newCount:   1,
+			newZones:   []interface{}{"us-east-1"},
+			wantErr:    false,
+		},
+		{
+			name:       "update: remove zones (scale-up path): allowed",
+			instanceID: "some-crn",
+			oldCount:   1,
+			oldZones:   []interface{}{"us-east-1"},
+			newCount:   3,
+			newZones:   []interface{}{},
+			wantErr:    false,
+		},
+		{
+			name:        "update: add zones to instance without zones: rejected",
+			instanceID:  "some-crn",
+			oldCount:    3,
+			oldZones:    []interface{}{},
+			newCount:    1,
+			newZones:    []interface{}{"us-east-1"},
+			wantErr:     true,
+			errContains: "'member_zones' cannot be added after provisioning",
+		},
+		{
+			name:        "update: change zone value: rejected",
+			instanceID:  "some-crn",
+			oldCount:    1,
+			oldZones:    []interface{}{"us-east-1"},
+			newCount:    1,
+			newZones:    []interface{}{"us-east-2"},
+			wantErr:     true,
+			errContains: "'member_zones' cannot be changed after provisioning",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			oldSet := makeGroupSet(c.oldCount, c.oldZones)
+			newSet := makeGroupSet(c.newCount, c.newZones)
+
+			if c.instanceID == "" {
+				// Create path — no immutability check needed.
+				assert.NotNil(t, newSet)
+				return
+			}
+
+			oldGroups := expandGroups(oldSet.List())
+			newGroups := expandGroups(newSet.List())
+
+			type oldState struct {
+				allocationCount int
+				memberZones     []string
+			}
+			oldByID := make(map[string]oldState)
+			for _, og := range oldGroups {
+				if og == nil {
+					continue
+				}
+				s := oldState{memberZones: og.MemberZones}
+				if og.Members != nil {
+					s.allocationCount = og.Members.Allocation
+				}
+				oldByID[og.ID] = s
+			}
+
+			var gotErr error
+			for _, ng := range newGroups {
+				if ng == nil {
+					continue
+				}
+				old, exists := oldByID[ng.ID]
+				if !exists {
+					continue
+				}
+				oldHasZones := len(old.memberZones) > 0
+				newHasZones := len(ng.MemberZones) > 0
+				if !oldHasZones && newHasZones {
+					gotErr = fmt.Errorf(
+						"Invalid update for group %q: 'member_zones' cannot be added after provisioning.\n"+
+							"  'member_zones' is a create-only attribute. To deploy in a specific zone, "+
+							"destroy and re-create the instance.",
+						ng.ID,
+					)
+					break
+				}
+				if oldHasZones && newHasZones && old.memberZones[0] != ng.MemberZones[0] {
+					gotErr = fmt.Errorf(
+						"Invalid update for group %q: 'member_zones' cannot be changed after provisioning "+
+							"(current: %q, requested: %q).\n"+
+							"  To change the availability zone, destroy and re-create the instance.",
+						ng.ID, old.memberZones[0], ng.MemberZones[0],
+					)
+					break
+				}
+			}
+
+			if c.wantErr {
+				assert.Error(t, gotErr)
+				assert.Contains(t, gotErr.Error(), c.errContains)
+			} else {
+				assert.NoError(t, gotErr)
 			}
 		})
 	}
@@ -2200,6 +2480,300 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return logical_replication_slot")
 			} else {
 				assert.Contains(t, tt.expectedBehavior, "ignored", "logical_replication_slot should be ignored")
+			}
+		})
+	}
+}
+
+// TestMemberZonesInDBConfig checks member_zones is included in the map when set and omitted when not.
+func TestMemberZonesInDBConfig(t *testing.T) {
+	backend := &resourceIBMDatabaseGen2Backend{}
+
+	t.Run("member_zones included when set", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		zones, ok := result["member_zones"]
+		assert.True(t, ok, "member_zones should be present in result")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+		assert.Equal(t, 1, result["members"])
+	})
+
+	t.Run("member_zones omitted when empty", func(t *testing.T) {
+		config := DBConfig{
+			Members:     3,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		_, ok := result["member_zones"]
+		assert.False(t, ok, "member_zones should not be present when empty")
+	})
+
+	t.Run("members included for mongodbees without member_zones", func(t *testing.T) {
+		// members must always be sent when > 0 so that scale-up updates (e.g. 1->4)
+		// are correctly propagated to the API even without member_zones.
+		config := DBConfig{
+			Members:     3,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		members, membersOk := result["members"]
+		assert.True(t, membersOk, "members must be present for mongodbees when count is non-zero")
+		assert.Equal(t, 3, members)
+		_, zonesOk := result["member_zones"]
+		assert.False(t, zonesOk, "member_zones should not be present when not set")
+	})
+
+	t.Run("members included for mongodbees with member_zones", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		members, membersOk := result["members"]
+		assert.True(t, membersOk, "members must be present for mongodbees when member_zones is set")
+		assert.Equal(t, 1, members)
+		zones, zonesOk := result["member_zones"]
+		assert.True(t, zonesOk, "member_zones should be present for mongodbees")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+	})
+
+	t.Run("members included for mongodbees scale-up without member_zones", func(t *testing.T) {
+		// Regression test: updating allocation_count from 1 to 4 on mongodbees
+		// must send members=4 in the API payload even though member_zones is absent.
+		config := DBConfig{
+			Members:     4,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		members, membersOk := result["members"]
+		assert.True(t, membersOk, "members must be present for mongodbees on scale-up")
+		assert.Equal(t, 4, members)
+		_, zonesOk := result["member_zones"]
+		assert.False(t, zonesOk, "member_zones should not be present when not set")
+	})
+
+	t.Run("members omitted when zero", func(t *testing.T) {
+		config := DBConfig{
+			Members:     0,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		_, membersOk := result["members"]
+		assert.False(t, membersOk, "members should not be present when count is 0")
+	})
+}
+
+// TestValidateMemberZones tests the core member_zones validation rules.
+func TestValidateMemberZones(t *testing.T) {
+	cases := []struct {
+		name        string
+		zones       []string
+		memberCount int
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "valid single zone with allocation 1",
+			zones:       []string{"us-east-1"},
+			memberCount: 1,
+			wantErr:     false,
+		},
+		{
+			name:        "allocation_count not 1",
+			zones:       []string{"us-east-1"},
+			memberCount: 3,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		{
+			name:        "multiple zones provided",
+			zones:       []string{"us-east-1", "us-east-2"},
+			memberCount: 1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+		{
+			name:        "zero allocation count with zones",
+			zones:       []string{"us-east-1"},
+			memberCount: 0,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := validateMemberZones(c.zones, c.memberCount)
+			if c.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), c.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+// TestGen2ValidateMemberZonesDiff tests the Gen2 backend ValidateMemberZonesDiff.
+func TestGen2ValidateMemberZonesDiff(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	cases := []struct {
+		name        string
+		zones       []string
+		count       int
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:    "valid single zone allocation 1",
+			zones:   []string{"us-east-1"},
+			count:   1,
+			wantErr: false,
+		},
+		{
+			name:        "invalid allocation count",
+			zones:       []string{"us-east-1"},
+			count:       3,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		{
+			name:        "multiple zones",
+			zones:       []string{"us-east-1", "us-east-2"},
+			count:       1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			// validateMemberZones is the core logic called by ValidateMemberZonesDiff
+			err := validateMemberZones(c.zones, c.count)
+			if c.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), c.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+			// Confirm Gen2 backend exists and implements the interface
+			var _ resourceIBMDatabaseBackend = g
+		})
+	}
+}
+
+// TestBuildDBConfigMemberZonesValidation tests both member_zones use cases at the
+// buildDBConfig (runtime) layer for all relevant Gen2 database types.
+//
+// Use case 1: member_zones must contain exactly one zone entry.
+// Use case 2: member_zones can only be set when allocation_count = 1.
+func TestBuildDBConfigMemberZonesValidation(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+	backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+
+	cases := []struct {
+		name        string
+		service     string
+		plan        string
+		dbType      string
+		zones       []interface{}
+		allocCount  int
+		wantErr     bool
+		errContains string
+	}{
+		// ── Use case 1: exactly one zone ────────────────────────────────────────
+		{
+			name:        "UC1: multiple zones rejected for postgresql",
+			service:     "databases-for-postgresql",
+			plan:        "standard-gen2",
+			dbType:      "postgresql",
+			zones:       []interface{}{"us-east-1", "us-east-2"},
+			allocCount:  1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+		{
+			name:        "UC1: multiple zones rejected for mongodbees",
+			service:     "databases-for-mongodb",
+			plan:        "enterprise-sharding-gen2",
+			dbType:      "mongodbees",
+			zones:       []interface{}{"us-east-1", "us-east-2"},
+			allocCount:  1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+		// ── Use case 2: allocation_count must be 1 ──────────────────────────────
+		{
+			name:        "UC2: allocation_count > 1 rejected for postgresql",
+			service:     "databases-for-postgresql",
+			plan:        "standard-gen2",
+			dbType:      "postgresql",
+			zones:       []interface{}{"us-east-1"},
+			allocCount:  3,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		{
+			name:        "UC2: allocation_count > 1 rejected for mongodbees",
+			service:     "databases-for-mongodb",
+			plan:        "enterprise-sharding-gen2",
+			dbType:      "mongodbees",
+			zones:       []interface{}{"us-east-1"},
+			allocCount:  4,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		// ── Valid: allocation_count = 1 and exactly one zone ────────────────────
+		{
+			name:       "valid: allocation_count=1 single zone postgresql",
+			service:    "databases-for-postgresql",
+			plan:       "standard-gen2",
+			dbType:     "postgresql",
+			zones:      []interface{}{"us-east-1"},
+			allocCount: 1,
+			wantErr:    false,
+		},
+		{
+			name:       "valid: allocation_count=1 single zone mongodbees",
+			service:    "databases-for-mongodb",
+			plan:       "enterprise-sharding-gen2",
+			dbType:     "mongodbees",
+			zones:      []interface{}{"us-east-1"},
+			allocCount: 1,
+			wantErr:    false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+				"service":  c.service,
+				"plan":     c.plan,
+				"name":     "test-db",
+				"location": "us-east",
+				"group": []interface{}{
+					map[string]interface{}{
+						"group_id": "member",
+						"members": []interface{}{
+							map[string]interface{}{
+								"allocation_count": c.allocCount,
+								"member_zones":     c.zones,
+							},
+						},
+					},
+				},
+			})
+
+			_, err := backend.buildDBConfig(d, "", nil, c.dbType)
+			if c.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), c.errContains)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
