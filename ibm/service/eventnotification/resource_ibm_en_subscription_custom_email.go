@@ -97,7 +97,7 @@ func ResourceIBMEnCustomEmailSubscription() *schema.Resource {
 						},
 						"invited": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Computed:    true,
 							Description: "The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
