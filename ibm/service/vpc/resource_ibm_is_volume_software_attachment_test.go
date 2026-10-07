@@ -6,6 +6,7 @@ package vpc_test
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -38,13 +39,15 @@ func TestAccIBMIsVolumeSoftwareAttachmentBasic(t *testing.T) {
 				Config: testAccCheckIBMIsVolumeSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsVolumeSoftwareAttachmentExists("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", conf),
-					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_id", "ibm_is_instance.testacc_instance", "boot_volume.0.volume_id"),
-					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_software_attachment_id", "data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_id", "ibm_is_instance.test_instance", "boot_volume.0.volume_id"),
+					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_software_attachment_id", "data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.id"),
 					// name is not set in config; it must be read back from the API (Optional + Computed).
-					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "name", "data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.name"),
+					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "name", "data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.name"),
 					resource.TestCheckResourceAttrSet("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttr("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "resource_type", "volume_software_attachment"),
+					// ibm_is_volume and ibm_is_volume_software_attachments must return the same attachment.
+					resource.TestCheckResourceAttrPair("data.ibm_is_volume.test_volume", "software_attachments.0.id", "data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.id"),
 				),
 			},
 			// Re-applying the same config must not produce a diff for the computed name.
@@ -74,7 +77,7 @@ func TestAccIBMIsVolumeSoftwareAttachmentAllArgs(t *testing.T) {
 				Config: testAccCheckIBMIsVolumeSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsVolumeSoftwareAttachmentExists("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", conf),
-					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_id", "ibm_is_instance.testacc_instance", "boot_volume.0.volume_id"),
+					resource.TestCheckResourceAttrPair("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "volume_id", "ibm_is_instance.test_instance", "boot_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", "name", name),
 					testAccCheckIBMIsVolumeSoftwareAttachmentRemoteName("ibm_is_volume_software_attachment.is_volume_software_attachment_instance", name),
 				),
@@ -129,23 +132,82 @@ func TestAccIBMIsVolumeSoftwareAttachmentInvalidName(t *testing.T) {
 	})
 }
 
-// testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig provisions an instance from a
-// software-licensed catalog offering. The boot volume of that instance carries a
-// volume software attachment, which the ibm_is_volume_software_attachment resource
-// then adopts and manages.
-func testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
-	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
-		data "ibm_is_volume_software_attachments" "is_volume_software_attachments_instance" {
-			volume_id = ibm_is_instance.testacc_instance.boot_volume.0.volume_id
+// testAccCheckIBMIsSoftwareAttachmentBaseConfig provisions an instance from a
+// software-licensed catalog offering and takes a snapshot of its boot volume. The
+// boot volume and the snapshot both carry software attachments, which the
+// ibm_is_volume_software_attachment and ibm_is_snapshot_software_attachment
+// resources then adopt and manage.
+func testAccCheckIBMIsSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
 		}
-	`
+
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s-snap"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+
+		data "ibm_is_snapshot" "test_snapshot" {
+			identifier = ibm_is_snapshot.test_snapshot.id
+		}
+
+		data "ibm_is_snapshot_software_attachments" "is_snapshot_software_attachments" {
+			snapshot_id = ibm_is_snapshot.test_snapshot.id
+		}
+
+		data "ibm_is_volume" "test_volume" {
+			identifier = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+
+		data "ibm_is_volume_software_attachments" "is_volume_software_attachments" {
+			volume_id = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, instanceName)
+}
+
+func testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
+	return testAccCheckIBMIsSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName)
 }
 
 func testAccCheckIBMIsVolumeSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
 	return testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
 		resource "ibm_is_volume_software_attachment" "is_volume_software_attachment_instance" {
-			volume_id                     = ibm_is_instance.testacc_instance.boot_volume.0.volume_id
-			volume_software_attachment_id = data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance.software_attachments.0.id
+			volume_id                     = ibm_is_instance.test_instance.boot_volume.0.volume_id
+			volume_software_attachment_id = data.ibm_is_volume.test_volume.software_attachments.0.id
 		}
 	`
 }
@@ -153,8 +215,8 @@ func testAccCheckIBMIsVolumeSoftwareAttachmentConfigBasic(vpcname, subnetname, s
 func testAccCheckIBMIsVolumeSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name string) string {
 	return testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
 		resource "ibm_is_volume_software_attachment" "is_volume_software_attachment_instance" {
-			volume_id                     = ibm_is_instance.testacc_instance.boot_volume.0.volume_id
-			volume_software_attachment_id = data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance.software_attachments.0.id
+			volume_id                     = ibm_is_instance.test_instance.boot_volume.0.volume_id
+			volume_software_attachment_id = data.ibm_is_volume.test_volume.software_attachments.0.id
 			name                          = "%s"
 		}
 	`, name)

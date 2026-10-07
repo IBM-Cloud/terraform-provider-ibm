@@ -689,13 +689,13 @@ func TestAccIBMISSnapshot_softwareAttachments(t *testing.T) {
 			{
 				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
-					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.#"),
-					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.id"),
-					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.href"),
-					resource.TestCheckResourceAttrSet("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.name"),
-					resource.TestCheckResourceAttr("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.resource_type", "snapshot_software_attachment"),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot.testacc_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance", "software_attachments.0.id"),
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.test_snapshot", snapshot),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.test_snapshot", "software_attachments.0.resource_type", "snapshot_software_attachment"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot.test_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
 				),
 			},
 			// software_attachments is computed only, so a second plan must be empty.

@@ -38,13 +38,15 @@ func TestAccIBMIsSnapshotSoftwareAttachmentBasic(t *testing.T) {
 				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsSnapshotSoftwareAttachmentExists("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", conf),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.testacc_snapshot", "id"),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.test_snapshot", "id"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
 					// name is not set in config; it must be read back from the API (Optional + Computed).
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance", "software_attachments.0.name"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.name"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "resource_type", "snapshot_software_attachment"),
+					// ibm_is_snapshot and ibm_is_snapshot_software_attachments must return the same attachment.
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.test_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
 				),
 			},
 			// Re-applying the same config must not produce a diff for the computed name.
@@ -74,7 +76,7 @@ func TestAccIBMIsSnapshotSoftwareAttachmentAllArgs(t *testing.T) {
 				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsSnapshotSoftwareAttachmentExists("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", conf),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.testacc_snapshot", "id"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.test_snapshot", "id"),
 					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", name),
 					testAccCheckIBMIsSnapshotSoftwareAttachmentRemoteName("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", name),
 				),
@@ -129,27 +131,15 @@ func TestAccIBMIsSnapshotSoftwareAttachmentInvalidName(t *testing.T) {
 	})
 }
 
-// testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig provisions an instance from a
-// software-licensed catalog offering and takes a snapshot of its boot volume. That
-// snapshot carries a snapshot software attachment, which the
-// ibm_is_snapshot_software_attachment resource then adopts and manages.
 func testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
-	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
-		resource "ibm_is_snapshot" "testacc_snapshot" {
-			name          = "%s-snap"
-			source_volume = ibm_is_instance.testacc_instance.boot_volume.0.volume_id
-		}
-		data "ibm_is_snapshot_software_attachments" "is_snapshot_software_attachments_instance" {
-			snapshot_id = ibm_is_snapshot.testacc_snapshot.id
-		}
-	`, instanceName)
+	return testAccCheckIBMIsSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName)
 }
 
 func testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
 	return testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
 		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id                     = ibm_is_snapshot.testacc_snapshot.id
-			snapshot_software_attachment_id = data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance.software_attachments.0.id
+			snapshot_id                     = ibm_is_snapshot.test_snapshot.id
+			snapshot_software_attachment_id = data.ibm_is_snapshot.test_snapshot.software_attachments.0.id
 		}
 	`
 }
@@ -157,8 +147,8 @@ func testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname,
 func testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name string) string {
 	return testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
 		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-			snapshot_id                     = ibm_is_snapshot.testacc_snapshot.id
-			snapshot_software_attachment_id = data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments_instance.software_attachments.0.id
+			snapshot_id                     = ibm_is_snapshot.test_snapshot.id
+			snapshot_software_attachment_id = data.ibm_is_snapshot.test_snapshot.software_attachments.0.id
 			name                            = "%s"
 		}
 	`, name)

@@ -36,13 +36,13 @@ func TestAccIBMIsVolumeSoftwareAttachmentsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMIsVolumeSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "id"),
-					resource.TestCheckResourceAttrPair("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "volume_id", "ibm_is_instance.testacc_instance", "boot_volume.0.volume_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.href"),
-					resource.TestCheckResourceAttr("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.0.resource_type", "volume_software_attachment"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "id"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "volume_id", "ibm_is_instance.test_instance", "boot_volume.0.volume_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.href"),
+					resource.TestCheckResourceAttr("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.0.resource_type", "volume_software_attachment"),
 				),
 			},
 		},
@@ -89,13 +89,13 @@ func TestAccIBMIsVolumeSoftwareAttachmentsDataSourceEmpty(t *testing.T) {
 						profile = "10iops-tier"
 						zone    = "%s"
 					}
-					data "ibm_is_volume_software_attachments" "is_volume_software_attachments_instance" {
+					data "ibm_is_volume_software_attachments" "is_volume_software_attachments" {
 						volume_id = ibm_is_volume.testacc_volume.id
 					}
 				`, name, acc.ISZoneName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_is_volume_software_attachments.is_volume_software_attachments_instance", "software_attachments.#", "0"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "id"),
+					resource.TestCheckResourceAttr("data.ibm_is_volume_software_attachments.is_volume_software_attachments", "software_attachments.#", "0"),
 				),
 			},
 		},

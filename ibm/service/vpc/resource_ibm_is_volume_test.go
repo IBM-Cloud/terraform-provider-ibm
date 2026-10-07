@@ -982,7 +982,7 @@ func testAccCheckIBMISVolumeSoftwareAttachmentsConfig(vpcname, subnetname, sshna
 			name            = "%s"
 			profile         = "general-purpose"
 			zone            = "%s"
-			source_snapshot = ibm_is_snapshot.testacc_snapshot.id
+			source_snapshot = ibm_is_snapshot.test_snapshot.id
 		}
 	`, volname, acc.ISZoneName)
 }
