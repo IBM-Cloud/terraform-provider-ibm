@@ -131,7 +131,7 @@ Review the argument reference that you can specify for your resource.
 
   - `template_id_invitation` - (Optional, String) The template ID for invitation emails.
 
-  - `invited` - (Required, List) The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.
+  - `invited` - (Optional, List) The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.
 
   - `subscribed` - (Computed, List) Email addresses that have accepted the invitation and are currently subscribed. Populated by the service; read-only.
 
