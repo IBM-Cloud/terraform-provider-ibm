@@ -112,6 +112,9 @@ func opsManagerRoles() []string {
 
 const icdReadyMinTimeout = 10 * time.Second
 
+// icdNotFoundGrace bounds how long a 404 from ICD is retried.
+var icdNotFoundGrace = 10 * time.Minute
+
 // remainingWaitTimeout returns the unused portion of a Terraform timeout.
 // A minimum is applied so a wait that finishes at the deadline still gets a
 // short ICD readiness poll instead of failing immediately.
@@ -134,14 +137,15 @@ func classifyICDReadyError(instanceID string, cdbErr error) error {
 		return nil
 	}
 	if apiErr, ok := cdbErr.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-		return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", cdbErr)
+		return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %w", cdbErr)
 	}
 	return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", instanceID, cdbErr)
 }
 
 // pollUntilReady invokes check immediately, then retries until timeout.
 // Transient ICD API errors (including HTTP 500 while the deployment is built)
-// are retried. The last error is returned if the deadline is reached.
+// are retried. A 404 is retried only for icdNotFoundGrace. The last error is
+// returned if the deadline is reached.
 func pollUntilReady(timeout, interval time.Duration, check func() error) error {
 	if interval <= 0 {
 		interval = icdReadyMinTimeout
@@ -151,12 +155,17 @@ func pollUntilReady(timeout, interval time.Duration, check func() error) error {
 	}
 
 	deadline := time.Now().Add(timeout)
+	notFoundDeadline := time.Now().Add(icdNotFoundGrace)
 	var lastErr error
 
 	for {
 		if err := check(); err == nil {
 			return nil
 		} else {
+			var apiErr bmxerror.RequestFailure
+			if errors.As(err, &apiErr) && apiErr.StatusCode() == 404 && time.Now().After(notFoundDeadline) {
+				return err
+			}
 			lastErr = err
 			log.Println("retrying after error:", err)
 		}
