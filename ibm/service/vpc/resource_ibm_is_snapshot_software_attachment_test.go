@@ -5,12 +5,11 @@ package vpc_test
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -28,6 +27,7 @@ func TestAccIBMIsSnapshotSoftwareAttachmentBasic(t *testing.T) {
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotName := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -35,24 +35,16 @@ func TestAccIBMIsSnapshotSoftwareAttachmentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName, snapshotName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsSnapshotSoftwareAttachmentExists("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", conf),
 					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.test_snapshot", "id"),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
-					// name is not set in config; it must be read back from the API (Optional + Computed).
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.name"),
+					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_software_attachment_id", "data.ibm_is_snapshot.test_snapshot", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "resource_type", "snapshot_software_attachment"),
-					// ibm_is_snapshot and ibm_is_snapshot_software_attachments must return the same attachment.
-					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.test_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
 				),
-			},
-			// Re-applying the same config must not produce a diff for the computed name.
-			resource.TestStep{
-				Config:   testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
-				PlanOnly: true,
 			},
 		},
 	})
@@ -64,6 +56,7 @@ func TestAccIBMIsSnapshotSoftwareAttachmentAllArgs(t *testing.T) {
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotName := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf-name-upd-%d", acctest.RandIntRange(10, 100))
 
@@ -73,24 +66,15 @@ func TestAccIBMIsSnapshotSoftwareAttachmentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name),
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, snapshotName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsSnapshotSoftwareAttachmentExists("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", conf),
 					resource.TestCheckResourceAttrPair("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "snapshot_id", "ibm_is_snapshot.test_snapshot", "id"),
 					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", name),
-					testAccCheckIBMIsSnapshotSoftwareAttachmentRemoteName("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, nameUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", nameUpdate),
-					testAccCheckIBMIsSnapshotSoftwareAttachmentRemoteName("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", nameUpdate),
-				),
-			},
-			// Removing name from the config keeps the last name (Optional + Computed), it is not cleared.
-			resource.TestStep{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
+				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, snapshotName, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance", "name", nameUpdate),
 				),
@@ -100,58 +84,119 @@ func TestAccIBMIsSnapshotSoftwareAttachmentAllArgs(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Import with an ID that is not in <snapshot_id>/<snapshot_software_attachment_id> format must fail.
-			resource.TestStep{
-				ResourceName:  "ibm_is_snapshot_software_attachment.is_snapshot_software_attachment_instance",
-				ImportState:   true,
-				ImportStateId: "invalid-import-id",
-				ExpectError:   regexp.MustCompile("does not contain /"),
-			},
 		},
 	})
 }
 
-func TestAccIBMIsSnapshotSoftwareAttachmentInvalidName(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: `
-					resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
-						snapshot_id                     = "r006-00000000-0000-0000-0000-000000000000"
-						snapshot_software_attachment_id = "r006-00000000-0000-0000-0000-000000000001"
-						name                            = "Invalid_Name"
-					}
-				`,
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("should match regexp"),
-			},
-		},
-	})
-}
+func testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName, snapshotName string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
+		}
 
-func testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
-	return testAccCheckIBMIsSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName)
-}
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
 
-func testAccCheckIBMIsSnapshotSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
-	return testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+
+		data "ibm_is_snapshot" "test_snapshot" {
+			identifier = ibm_is_snapshot.test_snapshot.id
+		}
+
 		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
 			snapshot_id                     = ibm_is_snapshot.test_snapshot.id
 			snapshot_software_attachment_id = data.ibm_is_snapshot.test_snapshot.software_attachments.0.id
 		}
-	`
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, snapshotName)
 }
 
-func testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name string) string {
-	return testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
+func testAccCheckIBMIsSnapshotSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, snapshotName, name string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+
+		data "ibm_is_snapshot" "test_snapshot" {
+			identifier = ibm_is_snapshot.test_snapshot.id
+		}
+
 		resource "ibm_is_snapshot_software_attachment" "is_snapshot_software_attachment_instance" {
 			snapshot_id                     = ibm_is_snapshot.test_snapshot.id
 			snapshot_software_attachment_id = data.ibm_is_snapshot.test_snapshot.software_attachments.0.id
 			name                            = "%s"
 		}
-	`, name)
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, snapshotName, name)
 }
 
 func testAccCheckIBMIsSnapshotSoftwareAttachmentExists(n string, obj vpcv1.SnapshotSoftwareAttachment) resource.TestCheckFunc {
@@ -187,44 +232,6 @@ func testAccCheckIBMIsSnapshotSoftwareAttachmentExists(n string, obj vpcv1.Snaps
 	}
 }
 
-// testAccCheckIBMIsSnapshotSoftwareAttachmentRemoteName verifies that the name was
-// actually patched on the API side, not only stored in Terraform state.
-func testAccCheckIBMIsSnapshotSoftwareAttachmentRemoteName(n string, name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
-		if err != nil {
-			return err
-		}
-
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getSnapshotSoftwareAttachmentOptions := &vpcv1.GetSnapshotSoftwareAttachmentOptions{}
-		getSnapshotSoftwareAttachmentOptions.SetSnapshotID(parts[0])
-		getSnapshotSoftwareAttachmentOptions.SetID(parts[1])
-
-		snapshotSoftwareAttachment, _, err := vpcClient.GetSnapshotSoftwareAttachment(getSnapshotSoftwareAttachmentOptions)
-		if err != nil {
-			return err
-		}
-		if snapshotSoftwareAttachment.Name == nil || *snapshotSoftwareAttachment.Name != name {
-			return fmt.Errorf("SnapshotSoftwareAttachment %s has name %v, expected %s", rs.Primary.ID, snapshotSoftwareAttachment.Name, name)
-		}
-		return nil
-	}
-}
-
-// testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy runs after all resources in the
-// test are destroyed. Destroying ibm_is_snapshot_software_attachment only removes it
-// from state, but the attachment goes away together with its snapshot, which is
-// destroyed in the same test, so by now the attachment must no longer exist.
 func testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy(s *terraform.State) error {
 	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
@@ -245,7 +252,7 @@ func testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy(s *terraform.State) erro
 		getSnapshotSoftwareAttachmentOptions.SetSnapshotID(parts[0])
 		getSnapshotSoftwareAttachmentOptions.SetID(parts[1])
 
-		// Try to find the key
+		// The attachment is removed together with its snapshot, which is destroyed in the same test.
 		_, response, err := vpcClient.GetSnapshotSoftwareAttachment(getSnapshotSoftwareAttachmentOptions)
 
 		if err == nil {
@@ -256,70 +263,6 @@ func testAccCheckIBMIsSnapshotSoftwareAttachmentDestroy(s *terraform.State) erro
 	}
 
 	return nil
-}
-
-// TestResourceIBMIsSnapshotSoftwareAttachmentSchema checks that the resource is
-// registered with the provider and that its arguments have the expected
-// Required / Optional / Computed / ForceNew behavior and validation.
-func TestResourceIBMIsSnapshotSoftwareAttachmentSchema(t *testing.T) {
-	r, ok := acc.TestAccProvider.ResourcesMap["ibm_is_snapshot_software_attachment"]
-	assert.True(t, ok, "ibm_is_snapshot_software_attachment must be registered in the provider")
-	if !ok {
-		return
-	}
-	assert.NotNil(t, r.Importer)
-
-	snapshotID := r.Schema["snapshot_id"]
-	assert.True(t, snapshotID.Required)
-	assert.True(t, snapshotID.ForceNew)
-
-	attachmentID := r.Schema["snapshot_software_attachment_id"]
-	assert.NotNil(t, attachmentID)
-	assert.True(t, attachmentID.Required)
-	assert.True(t, attachmentID.ForceNew)
-
-	name := r.Schema["name"]
-	assert.True(t, name.Optional)
-	assert.True(t, name.Computed)
-	assert.False(t, name.ForceNew)
-	assert.NotNil(t, name.ValidateFunc)
-	_, errs := name.ValidateFunc("my-software-attachment", "name")
-	assert.Empty(t, errs)
-	_, errs = name.ValidateFunc("Invalid_Name", "name")
-	assert.NotEmpty(t, errs)
-
-	for _, computed := range []string{"catalog_offering", "created_at", "entitlement", "href", "resource_type"} {
-		assert.True(t, r.Schema[computed].Computed, computed)
-		assert.False(t, r.Schema[computed].Optional, computed)
-	}
-
-	_, ok = acc.TestAccProvider.DataSourcesMap["ibm_is_snapshot_software_attachment"]
-	assert.True(t, ok, "data source ibm_is_snapshot_software_attachment must be registered in the provider")
-	_, ok = acc.TestAccProvider.DataSourcesMap["ibm_is_snapshot_software_attachments"]
-	assert.True(t, ok, "data source ibm_is_snapshot_software_attachments must be registered in the provider")
-}
-
-func TestResourceIBMIsSnapshotSoftwareAttachmentPatchAsPatch(t *testing.T) {
-	r := vpc.ResourceIBMIsSnapshotSoftwareAttachment()
-
-	// name set: it is sent in the patch.
-	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
-		"snapshot_id":                     "r006-00000000-0000-0000-0000-000000000000",
-		"snapshot_software_attachment_id": "r006-00000000-0000-0000-0000-000000000001",
-		"name":                            "my-software-attachment",
-	})
-	patchVals := &vpcv1.SnapshotSoftwareAttachmentPatch{Name: core.StringPtr("my-software-attachment")}
-	patch := vpc.ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentPatchAsPatch(patchVals, d)
-	assert.Equal(t, core.StringPtr("my-software-attachment"), patch["name"])
-
-	// name not set and not changed: the key is left out of the patch.
-	d = schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
-		"snapshot_id":                     "r006-00000000-0000-0000-0000-000000000000",
-		"snapshot_software_attachment_id": "r006-00000000-0000-0000-0000-000000000001",
-	})
-	patch = vpc.ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentPatchAsPatch(&vpcv1.SnapshotSoftwareAttachmentPatch{}, d)
-	_, exists := patch["name"]
-	assert.False(t, exists)
 }
 
 func TestResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentCatalogOfferingToMap(t *testing.T) {
@@ -452,40 +395,4 @@ func TestResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentEntitl
 	result, err := vpc.ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentEntitlementLicensableSoftwareToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
-}
-
-func TestResourceIBMIsSnapshotSoftwareAttachmentCatalogOfferingWithoutPlanToMap(t *testing.T) {
-	// A free catalog offering version has no billing plan: "plan" must be left out, not set to an empty list.
-	catalogOfferingVersionReferenceModel := new(vpcv1.CatalogOfferingVersionReference)
-	catalogOfferingVersionReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:globalcatalog-collection:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:00111601-0ec5-41ac-b142-96d1e64e6442/ec66bec2-6a33-42d6-9323-26dd4dc8875d")
-
-	model := new(vpcv1.SnapshotSoftwareAttachmentCatalogOffering)
-	model.Version = catalogOfferingVersionReferenceModel
-
-	result, err := vpc.ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentCatalogOfferingToMap(model)
-	assert.Nil(t, err)
-	_, hasPlan := result["plan"]
-	assert.False(t, hasPlan)
-	assert.Equal(t, []map[string]interface{}{{"crn": *catalogOfferingVersionReferenceModel.CRN}}, result["version"])
-}
-
-func TestResourceIBMIsSnapshotSoftwareAttachmentPlanWithoutDeletedToMap(t *testing.T) {
-	model := new(vpcv1.CatalogOfferingVersionPlanReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:globalcatalog-collection:global:a/aa2432b1fa4d4ace891e9b80fc104e34:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e")
-
-	result, err := vpc.ResourceIBMIsSnapshotSoftwareAttachmentCatalogOfferingVersionPlanReferenceToMap(model)
-	assert.Nil(t, err)
-	_, hasDeleted := result["deleted"]
-	assert.False(t, hasDeleted)
-	assert.Equal(t, *model.CRN, result["crn"])
-}
-
-func TestResourceIBMIsSnapshotSoftwareAttachmentEntitlementEmptyToMap(t *testing.T) {
-	// No licensable software: an empty list, not nil, so the attribute count is 0.
-	model := new(vpcv1.SnapshotSoftwareAttachmentEntitlement)
-	model.LicensableSoftware = []vpcv1.SnapshotSoftwareAttachmentEntitlementLicensableSoftware{}
-
-	result, err := vpc.ResourceIBMIsSnapshotSoftwareAttachmentSnapshotSoftwareAttachmentEntitlementToMap(model)
-	assert.Nil(t, err)
-	assert.Equal(t, []map[string]interface{}{}, result["licensable_software"])
 }

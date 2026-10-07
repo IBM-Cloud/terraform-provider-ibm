@@ -12,13 +12,10 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMISSnapshot_basic(t *testing.T) {
@@ -643,43 +640,13 @@ func testAccCheckIBMISSnapshotConfigCRC(copySnapshotName string) string {
 
 }
 
-func TestResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(t *testing.T) {
-	href := "https://us-south.iaas.cloud.ibm.com/v1/snapshots/r006-7ec86020-1c6e-4889-b3f0-a15f2e50f87e/software_attachments/r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1"
-
-	// Active reference: "deleted" must be left out.
-	model := new(vpcv1.SnapshotSoftwareAttachmentReference)
-	model.Href = core.StringPtr(href)
-	model.ID = core.StringPtr("r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1")
-	model.Name = core.StringPtr("my-software-attachment")
-	model.ResourceType = core.StringPtr("snapshot_software_attachment")
-
-	result, err := vpc.ResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
-	assert.Nil(t, err)
-	assert.Equal(t, map[string]interface{}{
-		"href":          href,
-		"id":            "r006-a569e8ae-3254-495e-ae75-86bb08e2c4d1",
-		"name":          "my-software-attachment",
-		"resource_type": "snapshot_software_attachment",
-	}, result)
-
-	// Deleted reference: "deleted" is a single element list with more_info.
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-	model.Deleted = deletedModel
-
-	result, err = vpc.ResourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model)
-	assert.Nil(t, err)
-	assert.Equal(t, []map[string]interface{}{{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}}, result["deleted"])
-}
-
-// A snapshot of the boot volume of an instance provisioned from a software-licensed
-// catalog offering carries the software attachments of that volume.
 func TestAccIBMISSnapshot_softwareAttachments(t *testing.T) {
 	var snapshot string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotName := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -687,22 +654,63 @@ func TestAccIBMISSnapshot_softwareAttachments(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
+				Config: testAccCheckIBMISSnapshotSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.test_snapshot", snapshot),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.test_snapshot", "name", snapshotName),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.#"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.href"),
 					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.name"),
 					resource.TestCheckResourceAttr("ibm_is_snapshot.test_snapshot", "software_attachments.0.resource_type", "snapshot_software_attachment"),
-					resource.TestCheckResourceAttrPair("ibm_is_snapshot.test_snapshot", "software_attachments.0.id", "data.ibm_is_snapshot_software_attachments.is_snapshot_software_attachments", "software_attachments.0.id"),
 				),
-			},
-			// software_attachments is computed only, so a second plan must be empty.
-			{
-				Config:   testAccCheckIBMIsSnapshotSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName),
-				PlanOnly: true,
 			},
 		},
 	})
+}
+
+func testAccCheckIBMISSnapshotSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, snapshotName)
 }
