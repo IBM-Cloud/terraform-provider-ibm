@@ -250,3 +250,340 @@ func TestAccIBMISVPNGateway_taint(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISVPNGateway_regional_basic(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(10, 100))
+	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-regional-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayRegionalConfig(vpcname, subnet1name, subnet2name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "availability_mode", "regional"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "policy"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "members.0.private_ip.0.address"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "members.1.private_ip.0.address"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "health_state"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISVPNGateway_regional_route(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(10, 100))
+	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-regional-route-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayRegionalRouteConfig(vpcname, subnet1name, subnet2name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "availability_mode", "regional"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "local_asn", "64520"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.name"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISVPNGateway_zonal_to_regional_migration(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(10, 100))
+	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-migration-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayZonalConfig(vpcname, subnet1name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "policy"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "members.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPNGatewayZonalToRegionalConfig(vpcname, subnet1name, subnet2name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "availability_mode", "regional"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "policy"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "members.0.private_ip.0.address"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "members.1.private_ip.0.address"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISVPNGateway_regional_with_advertised_cidrs(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(10, 100))
+	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-regional-cidrs-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayRegionalWithAdvertisedCIDRsConfig(vpcname, subnet1name, subnet2name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "availability_mode", "regional"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "local_asn", "64520"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "advertised_cidrs.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVPNGatewayRegionalConfig(vpc, subnet1, subnet2, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.0.0/24"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.1.0/24"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name = "%s"
+		availability_mode = "regional"
+		mode = "policy"
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet1.id
+				}
+			}
+		}
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet2.id
+				}
+			}
+		}
+	}`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, name)
+}
+
+func testAccCheckIBMISVPNGatewayRegionalRouteConfig(vpc, subnet1, subnet2, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.2.0/24"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.3.0/24"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name = "%s"
+		availability_mode = "regional"
+		mode = "route"
+		local_asn = 64520
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet1.id
+				}
+			}
+		}
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet2.id
+				}
+			}
+		}
+		lifecycle {
+			ignore_changes = [
+				advertised_cidrs
+			]
+		}
+	}`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, name)
+}
+
+func testAccCheckIBMISVPNGatewayZonalConfig(vpc, subnet1, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.4.0/24"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet1.id
+		mode = "policy"
+	}`, vpc, subnet1, acc.ISZoneName, name)
+}
+
+func testAccCheckIBMISVPNGatewayZonalToRegionalConfig(vpc, subnet1, subnet2, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.4.0/24"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.5.0/24"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name = "%s"
+		availability_mode = "regional"
+		mode = "policy"
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet1.id
+				}
+			}
+		}
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet2.id
+				}
+			}
+		}
+	}`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, name)
+}
+
+func testAccCheckIBMISVPNGatewayRegionalWithAdvertisedCIDRsConfig(vpc, subnet1, subnet2, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.6.0/24"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "10.240.7.0/24"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name = "%s"
+		availability_mode = "regional"
+		mode = "route"
+		local_asn = 64520
+		advertised_cidrs = ["10.45.0.0/25"]
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet1.id
+				}
+			}
+		}
+		members {
+			private_ip {
+				subnet {
+					id = ibm_is_subnet.testacc_subnet2.id
+				}
+			}
+		}
+	}`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, name)
+}

@@ -118,3 +118,105 @@ func testAccCheckIBMIsVPNGatewayDataSourceConfigBasic(vpc, subnet, vpngwname, vp
 		}
 	`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpngwname, vpngwconname)
 }
+
+func TestAccIBMIsVPNGatewayDataSourceRegional(t *testing.T) {
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(100, 200))
+	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(100, 200))
+	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(100, 200))
+	vpngwname := fmt.Sprintf("tfvpnuat-vpngw-regional-%d", acctest.RandIntRange(100, 200))
+	vpngwconname := fmt.Sprintf("tfvpnuat-vpngwconn-%d", acctest.RandIntRange(100, 200))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsVPNGatewayDataSourceRegionalConfig(vpcname, subnet1name, subnet2name, vpngwname, vpngwconname),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "connections.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "connections.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "connections.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "href"),
+					resource.TestCheckResourceAttr("data.ibm_is_vpn_gateway.example", "availability_mode", "regional"),
+					resource.TestCheckResourceAttr("data.ibm_is_vpn_gateway.example", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.public_ip_address"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.role"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.private_ip.0.address"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.1.public_ip_address"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.1.role"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.1.private_ip.0.address"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_group.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "local_asn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "advertised_cidrs.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsVPNGatewayDataSourceRegionalConfig(vpc, subnet1, subnet2, vpngwname, vpngwconname string) string {
+	return fmt.Sprintf(`
+    	resource "ibm_is_vpc" "example" {
+    		name = "%s"
+    	}
+    	resource "ibm_is_subnet" "example1" {
+    		name = "%s"
+    		vpc = ibm_is_vpc.example.id
+    		zone = "%s"
+    		ipv4_cidr_block = "10.240.10.0/24"
+    	}
+    	resource "ibm_is_subnet" "example2" {
+    		name = "%s"
+    		vpc = ibm_is_vpc.example.id
+    		zone = "%s"
+    		ipv4_cidr_block = "10.240.11.0/24"
+    	}
+    	resource "ibm_is_vpn_gateway" "example" {
+			name = "%s"
+			availability_mode = "regional"
+			mode = "route"
+			local_asn = 64520
+			members {
+				private_ip {
+					subnet {
+						id = ibm_is_subnet.example1.id
+					}
+				}
+			}
+			members {
+				private_ip {
+					subnet {
+						id = ibm_is_subnet.example2.id
+					}
+				}
+			}
+			lifecycle {
+				ignore_changes = [
+					advertised_cidrs
+				]
+			}
+		}
+		resource "ibm_is_vpn_gateway_advertised_cidr" "example" {
+			vpn_gateway = ibm_is_vpn_gateway.example.id
+			cidr        = "10.45.0.0/25"
+		}
+		resource "ibm_is_vpn_gateway_connection" "example" {
+			name          = "%s"
+			vpn_gateway   = ibm_is_vpn_gateway.example.id
+			peer_address  = ibm_is_vpn_gateway.example.public_ip_address
+			preshared_key = "VPNDemoPassword"
+			local_cidrs   = [ibm_is_subnet.example1.ipv4_cidr_block]
+			
+		}
+		data "ibm_is_vpn_gateway" "example" {
+			depends_on = [
+				ibm_is_vpn_gateway_connection.example
+			]
+			vpn_gateway = ibm_is_vpn_gateway.example.id
+		}
+	`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, vpngwname, vpngwconname)
+}

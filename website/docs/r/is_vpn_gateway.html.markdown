@@ -56,7 +56,20 @@ The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `availability_mode` - (Optional, String) The availability mode of the VPN gateway:- `zonal`: The availability of this VPN gateway is limited only to a single zone of a  given region as provided by the `zone` of the VPN gateway.
+  * Constraints: Allowable values are: `zonal`. 
 - `local_asn` - (Optional, Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
+- `members` - (Optional, List) The members for the VPN gateway.
+  Nested schema for **members**:
+
+	- `private_ip` - (Required, List) The reserved IP address assigned to the VPN gateway member.This property will be present only when the VPN gateway status is `available`.
+	  Nested schema for **private_ip**:
+		- `subnet` - (Required, List)
+		  Nested schema for **subnet**: (one of the three, all three are mutually exclusive)
+			- `crn` - (Required, String) The CRN for this subnet.
+			- `href` - (Required, String) The URL for this subnet.
+			- `id` - (Required, String) The unique identifier for this subnet.
+
 - `mode`- (Optional, String) Mode in VPN gateway. Supported values are `route` or `policy`. The default value is `route`.
 - `name` - (Required, String) The name of the VPN gateway.
 - `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
@@ -80,6 +93,70 @@ In addition to all argument reference list, you can access the following attribu
 - `public_ip_address2` -  (String) The Second Public IP address assigned to this VPN gateway member.
 
   ~>**Note:** If one of the public IP addresses is "0.0.0.0", you can use a conditional expression to get the valid IP address: `ibm_is_vpn_gateway.example.public_ip_address == "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address2 : ibm_is_vpn_gateway.example.public_ip_address`
+
+- `members` - (Optional, List) The members for the VPN gateway.
+  Nested schema for **members**:
+	- `health_reasons` - (Required, List) The reasons for the current `health_state` (if any).
+	  Nested schema for **health_reasons**:
+		- `code` - (Required, String) A reason code for this health state:- `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's  subnet)- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		  * Constraints: Allowable values are: `cannot_reserve_ip_address`, `internal_error`. 
+		- `message` - (Required, String) An explanation of the reason for this health state.
+		- `more_info` - (Optional, String) A link to documentation about the reason for this health state.
+	- `health_state` - (Required, String) The health of this resource:- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle   state. A resource with a lifecycle state of `failed` or `deleting` will have a   health state of `inapplicable`. A `pending` resource may also have this state.
+	  * Constraints: Allowable values are: `degraded`, `faulted`, `inapplicable`, `ok`. 
+	- `id` - (Optional, String) The unique identifier for this VPN gateway member.
+	- `lifecycle_reasons` - (Required, List) The reasons for the current `lifecycle_state` (if any).
+	  Nested schema for **lifecycle_reasons**:
+		- `code` - (Required, String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		  * Constraints: Allowable values are: `internal_error`, `resource_suspended_by_provider`.
+		- `message` - (Required, String) An explanation of the reason for this lifecycle state.
+		- `more_info` - (Optional, String) A link to documentation about the reason for this lifecycle state.
+	- `lifecycle_state` - (Required, String) The lifecycle state of the VPN gateway member.
+	  * Constraints: Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`.
+	- `private_ip` - (Required, List) The reserved IP address assigned to the VPN gateway member.This property will be present only when the VPN gateway status is `available`.
+	  Nested schema for **private_ip**:
+		- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (Required, String) A link to documentation about deleted resources.
+		- `href` - (Required, String) The URL for this reserved IP.
+		- `id` - (Required, String) The unique identifier for this reserved IP.
+		- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (Required, String) The resource type.
+		- `subnet` - (Required, List)
+		  Nested schema for **subnet**:
+			- `crn` - (Required, String) The CRN for this subnet.
+			- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and  providessome supplementary information.
+			  Nested schema for **deleted**:
+				- `more_info` - (Computed, String) A link to documentation about deleted resources.
+			- `href` - (Required, String) The URL for this subnet.
+			- `id` - (Required, String) The unique identifier for this subnet.
+			- `name` - (Computed, String) The name for this subnet. The name is unique across all subnets in the VPC.
+			- `resource_type` - (Computed, String) The resource type.
+	- `public_ip` - (Required, List) The public IP address assigned to the VPN gateway member.
+	  Nested schema for **public_ip**:
+		- `address` - (Required, String) The IP address.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+	- `role` - (Required, String) The high availability role assigned to the VPN gateway member.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	  * Constraints: Allowable values are: `active`, `standby`.
+- `mode` - (Optional, String) The mode for this VPN gateway.
+  * Constraints: Allowable values are: `policy`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+- `name` - (Optional, String) The name for this VPN gateway. The name is unique across all VPN gateways in the VPC.
+  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+- `resource_group` - (Optional, List) The resource group for this VPN gateway.
+  Nested schema for **resource_group**:
+	- `href` - (Computed, String) The URL for this resource group.
+	- `id` - (Required, String) The unique identifier for this resource group.
+	- `name` - (Computed, String) The name for this resource group.
+- `subnet` - (Optional, List) Identifies a subnet by a unique property.
+  Nested schema for **subnet**:
+	- `crn` - (Required, String) The CRN for this subnet.
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (Computed, String) A link to documentation about deleted resources.
+	- `href` - (Required, String) The URL for this subnet.
+	- `id` - (Required, String) The unique identifier for this subnet.
+	- `name` - (Computed, String) The name for this subnet. The name is unique across all subnets in the VPC.
+	- `resource_type` - (Computed, String) The resource type.
 
 - `private_ip_address` -  (String) The Private IP address assigned to this VPN gateway member.
 - `private_ip_address2` -  (String) The Second Private IP address assigned to this VPN gateway.

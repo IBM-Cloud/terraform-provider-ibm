@@ -273,11 +273,14 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			// regional vpn
 
-			isVPNGatewayMembers: {
+			"members": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
-				Description: "Collection of VPN gateway members",
+				ForceNew:    true,
+				Description: "The members for the VPN gateway.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -291,20 +294,198 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 							Computed:    true,
 							Description: "The private IP address assigned to the VPN gateway member",
 						},
-
-						"role": {
+						"role": &schema.Schema{
 							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The high availability role assigned to the VPN gateway member",
+							Required:    true,
+							Description: "The high availability role assigned to the VPN gateway member.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
-
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The status of the VPN gateway member",
 						},
+						"health_reasons": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current `health_state` (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A reason code for this health state:- `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's  subnet)- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
+						"health_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The health of this resource:- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle   state. A resource with a lifecycle state of `failed` or `deleting` will have a   health state of `inapplicable`. A `pending` resource may also have this state.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this VPN gateway member.",
+						},
+						"lifecycle_reasons": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current `lifecycle_state` (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this lifecycle state.",
+									},
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about the reason for this lifecycle state.",
+									},
+								},
+							},
+						},
+						"lifecycle_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The lifecycle state of the VPN gateway member.",
+						},
+						"private_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reserved IP address assigned to the VPN gateway member.This property will be present only when the VPN gateway status is `available`.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									"subnet": &schema.Schema{
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Required: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The CRN for this subnet.",
+												},
+												"deleted": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"more_info": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "A link to documentation about deleted resources.",
+															},
+														},
+													},
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The URL for this subnet.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique identifier for this subnet.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"public_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The public IP address assigned to the VPN gateway member.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.",
+									},
+								},
+							},
+						},
 					},
 				},
+			},
+			"availability_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpn_gateway", "availability_mode"),
+				Description:  "The availability mode of the VPN gateway:- `zonal`: The availability of this VPN gateway is limited only to a single zone of a  given region as provided by the `zone` of the VPN gateway.",
 			},
 			"vpc": {
 				Type:        schema.TypeList,
@@ -356,6 +537,7 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 func ResourceIBMISVPNGatewayValidator() *validate.ResourceValidator {
 
 	modeCheckTypes := "route,policy"
+	availabilityModeCheckTypes := "zonal,regional"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -366,6 +548,13 @@ func ResourceIBMISVPNGatewayValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "availability_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   false,
+			AllowedValues:              availabilityModeCheckTypes})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVPNGatewayMode,
@@ -554,6 +743,27 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-name").GetDiag()
 		}
 	}
+	// regional vpn
+	if !core.IsNil(vpnGateway.AvailabilityMode) {
+		if err = d.Set("availability_mode", vpnGateway.AvailabilityMode); err != nil {
+			err = fmt.Errorf("Error setting availability_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-availability_mode").GetDiag()
+		}
+	}
+	if !core.IsNil(vpnGateway.Members) {
+		members := []map[string]interface{}{}
+		for _, membersItem := range vpnGateway.Members {
+			membersItemMap, err := ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(&membersItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "members-to-map").GetDiag()
+			}
+			members = append(members, membersItemMap)
+		}
+		if err = d.Set("members", members); err != nil {
+			err = fmt.Errorf("Error setting members: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-members").GetDiag()
+		}
+	}
 	if !core.IsNil(vpnGateway.Subnet) {
 		if err = d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID); err != nil {
 			err = fmt.Errorf("Error setting subnet: %s", err)
@@ -722,6 +932,7 @@ func vpngwUpdate(context context.Context, d *schema.ResourceData, meta interface
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+
 	if d.HasChange(isVPNGatewayTags) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
@@ -765,6 +976,11 @@ func vpngwUpdate(context context.Context, d *schema.ResourceData, meta interface
 		ID: &id,
 	}
 	vpnGatewayPatchModel := &vpcv1.VPNGatewayPatch{}
+	if d.HasChange("availability_mode") {
+		newAvailabilityMode := d.Get("availability_mode").(string)
+		vpnGatewayPatchModel.AvailabilityMode = &newAvailabilityMode
+		hasChanged = true
+	}
 	if d.HasChange(isVPNGatewayName) {
 		name := d.Get(isVPNGatewayName).(string)
 		vpnGatewayPatchModel.Name = &name
@@ -938,4 +1154,114 @@ func resourceVPNGatewayFlattenLifecycleReasons(lifecycleReasons []vpcv1.VPNGatew
 		}
 	}
 	return lifecycleReasonsList
+}
+
+func ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(model *vpcv1.VPNGatewayMember) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	healthReasons := []map[string]interface{}{}
+	for _, healthReasonsItem := range model.HealthReasons {
+		healthReasonsItemMap, err := ResourceIBMIsVPNGatewayVPNGatewayMemberHealthReasonToMap(&healthReasonsItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		healthReasons = append(healthReasons, healthReasonsItemMap)
+	}
+	modelMap["health_reasons"] = healthReasons
+	modelMap["health_state"] = *model.HealthState
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	lifecycleReasons := []map[string]interface{}{}
+	for _, lifecycleReasonsItem := range model.LifecycleReasons {
+		lifecycleReasonsItemMap, err := ResourceIBMIsVPNGatewayVPNGatewayMemberLifecycleReasonToMap(&lifecycleReasonsItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		lifecycleReasons = append(lifecycleReasons, lifecycleReasonsItemMap)
+	}
+	modelMap["lifecycle_reasons"] = lifecycleReasons
+	modelMap["lifecycle_state"] = *model.LifecycleState
+	privateIPMap, err := ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model.PrivateIP)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["private_ip"] = []map[string]interface{}{privateIPMap}
+	publicIPMap, err := ResourceIBMIsVPNGatewayIPToMap(model.PublicIP)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["public_ip"] = []map[string]interface{}{publicIPMap}
+	modelMap["role"] = *model.Role
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewayVPNGatewayMemberHealthReasonToMap(model *vpcv1.VPNGatewayMemberHealthReason) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["code"] = *model.Code
+	modelMap["message"] = *model.Message
+	if model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewayVPNGatewayMemberLifecycleReasonToMap(model *vpcv1.VPNGatewayMemberLifecycleReason) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["code"] = *model.Code
+	modelMap["message"] = *model.Message
+	if model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayMemberContext) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = *model.Address
+	if model.Deleted != nil {
+		deletedMap, err := ResourceIBMIsVPNGatewayDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	subnetMap, err := ResourceIBMIsVPNGatewaySubnetReferenceToMap(model.Subnet)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewayDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewaySubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = *model.CRN
+	if model.Deleted != nil {
+		deletedMap, err := ResourceIBMIsVPNGatewayDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func ResourceIBMIsVPNGatewayIPToMap(model *vpcv1.IP) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = *model.Address
+	return modelMap, nil
 }
