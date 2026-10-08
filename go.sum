@@ -172,8 +172,6 @@ github.com/IBM/vmware-go-sdk v0.1.5 h1:aQbwcJBceaaauuIoJ0OJn+ttwjb+QTX6XV9Jbrdpj
 github.com/IBM/vmware-go-sdk v0.1.5/go.mod h1:OyQKRInGGsBaOyE5LIZCqH7b1DZ01BvIYa8BgGy+wWo=
 github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5Jt9eE=
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
-github.com/IBM/vpc-go-sdk v0.92.0 h1:ZTqMwAg6iQkEfY3dSrcqW6G0RgMEtl6sBpn5xrBvqZs=
-github.com/IBM/vpc-go-sdk v0.92.0/go.mod h1:ePHjyAYteLahhPcly7r8K5os6trcxrOcYNAo32TTsZ0=
 github.com/IBM/vpc-go-sdk v0.92.1-0.20261008131541-5ed74af322b7 h1:vA9oliKiY2q4HxE1QLt9bstFPiWSmMAUXGn6oFC2s6Y=
 github.com/IBM/vpc-go-sdk v0.92.1-0.20261008131541-5ed74af322b7/go.mod h1:ePHjyAYteLahhPcly7r8K5os6trcxrOcYNAo32TTsZ0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
