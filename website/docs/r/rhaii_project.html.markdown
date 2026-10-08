@@ -13,10 +13,10 @@ Create, update, and delete a Red Hat AI Inference (RHAII) project with this reso
 An RHAII project is an instance of the `instructlab` service in the IBM Cloud resource controller. This resource is the Terraform equivalent of the following IBM Cloud CLI command.
 
 ```sh
-ibmcloud resource service-instance-create <name> instructlab instructlab-pricing-plan us-east -g <resource_group>
+ibmcloud resource service-instance-create <name> instructlab <plan_name> <location> -g <resource_group>
 ```
 
-The provider resolves the service, the plan, and the deployment for the location from the global catalog. You do not need to look up the plan ID or the deployment CRN yourself.
+In this command, `<plan_name>` is `instructlab-pricing-plan` and `<location>` is `us-east`. They map to the `plan_name` and `location` arguments. The provider resolves the service, the plan, and the deployment for the location from the global catalog. You do not need to look up the plan ID or the deployment CRN yourself. The plan ID is available in the `plan_id` attribute.
 
 For more information, see [Red Hat AI Inference on IBM Cloud](https://cloud.ibm.com/docs/inference) and the [Red Hat AI Inference API](https://cloud.ibm.com/docs/apis/inference).
 
@@ -33,6 +33,8 @@ resource "ibm_iam_access_tag" "rhaii" {
 
 resource "ibm_rhaii_project" "project" {
   name              = "my-rhaii-project"
+  plan_name         = "instructlab-pricing-plan"
+  location          = "us-east"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["env:dev", "team:ai"]
   access_tags       = [ibm_iam_access_tag.rhaii.name]
@@ -62,7 +64,7 @@ You can specify the following arguments for this resource.
 * `name` - (Required, String) The name of the project.
   * Constraints: The maximum length is `180` characters. The minimum length is `1` character. Letters, numbers, spaces, `-`, `.`, `_` and `:` are allowed.
 * `location` - (Optional, Forces new resource, String) The region where the project is created. The default value is `us-east`, which is the only region where the service is available today. If you set a region where the service is not deployed, the error lists the valid regions.
-* `plan` - (Optional, Forces new resource, String) The pricing plan of the project. The default value is `instructlab-pricing-plan`, which is the only plan today. You can set the plan name or the plan ID from the global catalog. The service does not support plan changes, so a new plan replaces the project.
+* `plan_name` - (Optional, Forces new resource, String) The name of the pricing plan of the project, as in the `SERVICE_PLAN_NAME` argument of `ibmcloud resource service-instance-create`. The default value is `instructlab-pricing-plan`, which is the only plan today. Set the plan name, not the plan ID; the plan ID is returned in `plan_id`. The service does not support plan changes, so a new plan name replaces the project.
 * `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. If you do not set it, the default resource group of the account is used.
 * `tags` - (Optional, Array of Strings) The user tags of the project. User tags help you organize and search for resources. They do not control access. Each tag can have up to 128 characters, and can contain letters, numbers, spaces, `_`, `.`, `-` and `:`.
 * `access_tags` - (Optional, Array of Strings) The access management tags of the project, in `key:value` format. Use them in IAM access policies to control who can work with the project. The tags must already exist in the account. You can create them with the `ibm_iam_access_tag` resource or in the console.
@@ -82,7 +84,7 @@ After your resource is created, you can read values from the listed arguments an
 * `dashboard_url` - (String) The relative URL of the project in the IBM Cloud console.
 * `account_id` - (String) The ID of the account that owns the project.
 * `resource_group_crn` - (String) The CRN of the resource group.
-* `resource_plan_id` - (String) The catalog ID of the plan of the project.
+* `plan_id` - (String) The global catalog ID of the pricing plan of the project.
 * `target_crn` - (String) The deployment CRN of the project in the global catalog.
 * `created_at` - (String) The date when the project was created.
 * `created_by` - (String) The subject who created the project.

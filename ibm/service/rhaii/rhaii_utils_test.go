@@ -60,16 +60,20 @@ func TestRhaiiResolvePlanID(t *testing.T) {
 	gc := newTestCatalog(t)
 	ctx := context.Background()
 
-	for _, plan := range []string{"instructlab-pricing-plan", "plan-1"} {
-		id, err := rhaiiResolvePlanID(ctx, gc, plan)
-		if err != nil || id != "plan-1" {
-			t.Errorf("rhaiiResolvePlanID(%q) = %q, %v", plan, id, err)
-		}
+	id, err := rhaiiResolvePlanID(ctx, gc, "instructlab-pricing-plan")
+	if err != nil || id != "plan-1" {
+		t.Errorf("rhaiiResolvePlanID(name) = %q, %v", id, err)
 	}
 
-	_, err := rhaiiResolvePlanID(ctx, gc, "missing")
+	// A plan ID is not accepted as a plan name; the error names the plan to use.
+	_, err = rhaiiResolvePlanID(ctx, gc, "plan-1")
+	if err == nil || !strings.Contains(err.Error(), `is a plan ID; set the plan name "instructlab-pricing-plan"`) {
+		t.Errorf("expected a plan ID error, got %v", err)
+	}
+
+	_, err = rhaiiResolvePlanID(ctx, gc, "missing")
 	if err == nil || !strings.Contains(err.Error(), `"instructlab-pricing-plan" "other-plan"`) {
-		t.Errorf("expected an error listing the valid plans, got %v", err)
+		t.Errorf("expected an error listing the valid plan names, got %v", err)
 	}
 }
 
@@ -238,15 +242,18 @@ func TestRhaiiSchemas(t *testing.T) {
 		t.Fatalf("resource schema is not valid: %s", err)
 	}
 	s := r.Schema
-	if !s["name"].Required || s["plan"].Default != rhaiiDefaultPlan || s["location"].Default != rhaiiDefaultLocation || !s["location"].ForceNew {
-		t.Error("unexpected name, plan or location schema")
+	if !s["name"].Required || s["plan_name"].Default != rhaiiDefaultPlan || s["location"].Default != rhaiiDefaultLocation || !s["location"].ForceNew {
+		t.Error("unexpected name, plan_name or location schema")
 	}
 	for _, k := range []string{"tags", "access_tags"} {
 		if !s[k].Optional || !s[k].Computed {
 			t.Errorf("%s must be optional and computed", k)
 		}
 	}
-	for _, k := range []string{"service", "project_id", "endpoint", "crn", "guid"} {
+	if _, ok := s["plan"]; ok {
+		t.Error("plan was renamed to plan_name")
+	}
+	for _, k := range []string{"service", "project_id", "endpoint", "crn", "guid", "plan_id"} {
 		if s[k] == nil || s[k].Optional || !s[k].Computed {
 			t.Errorf("%s must be computed only", k)
 		}
@@ -305,8 +312,8 @@ func TestRhaiiProjectValidators(t *testing.T) {
 		}
 	}
 
-	if !r.Schema["plan"].ForceNew {
-		t.Error("plan must force a new resource, the service does not support plan updates")
+	if !r.Schema["plan_name"].ForceNew {
+		t.Error("plan_name must force a new resource, the service does not support plan updates")
 	}
 }
 

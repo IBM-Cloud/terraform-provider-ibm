@@ -47,10 +47,10 @@ func DataSourceIBMRhaiiProject() *schema.Resource {
 			Computed:    true,
 			Description: "The region of the project.",
 		},
-		"plan": {
+		"plan_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "The pricing plan of the project.",
+			Description: "The name of the pricing plan of the project.",
 		},
 		"tags": {
 			Type:        schema.TypeSet,

@@ -33,6 +33,7 @@ Run `terraform destroy` when you no longer need the project.
 | ibmcloud_api_key | IBM Cloud API key | `string` | n/a |
 | resource_group | Name of the resource group for the project | `string` | `Default` |
 | project_name | Name of the project | `string` | `my-rhaii-project` |
+| plan_name | Name of the pricing plan of the project | `string` | `instructlab-pricing-plan` |
 | location | Region of the project | `string` | `us-east` |
 | tags | User tags for the project | `list(string)` | `[]` |
 | access_tags | Access management tags for the project. The tags must already exist. | `list(string)` | `[]` |
@@ -45,6 +46,7 @@ Run `terraform destroy` when you no longer need the project.
 | project_id | ID of the project. Use it as `project_id` in the Red Hat AI Inference API. |
 | endpoint | Public base URL of the Red Hat AI Inference API for this project |
 | private_endpoint | Private base URL of the Red Hat AI Inference API for this project |
+| plan_id | Global catalog ID of the pricing plan of the project |
 | crn | CRN of the project |
 | model_ids | IDs of the inference models available in the project |
 | model_status | Status of the selected inference model |

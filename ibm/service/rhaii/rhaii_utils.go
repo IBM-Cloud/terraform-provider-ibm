@@ -72,8 +72,10 @@ func rhaiiProjectPrivateEndpoint(location, projectID string) string {
 	return rhaiiv1.ProjectServiceURL(serviceURL, projectID)
 }
 
-// rhaiiResolvePlanID finds the catalog ID of a plan of the RHAII service by plan name or ID.
-func rhaiiResolvePlanID(ctx context.Context, gcClient *globalcatalogv1.GlobalCatalogV1, plan string) (string, error) {
+// rhaiiResolvePlanID finds the catalog ID of a plan of the RHAII service by plan
+// name. Only names are matched, like SERVICE_PLAN_NAME in
+// "ibmcloud resource service-instance-create".
+func rhaiiResolvePlanID(ctx context.Context, gcClient *globalcatalogv1.GlobalCatalogV1, planName string) (string, error) {
 	plans, _, err := gcClient.GetChildObjectsWithContext(ctx, &globalcatalogv1.GetChildObjectsOptions{
 		ID:   ptr(rhaiiServiceName),
 		Kind: ptr("plan"),
@@ -87,13 +89,16 @@ func rhaiiResolvePlanID(ctx context.Context, gcClient *globalcatalogv1.GlobalCat
 		if p.ID == nil || p.Name == nil {
 			continue
 		}
-		if *p.Name == plan || *p.ID == plan {
+		if *p.Name == planName {
 			return *p.ID, nil
+		}
+		if *p.ID == planName {
+			return "", fmt.Errorf("plan_name %q is a plan ID; set the plan name %q instead", planName, *p.Name)
 		}
 		available = append(available, *p.Name)
 	}
 	sort.Strings(available)
-	return "", fmt.Errorf("plan %q not found for service %q. Valid plans are: %q", plan, rhaiiServiceName, available)
+	return "", fmt.Errorf("plan %q not found for service %q. Valid plan names are: %q", planName, rhaiiServiceName, available)
 }
 
 // rhaiiResolveTargetCRN finds the deployment CRN of a plan in a location. This
@@ -182,7 +187,7 @@ func setRhaiiProjectAttributes(ctx context.Context, d *schema.ResourceData, meta
 		"dashboard_url":      instance.DashboardURL,
 		"account_id":         instance.AccountID,
 		"resource_group_crn": instance.ResourceGroupCRN,
-		"resource_plan_id":   instance.ResourcePlanID,
+		"plan_id":            instance.ResourcePlanID,
 		"target_crn":         instance.TargetCRN,
 		"created_by":         instance.CreatedBy,
 		"updated_by":         instance.UpdatedBy,
@@ -210,7 +215,7 @@ func setRhaiiProjectAttributes(ctx context.Context, d *schema.ResourceData, meta
 		if err != nil {
 			return err
 		}
-		values["plan"] = plan
+		values["plan_name"] = plan
 	}
 
 	for k, v := range values {
@@ -255,7 +260,7 @@ func rhaiiProjectComputedSchema() map[string]*schema.Schema {
 		"dashboard_url":      computed(schema.TypeString, "The relative URL of the project in the IBM Cloud console."),
 		"account_id":         computed(schema.TypeString, "The ID of the account that owns the project."),
 		"resource_group_crn": computed(schema.TypeString, "The CRN of the resource group of the project."),
-		"resource_plan_id":   computed(schema.TypeString, "The catalog ID of the plan of the project."),
+		"plan_id":            computed(schema.TypeString, "The global catalog ID of the pricing plan of the project."),
 		"target_crn":         computed(schema.TypeString, "The deployment CRN of the project in the global catalog."),
 		"created_at":         computed(schema.TypeString, "The date when the project was created."),
 		"created_by":         computed(schema.TypeString, "The subject who created the project."),

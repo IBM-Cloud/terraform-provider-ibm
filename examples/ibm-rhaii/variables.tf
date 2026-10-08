@@ -16,6 +16,12 @@ variable "project_name" {
   default     = "my-rhaii-project"
 }
 
+variable "plan_name" {
+  description = "Name of the pricing plan of the project (SERVICE_PLAN_NAME in the IBM Cloud CLI)"
+  type        = string
+  default     = "instructlab-pricing-plan"
+}
+
 variable "location" {
   description = "Region of the Red Hat AI Inference project"
   type        = string

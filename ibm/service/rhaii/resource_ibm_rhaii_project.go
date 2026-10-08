@@ -40,14 +40,15 @@ func ResourceIBMRhaiiProject() *schema.Resource {
 			Default:     rhaiiDefaultLocation,
 			Description: "The region where the project is created.",
 		},
-		// The catalog marks the service with plan_updateable=false, so a plan
-		// change replaces the project.
-		"plan": {
+		// The name, not the ID, like SERVICE_PLAN_NAME in the CLI. The ID is
+		// the computed plan_id. The catalog marks the service with
+		// plan_updateable=false, so a plan change replaces the project.
+		"plan_name": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 			Default:     rhaiiDefaultPlan,
-			Description: "The pricing plan of the project.",
+			Description: "The name of the pricing plan of the project.",
 		},
 		"resource_group_id": {
 			Type:        schema.TypeString,
@@ -150,7 +151,7 @@ func resourceIBMRhaiiProjectCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	location := d.Get("location").(string)
-	planID, err := rhaiiResolvePlanID(ctx, gcClient, d.Get("plan").(string))
+	planID, err := rhaiiResolvePlanID(ctx, gcClient, d.Get("plan_name").(string))
 	if err != nil {
 		return rhaiiDiag(err, "create", "resolve-plan")
 	}

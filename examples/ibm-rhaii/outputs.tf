@@ -13,6 +13,11 @@ output "private_endpoint" {
   value       = ibm_rhaii_project.project.private_endpoint
 }
 
+output "plan_id" {
+  description = "Global catalog ID of the pricing plan of the project"
+  value       = ibm_rhaii_project.project.plan_id
+}
+
 output "crn" {
   description = "CRN of the project"
   value       = ibm_rhaii_project.project.crn

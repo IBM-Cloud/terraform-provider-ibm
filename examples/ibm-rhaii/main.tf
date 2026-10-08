@@ -5,6 +5,7 @@ data "ibm_resource_group" "group" {
 // Create a Red Hat AI Inference project
 resource "ibm_rhaii_project" "project" {
   name              = var.project_name
+  plan_name         = var.plan_name
   location          = var.location
   resource_group_id = data.ibm_resource_group.group.id
   tags              = var.tags

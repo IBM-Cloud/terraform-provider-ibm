@@ -49,14 +49,14 @@ After your data source is created, you can read values from the following attrib
 * `guid` - (String) The GUID of the resource instance.
 * `crn` - (String) The CRN of the project.
 * `service` - (String) The service name of the project. Always `instructlab`.
-* `plan` - (String) The pricing plan of the project.
+* `plan_name` - (String) The name of the pricing plan of the project.
 * `state` - (String) The state of the project, for example `active`.
 * `tags` - (Array of Strings) The user tags of the project.
 * `access_tags` - (Array of Strings) The access management tags of the project.
 * `dashboard_url` - (String) The relative URL of the project in the IBM Cloud console.
 * `account_id` - (String) The ID of the account that owns the project.
 * `resource_group_crn` - (String) The CRN of the resource group.
-* `resource_plan_id` - (String) The catalog ID of the plan of the project.
+* `plan_id` - (String) The global catalog ID of the pricing plan of the project.
 * `target_crn` - (String) The deployment CRN of the project in the global catalog.
 * `created_at` - (String) The date when the project was created.
 * `created_by` - (String) The subject who created the project.
