@@ -846,7 +846,7 @@ Review the argument reference that you can specify for your resource.
   - `point_in_time_recovery` - (Optional, List) Point-in-time recovery settings.
 
     Nested scheme for `point_in_time_recovery`:
-    - `retention_days` - (Optional, Integer) Days of history kept for point-in-time recovery, from 7 to the region's maximum. It can be set at creation and updated in place, and it is read back from the instance. An instance that never sets it keeps 7 days. Removing the block keeps the current value; set `7` to return to the minimum. The platform refuses the setting where point-in-time recovery is not offered.
+    - `retention_days` - (Optional, Integer) Days of history kept for point-in-time recovery, from 7 to the region's maximum. It can be set at creation and updated in place, and it is read back from the instance. An instance that never sets it keeps 7 days, except a point-in-time restore, which starts with the source's retention as stored when the restore is requested; later changes to either instance do not affect the other. Removing the block keeps the current value; set `7` to return to the minimum. The platform refuses the setting where point-in-time recovery is not offered.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.

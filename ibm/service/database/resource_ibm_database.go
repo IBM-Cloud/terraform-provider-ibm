@@ -338,7 +338,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"retention_days": {
-										Description:  "Days of history kept for point-in-time recovery, from 7 to the region's maximum. An instance that never sets it keeps 7. Removing the block keeps the current value; set 7 to return to the minimum.",
+										Description:  "Days of history kept for point-in-time recovery, from 7 to the region's maximum. An instance that never sets it keeps 7, except a point-in-time restore, which starts with the source's retention as stored when the restore is requested; later changes to either instance do not affect the other. Removing the block keeps the current value; set 7 to return to the minimum.",
 										Type:         schema.TypeInt,
 										Optional:     true,
 										Computed:     true,
