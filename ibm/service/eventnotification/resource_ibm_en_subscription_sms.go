@@ -61,7 +61,7 @@ func ResourceIBMEnSMSSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"invited": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Computed:    true,
 							Description: "The phone numbers to invite. Add a number by adding it to this list; remove a number by removing it from this list.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
