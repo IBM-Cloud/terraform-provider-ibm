@@ -1,39 +1,56 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package transitgateway
+package transitgateway_test
 
 import (
-	"strings"
+	"fmt"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestTransitGatewayConnectionValidatorAllowsDynamicRouteServer(t *testing.T) {
-	validator := ResourceIBMTransitGatewayConnectionValidator()
-	for _, validationSchema := range validator.Schema {
-		if validationSchema.Identifier != tgNetworkType {
-			continue
-		}
-
-		for _, networkType := range strings.Split(validationSchema.AllowedValues, ",") {
-			if strings.TrimSpace(networkType) == "dynamic_route_server" {
-				return
-			}
-		}
-
-		t.Fatalf("dynamic_route_server is missing from network_type allowed values: %q", validationSchema.AllowedValues)
+func TestAccIBMTransitGatewayConnectionVpnGateway_basic(t *testing.T) {
+	if acc.Tg_cross_network_id == "" {
+		t.Skip("Skipping TestAccIBMTransitGatewayConnectionVpnGateway_basic because IBM_TG_CROSS_NETWORK_ID is not set")
 	}
-
-	t.Fatal("network_type validator is missing")
+	var tgConnection string
+	var randNum = acctest.RandIntRange(10, 100)
+	connectionName := fmt.Sprintf("tg-connection-vpngw-%d", randNum)
+	gatewayName := fmt.Sprintf("tg-gateway-name-%d", randNum)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTransitGatewayConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMTransitGatewayVpnGatewayConnectionConfig(gatewayName, connectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_tg_vpngw_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_tg_vpngw_connection", "name", connectionName),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_tg_vpngw_connection", "network_type", "vpn_gateway"),
+				),
+			},
+		},
+	})
 }
 
-func TestTransitGatewayConnectionDynamicRouteServerSchema(t *testing.T) {
-	connectionSchema := ResourceIBMTransitGatewayConnection().Schema
+func testAccCheckIBMTransitGatewayVpnGatewayConnectionConfig(gatewayName, connectionName string) string {
+	return fmt.Sprintf(`
+resource "ibm_tg_gateway" "test_tg_gateway" {
+	name     = "%s"
+	location = "us-south"
+	global   = true
+}
 
-	if !connectionSchema[tgNetworkId].Optional || !connectionSchema[tgNetworkId].ForceNew {
-		t.Fatal("network_id must remain an optional, ForceNew input for dynamic_route_server connections")
-	}
-	if !connectionSchema[tgCidr].Optional || !connectionSchema[tgCidr].ForceNew {
-		t.Fatal("cidr must be an optional, ForceNew input for dynamic_route_server connections")
-	}
+resource "ibm_tg_connection" "test_tg_vpngw_connection" {
+	gateway      = ibm_tg_gateway.test_tg_gateway.id
+	network_type = "vpn_gateway"
+	name         = "%s"
+	network_id   = "%s"
+}
+	`, gatewayName, connectionName, acc.Tg_cross_network_id)
 }

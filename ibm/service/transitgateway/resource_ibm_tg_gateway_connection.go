@@ -114,6 +114,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of a network_type 'classic' connection a tunnel is configured over. This field only applies to network type 'gre_tunnel' connections.",
 			},
+			tgCidr: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The CIDR of the VPN gateway or dynamic route server GRE tunnels. This field applies to network type 'vpn_gateway' and 'dynamic_route_server' connections. If unspecified, the service default is 198.19.174.0/23.",
+			},
 			tgBaseNetworkType: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -132,9 +139,16 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				ForceNew:    true,
 				Description: "The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
+			tgLocalBgpAsn: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The local network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+			},
 			tgRemoteBgpAsn: {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The remote network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
 			},
@@ -155,12 +169,6 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and is optional for network type 'vpn_gateway' connections. It must be unspecified for 'dynamic_route_server' connections.",
-			},
-			tgCidr: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The network_type 'vpn_gateway' and 'dynamic_route_server' connections use 'cidr' to specify the CIDR for their GRE tunnels. If unspecified, the service default is 198.19.174.0/23.",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -521,7 +529,6 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 	}
 }
 func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interface{}) error {
-
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -570,17 +577,30 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
-
+	if instance.LocalGatewayIp != nil {
+		d.Set(tgLocalGatewayIp, *instance.LocalGatewayIp)
+	}
+	if instance.LocalTunnelIp != nil {
+		d.Set(tgLocalTunnelIp, *instance.LocalTunnelIp)
+	}
+	if instance.RemoteGatewayIp != nil {
+		d.Set(tgRemoteGatewayIp, *instance.RemoteGatewayIp)
+	}
+	if instance.LocalBgpAsn != nil {
+		d.Set(tgLocalBgpAsn, *instance.LocalBgpAsn)
+	}
+	if instance.RemoteBgpAsn != nil {
+		d.Set(tgRemoteBgpAsn, *instance.RemoteBgpAsn)
+	}
 	if instance.PrefixFiltersDefault != nil {
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
-
-	if instance.Zone != nil {
-		d.Set(tgZone, *instance.Zone)
-	}
-
 	if instance.Cidr != nil {
 		d.Set(tgCidr, *instance.Cidr)
+	}
+
+	if instance.Zone != nil && instance.Zone.Name != nil {
+		d.Set(tgZone, *instance.Zone.Name)
 	}
 
 	d.Set(tgConnectionId, *instance.ID)

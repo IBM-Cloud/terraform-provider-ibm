@@ -23,7 +23,7 @@ func TestAccIbmCodeEngineConfigMapDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineConfigMapDataSourceConfigBasic(projectID, configMapName, configMapData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_config_map.code_engine_config_map_instance", "config_map_id"),

@@ -49,14 +49,15 @@ func TestAccIBMEnCustomDomainSubscriptionProductionDestination(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.from_name"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.from_email"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.add_notification_payload"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.invited"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.invited.#"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnCustomDomainSubscriptionProductionConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnCustomDomainSubscriptionProductionUpdatedConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_subscription_custom_email.en_subscription_production", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_subscription_custom_email.en_subscription_production", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_custom_email.en_subscription_production", "attributes.0.invited.#", "2"),
 				),
 			},
 			{
@@ -97,8 +98,8 @@ func TestAccIBMEnCustomDomainSubscriptionSandboxDestination(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_sandbox", "attributes.0.reply_to_mail"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_sandbox", "attributes.0.reply_to_name"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_sandbox", "attributes.0.add_notification_payload"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_sandbox", "attributes.0.invited"),
-					// Note: from_name and from_email should NOT be set for sandbox destinations
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_custom_email.en_subscription_sandbox", "attributes.0.invited.#"),
+					// from_name and from_email must NOT be set for sandbox destinations
 				),
 			},
 			{
@@ -125,39 +126,85 @@ func testAccCheckIBMEnCustomDomainSubscriptionProductionConfig(instanceName, nam
 		plan     = "standard"
 		service  = "event-notifications"
 	}
-	
+
 	resource "ibm_en_topic" "en_topic_resource_2" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
-		name        = "tf_topic_name_0234"
-		description = "tf_topic_description_0235"
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
 	}
-	
+
 	resource "ibm_en_destination_custom_email" "en_destination_production" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
-		name        = "Production Email Destination"
-		type        = "smtp_custom"
-		description = "Production custom email destination"
-		is_sandbox  = false
+		name          = "Production Email Destination"
+		type          = "smtp_custom"
+		description   = "Production custom email destination"
+		is_sandbox    = false
 		config {
 			params {
-				domain  = "production.example.com"
+				domain = "production.example.com"
 			}
 		}
 	}
-	
+
 	resource "ibm_en_subscription_custom_email" "en_subscription_production" {
-		name             = "%s"
-		description 	 = "%s"
-		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
-		topic_id         = ibm_en_topic.en_topic_resource_2.topic_id
-		destination_id   = ibm_en_destination_custom_email.en_destination_production.destination_id
+		name           = "%s"
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
+		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
+		destination_id = ibm_en_destination_custom_email.en_destination_production.destination_id
 		attributes {
-			add_notification_payload = true
-			reply_to_mail = "en@ibm.com"
-			reply_to_name = "EYS ORG"
-			from_name = "ABC ORG"
-			from_email = "testuser@production.example.com"
-			invited = ["testmail@gmail.com"]
+			add_notification_payload  = true
+			reply_to_mail             = "en@ibm.com"
+			reply_to_name             = "EYS ORG"
+			from_name                 = "ABC ORG"
+			from_email                = "testuser@production.example.com"
+			invited                   = ["testmail@gmail.com"]
+		}
+	}
+	`, instanceName, name, description)
+}
+
+func testAccCheckIBMEnCustomDomainSubscriptionProductionUpdatedConfig(instanceName, name, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_subscription_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+
+	resource "ibm_en_topic" "en_topic_resource_2" {
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
+	}
+
+	resource "ibm_en_destination_custom_email" "en_destination_production" {
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
+		name          = "Production Email Destination"
+		type          = "smtp_custom"
+		description   = "Production custom email destination"
+		is_sandbox    = false
+		config {
+			params {
+				domain = "production.example.com"
+			}
+		}
+	}
+
+	resource "ibm_en_subscription_custom_email" "en_subscription_production" {
+		name           = "%s"
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
+		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
+		destination_id = ibm_en_destination_custom_email.en_destination_production.destination_id
+		attributes {
+			add_notification_payload  = true
+			reply_to_mail             = "en@ibm.com"
+			reply_to_name             = "EYS ORG"
+			from_name                 = "ABC ORG"
+			from_email                = "testuser@production.example.com"
+			invited                   = ["testmail@gmail.com", "another@gmail.com"]
 		}
 	}
 	`, instanceName, name, description)
@@ -248,7 +295,7 @@ func testAccCheckIBMEnCustomDomainSubscriptionDestroy(s *terraform.State) error 
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_subscription_resource_1" {
+		if rs.Type != "ibm_en_subscription_custom_email" {
 			continue
 		}
 
