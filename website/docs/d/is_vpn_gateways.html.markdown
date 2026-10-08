@@ -42,8 +42,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vpn_gateways`:
   - `access_tags`  - (List) Access management tags associated for the vpn gateway.
-	- `availability_mode` - (String) The availability mode of the VPN gateway:- `zonal`: The availability of this VPN gateway is limited only to a single zone of a  given region as provided by the `zone` of the VPN gateway.
-	  * Constraints: Allowable values are: `zonal`. 
+  - `availability_mode` - (String) The availability mode of the VPN gateway. `zonal`: the gateway lives in a single zone, given by its `subnet`. `regional`: the gateway has two members that can be in the same or different zones of the region.
   - `crn` - (String) The VPN gateway's CRN.
   - `created_at`- (Timestamp) The date and time the VPN gateway was created.
   - `id` - (String) The ID of the VPN gateway.
@@ -51,8 +50,8 @@ In addition to all argument reference list, you can access the following attribu
   - `name`-  (String) The VPN gateway instance name.
 	- `members` - (List) The members for the VPN gateway.
 	  Nested schema for **members**:
-    - `address` - (String) The public IP address assigned to the VPN gateway member.</br>
-    - `role`-  (String) The high availability role assigned to the VPN gateway member.</br>
+		- `address` - (String) The public IP address assigned to the VPN gateway member. Same as `public_ip.0.address`.
+		- `private_address` - (String) The private IP address assigned to the VPN gateway member. Same as `private_ip.0.address`.
 		- `health_reasons` - (List) The reasons for the current `health_state` (if any).
 		  Nested schema for **health_reasons**:
 			- `code` - (String) A reason code for this health state:- `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's  subnet)- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
@@ -94,7 +93,6 @@ In addition to all argument reference list, you can access the following attribu
 		  Nested schema for **public_ip**:
 			- `address` - (String) The IP address.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
 		- `role` - (String) The high availability role assigned to the VPN gateway member.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
-	  - `private_address` - (String) The private IP address assigned to the VPN gateway member. Same as `private_ip.0.address`.</br>
   
 
   - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.

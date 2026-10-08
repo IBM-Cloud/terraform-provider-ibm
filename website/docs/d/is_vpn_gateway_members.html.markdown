@@ -22,7 +22,7 @@ data "ibm_is_vpn_gateway_members" "is_vpn_gateway_members" {
 
 You can specify the following arguments for this data source.
 
-- `vpn_gateway_id` - (Required, Forces new resource, String) The VPN gateway identifier.
+- `vpn_gateway_id` - (Required, String) The VPN gateway identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 
 ## Attribute Reference

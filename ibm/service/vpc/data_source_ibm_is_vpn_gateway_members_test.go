@@ -14,6 +14,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
@@ -98,121 +99,42 @@ func testAccCheckIBMIsVPNGatewayMembersDataSourceConfigBasic(vpc, subnet1, subne
 }
 
 func TestDataSourceIBMIsVPNGatewayMembersPageLinkToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["href"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
 	model := new(vpcv1.PageLink)
 	model.Href = core.StringPtr("testString")
 
 	result, err := vpc.DataSourceIBMIsVPNGatewayMembersPageLinkToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"href": "testString"}, result)
+
+	// A missing page link must not panic.
+	result, err = vpc.DataSourceIBMIsVPNGatewayMembersPageLinkToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, result)
 }
 
-func TestDataSourceIBMIsVPNGatewayMembersVPNGatewayMemberHealthReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "cannot_reserve_ip_address"
-		model["message"] = "IP address exhaustion (release addresses on the VPN's subnet)."
-		model["more_info"] = "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-health"
-
-		assert.Equal(t, result, model)
+// TestDataSourceIBMIsVPNGatewayMembersCollectionItemToMap checks that the
+// collection item only carries keys that exist in the data source schema and
+// that a pending member without IPs is handled.
+func TestDataSourceIBMIsVPNGatewayMembersCollectionItemToMap(t *testing.T) {
+	model := &vpcv1.VPNGatewayMember{
+		HealthReasons:    []vpcv1.VPNGatewayMemberHealthReason{},
+		HealthState:      core.StringPtr("inapplicable"),
+		ID:               core.StringPtr("r006-member-1"),
+		LifecycleReasons: []vpcv1.VPNGatewayMemberLifecycleReason{},
+		LifecycleState:   core.StringPtr("pending"),
+		Role:             core.StringPtr("standby"),
 	}
-
-	model := new(vpcv1.VPNGatewayMemberHealthReason)
-	model.Code = core.StringPtr("cannot_reserve_ip_address")
-	model.Message = core.StringPtr("IP address exhaustion (release addresses on the VPN's subnet).")
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-health")
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberHealthReasonToMap(model)
+	result, err := vpc.DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberCollectionItemToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
-}
+	assert.Equal(t, "r006-member-1", result["id"])
+	assert.Equal(t, "pending", result["lifecycle_state"])
+	assert.NotContains(t, result, "private_ip")
+	assert.NotContains(t, result, "public_ip")
+	assert.NotContains(t, result, "address")
+	assert.NotContains(t, result, "private_address")
 
-func TestDataSourceIBMIsVPNGatewayMembersVPNGatewayMemberLifecycleReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "resource_suspended_by_provider"
-		model["message"] = "The resource has been suspended. Contact IBM support with the CRN for next steps."
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#resource-suspension"
-
-		assert.Equal(t, result, model)
+	schemaKeys := vpc.DataSourceIBMIsVPNGatewayMembers().Schema["members"].Elem.(*schema.Resource).Schema
+	for k := range result {
+		assert.Contains(t, schemaKeys, k)
 	}
-
-	model := new(vpcv1.VPNGatewayMemberLifecycleReason)
-	model.Code = core.StringPtr("resource_suspended_by_provider")
-	model.Message = core.StringPtr("The resource has been suspended. Contact IBM support with the CRN for next steps.")
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#resource-suspension")
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberLifecycleReasonToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIBMIsVPNGatewayMembersDeletedToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.Deleted)
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMembersDeletedToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIBMIsVPNGatewayMembersSubnetReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["name"] = "my-subnet"
-		model["resource_type"] = "subnet"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.SubnetReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.Name = core.StringPtr("my-subnet")
-	model.ResourceType = core.StringPtr("subnet")
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMembersSubnetReferenceToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIBMIsVPNGatewayMembersIPToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["address"] = "192.168.3.4"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.IP)
-	model.Address = core.StringPtr("192.168.3.4")
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMembersIPToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

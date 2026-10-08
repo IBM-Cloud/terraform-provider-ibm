@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc
@@ -12,7 +12,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+const (
+	isVPNGatewayMemberLifecycleStable = "stable"
+	isVPNGatewayMemberLifecycleFailed = "failed"
 )
 
 func ResourceIBMISVpnGatewayMemberReplace() *schema.Resource {
@@ -21,10 +27,7 @@ func ResourceIBMISVpnGatewayMemberReplace() *schema.Resource {
 		ReadContext:   resourceIBMISVpnGatewayMemberReplaceRead,
 		DeleteContext: resourceIBMISVpnGatewayMemberReplaceDelete,
 		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set("vpn_gateway_id", d.Id())
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: resourceIBMISVpnGatewayMemberReplaceImport,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -37,64 +40,76 @@ func ResourceIBMISVpnGatewayMemberReplace() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The VPN gateway identifier",
+				Description: "The VPN gateway identifier.",
 			},
 			"vpn_gateway_member_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The VPN gateway member identifier",
+				Description: "The VPN gateway member identifier.",
 			},
 			"subnet": {
 				Type:        schema.TypeList,
 				Required:    true,
 				ForceNew:    true,
 				MaxItems:    1,
-				Description: "The subnet to replace the VPN gateway member with",
+				Description: "The subnet to move the VPN gateway member to. A reserved IP is allocated from this subnet.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The subnet identifier",
+							Computed:    true,
+							ForceNew:    true,
+							Description: "The subnet identifier.",
 						},
 						"crn": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The subnet CRN",
+							Computed:    true,
+							ForceNew:    true,
+							Description: "The subnet CRN.",
 						},
 						"href": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The subnet href",
+							Computed:    true,
+							ForceNew:    true,
+							Description: "The subnet URL.",
 						},
 					},
 				},
 			},
-			"status": {
+			"role": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the VPN gateway member replacement",
+				Description: "The high availability role assigned to the VPN gateway member.",
+			},
+			"lifecycle_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the VPN gateway member.",
+			},
+			"health_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health state of the VPN gateway member.",
+			},
+			"private_ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The private IP address of the VPN gateway member in the new subnet.",
+			},
+			"public_ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The public IP address of the VPN gateway member.",
 			},
 		},
 	}
 }
 
 func resourceIBMISVpnGatewayMemberReplaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf("[DEBUG] VPN Gateway Member Replace create")
-
-	vpnGatewayID := d.Get("vpn_gateway_id").(string)
-	vpnGatewayMemberID := d.Get("vpn_gateway_member_id").(string)
-
-	err := vpnGatewayMemberReplaceCreate(ctx, d, meta, vpnGatewayID, vpnGatewayMemberID)
-	if err != nil {
-		return err
-	}
-
-	return resourceIBMISVpnGatewayMemberReplaceRead(ctx, d, meta)
-}
-
-func vpnGatewayMemberReplaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}, vpnGatewayID, vpnGatewayMemberID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "initialize-client")
@@ -102,95 +117,86 @@ func vpnGatewayMemberReplaceCreate(ctx context.Context, d *schema.ResourceData, 
 		return tfErr.GetDiag()
 	}
 
-	// Build subnet prototype
-	subnetPrototype := &vpcv1.SubnetIdentity{}
+	vpnGatewayID := d.Get("vpn_gateway_id").(string)
+	vpnGatewayMemberID := d.Get("vpn_gateway_member_id").(string)
 
-	if subnetRaw, ok := d.GetOk("subnet"); ok {
-		subnetList := subnetRaw.([]interface{})
-		if len(subnetList) > 0 {
-			subnet := subnetList[0].(map[string]interface{})
-			if id, ok := subnet["id"]; ok && id.(string) != "" {
-				subnetPrototype.ID = flex.PtrToString(id.(string))
-			} else if crn, ok := subnet["crn"]; ok && crn.(string) != "" {
-				subnetPrototype.CRN = flex.PtrToString(crn.(string))
-			} else if href, ok := subnet["href"]; ok && href.(string) != "" {
-				subnetPrototype.Href = flex.PtrToString(href.(string))
-			} else {
-				err := fmt.Errorf("[ERROR] subnet must provide one of id, crn, or href")
-				tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "set-subnet")
-				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-				return tfErr.GetDiag()
-			}
-		} else {
-			err := fmt.Errorf("[ERROR] subnet must be provided")
-			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "set-subnet")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-	} else {
-		err := fmt.Errorf("[ERROR] subnet is required")
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "set-subnet")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+	subnetList := d.Get("subnet").([]interface{})
+	if len(subnetList) == 0 || subnetList[0] == nil {
+		err := fmt.Errorf("subnet must specify one of id, crn or href")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "parse-subnet").GetDiag()
 	}
-
-	// Build subnet prototype
-
-	replaceOptions := &vpcv1.ReplaceVPNGatewayMemberPrivateIPOptions{
-		VPNGatewayID: &vpnGatewayID,
-		ID:           &vpnGatewayMemberID,
-		PrivateIP: &vpcv1.VPNGatewayMemberPrivateIPPrototype{
-			Subnet: subnetPrototype,
-		},
-	}
-
-	_, response, err := sess.ReplaceVPNGatewayMemberPrivateIPWithContext(ctx, replaceOptions)
+	subnetIdentity, err := vpnGatewaySubnetIdentityFromMap(subnetList[0].(map[string]interface{}))
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceVPNGatewayMemberWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway_connection", "create")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "create", "parse-subnet").GetDiag()
+	}
+
+	replaceOptions := sess.NewReplaceVPNGatewayMemberOptions(vpnGatewayID, vpnGatewayMemberID,
+		&vpcv1.VPNGatewayMemberPrivateIPPrototypeReservedIPPrototypeVPNGatewayContext{
+			Subnet: subnetIdentity,
+		})
+
+	member, _, err := sess.ReplaceVPNGatewayMemberWithContext(ctx, replaceOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceVPNGatewayMemberWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway_member_replace", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	// Set the resource ID as combination of gateway ID and member ID
-	d.SetId(fmt.Sprintf("%s/%s", vpnGatewayID, vpnGatewayMemberID))
-	log.Printf("[INFO] VPN Gateway Member Replace initiated for gateway: %s, member: %s", vpnGatewayID, vpnGatewayMemberID)
+	// The replace recreates the member. Track it by the ID the API returns so
+	// Read does not lose it if the service hands back a new member ID.
+	memberID := vpnGatewayMemberID
+	if member != nil && member.ID != nil {
+		memberID = *member.ID
+	}
+	d.SetId(fmt.Sprintf("%s/%s", vpnGatewayID, memberID))
+	log.Printf("[INFO] VPN gateway member replace started for gateway %s, member %s", vpnGatewayID, memberID)
 
-	// Check if response contains the updated member
-	if response != nil && response.StatusCode == 204 {
-		log.Printf("[INFO] VPN Gateway Member Replace completed successfully (204 No Content)")
-	} else if response != nil && response.StatusCode != 204 {
-		err := fmt.Errorf("[ERROR] Unexpected status code: %d", response.StatusCode)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceVPNGatewayMemberWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway_connection", "create")
+	if _, err = isWaitForVPNGatewayMemberStable(ctx, sess, vpnGatewayID, memberID, d.Timeout(schema.TimeoutCreate)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVPNGatewayMemberStable failed: %s", err.Error()), "ibm_is_vpn_gateway_member_replace", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	return nil
+	return resourceIBMISVpnGatewayMemberReplaceRead(ctx, d, meta)
+}
+
+func isWaitForVPNGatewayMemberStable(ctx context.Context, sess *vpcv1.VpcV1, vpnGatewayID, memberID string, timeout time.Duration) (interface{}, error) {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pending", "updating", "waiting"},
+		Target:  []string{isVPNGatewayMemberLifecycleStable},
+		Refresh: func() (interface{}, string, error) {
+			member, _, err := sess.GetVPNGatewayMemberWithContext(ctx, &vpcv1.GetVPNGatewayMemberOptions{
+				VPNGatewayID: &vpnGatewayID,
+				ID:           &memberID,
+			})
+			if err != nil {
+				return nil, "", fmt.Errorf("error getting VPN gateway member (%s/%s): %s", vpnGatewayID, memberID, err)
+			}
+			if member.LifecycleState == nil {
+				return member, "pending", nil
+			}
+			if *member.LifecycleState == isVPNGatewayMemberLifecycleFailed {
+				return member, *member.LifecycleState, fmt.Errorf("VPN gateway member (%s/%s) went into failed state", vpnGatewayID, memberID)
+			}
+			return member, *member.LifecycleState, nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(ctx)
 }
 
 func resourceIBMISVpnGatewayMemberReplaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Split the composite ID
-	id := d.Id()
-	if id == "" {
-		return nil
+	parts, err := flex.IdParts(d.Id())
+	if err != nil || len(parts) != 2 {
+		if err == nil {
+			err = fmt.Errorf("unexpected ID format (%s), expected vpn_gateway_id/vpn_gateway_member_id", d.Id())
+		}
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "read", "sep-id-parts").GetDiag()
 	}
+	vpnGatewayID, memberID := parts[0], parts[1]
 
-	// Split the ID to get gateway and member IDs
-	parts, err := flex.IdParts(id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	vpnGatewayID := parts[0]
-	vpnGatewayMemberID := parts[1]
-
-	diag := vpnGatewayMemberReplaceGet(d, meta, vpnGatewayID, vpnGatewayMemberID)
-	if diag != nil {
-		return diag
-	}
-	return nil
-}
-
-func vpnGatewayMemberReplaceGet(d *schema.ResourceData, meta interface{}, vpnGatewayID, vpnGatewayMemberID string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "read", "initialize-client")
@@ -198,34 +204,81 @@ func vpnGatewayMemberReplaceGet(d *schema.ResourceData, meta interface{}, vpnGat
 		return tfErr.GetDiag()
 	}
 
-	getOptions := &vpcv1.GetVPNGatewayMemberOptions{
+	member, response, err := sess.GetVPNGatewayMemberWithContext(ctx, &vpcv1.GetVPNGatewayMemberOptions{
 		VPNGatewayID: &vpnGatewayID,
-		ID:           &vpnGatewayMemberID,
-	}
-
-	_, response, err := sess.GetVPNGatewayMember(getOptions)
+		ID:           &memberID,
+	})
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		err := fmt.Errorf("[ERROR] Error Getting VPN Gateway Member (%s/%s): %s\n%s", vpnGatewayID, vpnGatewayMemberID, err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpnGatewayMemberReplaceGet failed: %s", err.Error()), "ibm_is_vpn_gateway_connection", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNGatewayMemberWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway_member_replace", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	// Set the fields from the response
-	d.Set("vpn_gateway_id", vpnGatewayID)
-	d.Set("vpn_gateway_member_id", vpnGatewayMemberID)
-
-	d.Set("status", "204")
-
+	if err = d.Set("vpn_gateway_id", vpnGatewayID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "read", "set-vpn_gateway_id").GetDiag()
+	}
+	// Keep the configured member ID; only fill it in on import.
+	if d.Get("vpn_gateway_member_id").(string) == "" {
+		if err = d.Set("vpn_gateway_member_id", memberID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "read", "set-vpn_gateway_member_id").GetDiag()
+		}
+	}
+	if member.Role != nil {
+		d.Set("role", *member.Role)
+	}
+	if member.LifecycleState != nil {
+		d.Set("lifecycle_state", *member.LifecycleState)
+	}
+	if member.HealthState != nil {
+		d.Set("health_state", *member.HealthState)
+	}
+	if member.PublicIP != nil && member.PublicIP.Address != nil {
+		d.Set("public_ip_address", *member.PublicIP.Address)
+	}
+	if member.PrivateIP != nil {
+		if member.PrivateIP.Address != nil {
+			d.Set("private_ip_address", *member.PrivateIP.Address)
+		}
+		if member.PrivateIP.Subnet != nil {
+			subnet := map[string]interface{}{}
+			if member.PrivateIP.Subnet.ID != nil {
+				subnet["id"] = *member.PrivateIP.Subnet.ID
+			}
+			if member.PrivateIP.Subnet.CRN != nil {
+				subnet["crn"] = *member.PrivateIP.Subnet.CRN
+			}
+			if member.PrivateIP.Subnet.Href != nil {
+				subnet["href"] = *member.PrivateIP.Subnet.Href
+			}
+			if err = d.Set("subnet", []map[string]interface{}{subnet}); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_member_replace", "read", "set-subnet").GetDiag()
+			}
+		}
+	}
 	return nil
 }
 
+func resourceIBMISVpnGatewayMemberReplaceImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts, err := flex.IdParts(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return nil, fmt.Errorf("unexpected import ID (%s), expected vpn_gateway_id/vpn_gateway_member_id", d.Id())
+	}
+	d.Set("vpn_gateway_id", parts[0])
+	d.Set("vpn_gateway_member_id", parts[1])
+	return []*schema.ResourceData{d}, nil
+}
+
+// resourceIBMISVpnGatewayMemberReplaceDelete only removes the resource from
+// state. There is no API to undo a member replace, and the member itself is
+// owned by the VPN gateway.
 func resourceIBMISVpnGatewayMemberReplaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf("[DEBUG] VPN Gateway Member Replace delete - setting ID to empty")
 	d.SetId("")
 	return nil
 }

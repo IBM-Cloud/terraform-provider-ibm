@@ -57,7 +57,6 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: "The VPN gateway's CRN",
 						},
-						// regional vpn
 						"members": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -468,6 +467,7 @@ func dataSourceIBMVPNGatewaysRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 
+	memberSchema := DataSourceIBMISVPNGateways().Schema[isvpnGateways].Elem.(*schema.Resource).Schema[isVPNGatewayMembers].Elem.(*schema.Resource).Schema
 	vpngateways := make([]map[string]interface{}, 0)
 	for _, instance := range allrecs {
 		gateway := map[string]interface{}{}
@@ -483,25 +483,27 @@ func dataSourceIBMVPNGatewaysRead(context context.Context, d *schema.ResourceDat
 		if data.LocalAsn != nil {
 			gateway[isVPNGatewayLocalAsn] = *data.LocalAsn
 		}
-		// regional vpn
-		gateway["availability_mode"] = *data.AvailabilityMode
-
+		if data.AvailabilityMode != nil {
+			gateway["availability_mode"] = *data.AvailabilityMode
+		}
 		members := []map[string]interface{}{}
 		for _, membersItem := range data.Members {
-			membersItemMap, err := DataSourceIBMIsVPNGatewaysVPNGatewayMemberToMap(&membersItem) // #nosec G601
+			membersItemMap, err := vpnGatewayMemberMapForSchema(&membersItem, memberSchema) // #nosec G601
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DataSourceIBMIsVPNGatewaysVPNGatewayMemberToMap failed %s", err), "(Data) ibm_is_vpn_gateways", "read")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpnGatewayMemberMapForSchema failed %s", err), "(Data) ibm_is_vpn_gateways", "read")
 				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
 			members = append(members, membersItemMap)
 		}
-		gateway["members"] = members
+		gateway[isVPNGatewayMembers] = members
 		if data.AdvertisedCIDRs != nil {
 			gateway[isVPNGatewayAdvertisedCidrs] = data.AdvertisedCIDRs
 		}
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
-		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
+		if data.Subnet != nil && data.Subnet.ID != nil {
+			gateway[isVPNGatewaySubnet] = *data.Subnet.ID
+		}
 		gateway[isVPNGatewayCrn] = *data.CRN
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *data.CRN, "", isUserTagType)
 		if err != nil {
@@ -516,21 +518,6 @@ func dataSourceIBMVPNGatewaysRead(context context.Context, d *schema.ResourceDat
 				"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
 		}
 		gateway[isVPNGatewayAccessTags] = accesstags
-		// if data.Members != nil {
-		// 	vpcMembersIpsList := make([]map[string]interface{}, 0)
-		// 	for _, memberIP := range data.Members {
-		// 		currentMemberIP := map[string]interface{}{}
-		// 		if memberIP.PublicIP != nil {
-		// 			currentMemberIP["address"] = *memberIP.PublicIP.Address
-		// 			currentMemberIP["role"] = *memberIP.Role
-		// 			vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
-		// 		}
-		// 		if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
-		// 			currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
-		// 		}
-		// 	}
-		// 	gateway[isVPNGatewayMembers] = vpcMembersIpsList
-		// }
 
 		if data.VPC != nil {
 			vpcList := []map[string]interface{}{}
@@ -586,113 +573,4 @@ func dataSourceVPNGatewayCollectionVpcsDeletedToMap(deletedItem vpcv1.Deleted) (
 	}
 
 	return deletedMap
-}
-
-func DataSourceIBMIsVPNGatewaysVPNGatewayMemberToMap(model *vpcv1.VPNGatewayMember) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	healthReasons := []map[string]interface{}{}
-	for _, healthReasonsItem := range model.HealthReasons {
-		healthReasonsItemMap, err := DataSourceIBMIsVPNGatewaysVPNGatewayMemberHealthReasonToMap(&healthReasonsItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		healthReasons = append(healthReasons, healthReasonsItemMap)
-	}
-	modelMap["health_reasons"] = healthReasons
-	modelMap["health_state"] = *model.HealthState
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	lifecycleReasons := []map[string]interface{}{}
-	for _, lifecycleReasonsItem := range model.LifecycleReasons {
-		lifecycleReasonsItemMap, err := DataSourceIBMIsVPNGatewaysVPNGatewayMemberLifecycleReasonToMap(&lifecycleReasonsItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		lifecycleReasons = append(lifecycleReasons, lifecycleReasonsItemMap)
-	}
-	modelMap["lifecycle_reasons"] = lifecycleReasons
-	modelMap["lifecycle_state"] = *model.LifecycleState
-	privateIPMap, err := DataSourceIBMIsVPNGatewaysReservedIPReferenceVPNGatewayContextToMap(model.PrivateIP)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["private_ip"] = []map[string]interface{}{privateIPMap}
-	publicIPMap, err := DataSourceIBMIsVPNGatewaysIPToMap(model.PublicIP)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["public_ip"] = []map[string]interface{}{publicIPMap}
-	modelMap["role"] = *model.Role
-	return modelMap, nil
-}
-
-func DataSourceIBMIsVPNGatewaysVPNGatewayMemberHealthReasonToMap(model *vpcv1.VPNGatewayMemberHealthReason) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMIsVPNGatewaysVPNGatewayMemberLifecycleReasonToMap(model *vpcv1.VPNGatewayMemberLifecycleReason) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMIsVPNGatewaysReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayMemberContext) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
-	if model.Deleted != nil {
-		deletedMap, err := DataSourceIBMIsVPNGatewaysDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
-	subnetMap, err := DataSourceIBMIsVPNGatewaysSubnetReferenceToMap(model.Subnet)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["subnet"] = []map[string]interface{}{subnetMap}
-	return modelMap, nil
-}
-
-func DataSourceIBMIsVPNGatewaysSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
-	if model.Deleted != nil {
-		deletedMap, err := DataSourceIBMIsVPNGatewaysDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
-	return modelMap, nil
-}
-
-func DataSourceIBMIsVPNGatewaysIPToMap(model *vpcv1.IP) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
-	return modelMap, nil
-}
-func DataSourceIBMIsVPNGatewaysDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = *model.MoreInfo
-	return modelMap, nil
 }

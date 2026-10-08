@@ -45,6 +45,7 @@ const (
 	isVPNGatewayHealthReasons     = "health_reasons"
 	isVPNGatewayLifecycleState    = "lifecycle_state"
 	isVPNGatewayLifecycleReasons  = "lifecycle_reasons"
+	isVPNGatewayAvailabilityMode  = "availability_mode"
 )
 
 func ResourceIBMISVPNGateway() *schema.Resource {
@@ -62,6 +63,7 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.All(
+			resourceIBMISVPNGatewayCustomizeDiff,
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceTagsCustomizeDiff(diff)
@@ -85,9 +87,10 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 
 			isVPNGatewaySubnet: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
-				Description: "VPNGateway subnet info",
+				Description: "The subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set for a regional VPN gateway.",
 			},
 
 			isVPNGatewayResourceGroup: {
@@ -273,14 +276,14 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			// regional vpn
-
-			"members": &schema.Schema{
+			isVPNGatewayMembers: {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The members for the VPN gateway.",
+				MinItems:    2,
+				MaxItems:    2,
+				Description: "The members for the VPN gateway. Set this only for a regional VPN gateway, with one `private_ip.subnet` per member. The subnet is used at create time only: later member moves are done with `ibm_is_vpn_gateway_member_replace` and are not treated as drift.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -296,8 +299,8 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 						},
 						"role": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The high availability role assigned to the VPN gateway member.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Computed:    true,
+							Description: "The high availability role assigned to the VPN gateway member.",
 						},
 						"status": {
 							Type:        schema.TypeString,
@@ -369,8 +372,11 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 						},
 						"private_ip": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
-							Description: "The reserved IP address assigned to the VPN gateway member.This property will be present only when the VPN gateway status is `available`.",
+							ForceNew:    true,
+							MaxItems:    1,
+							Description: "The reserved IP address assigned to the VPN gateway member. On create, set `subnet` to choose the member subnet.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": &schema.Schema{
@@ -413,15 +419,21 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 										Description: "The resource type.",
 									},
 									"subnet": &schema.Schema{
-										Type:     schema.TypeList,
-										MaxItems: 1,
-										Required: true,
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										ForceNew:    true,
+										MaxItems:    1,
+										Description: "The subnet of the VPN gateway member. Specify one of `id`, `crn` or `href`.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"crn": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The CRN for this subnet.",
+													Type:             schema.TypeString,
+													Optional:         true,
+													Computed:         true,
+													ForceNew:         true,
+													DiffSuppressFunc: suppressVPNGatewayMemberSubnetDiff,
+													Description:      "The CRN for this subnet.",
 												},
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
@@ -438,14 +450,20 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 													},
 												},
 												"href": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The URL for this subnet.",
+													Type:             schema.TypeString,
+													Optional:         true,
+													Computed:         true,
+													ForceNew:         true,
+													DiffSuppressFunc: suppressVPNGatewayMemberSubnetDiff,
+													Description:      "The URL for this subnet.",
 												},
 												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The unique identifier for this subnet.",
+													Type:             schema.TypeString,
+													Optional:         true,
+													Computed:         true,
+													ForceNew:         true,
+													DiffSuppressFunc: suppressVPNGatewayMemberSubnetDiff,
+													Description:      "The unique identifier for this subnet.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
@@ -480,12 +498,13 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 					},
 				},
 			},
-			"availability_mode": &schema.Schema{
+			isVPNGatewayAvailabilityMode: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_vpn_gateway", "availability_mode"),
-				Description:  "The availability mode of the VPN gateway:- `zonal`: The availability of this VPN gateway is limited only to a single zone of a  given region as provided by the `zone` of the VPN gateway.",
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpn_gateway", isVPNGatewayAvailabilityMode),
+				Description:  "The availability mode of the VPN gateway. `zonal`: the gateway lives in the single zone of its `subnet`. `regional`: the gateway has two `members` that can be in the same or different zones of the region (route-based gateways only). This value cannot be updated in place; changing it recreates the gateway.",
 			},
 			"vpc": {
 				Type:        schema.TypeList,
@@ -550,7 +569,7 @@ func ResourceIBMISVPNGatewayValidator() *validate.ResourceValidator {
 			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "availability_mode",
+			Identifier:                 isVPNGatewayAvailabilityMode,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   false,
@@ -609,11 +628,25 @@ func vpngwCreate(context context.Context, d *schema.ResourceData, meta interface
 		return tfErr.GetDiag()
 	}
 	vpnGatewayPrototype := &vpcv1.VPNGatewayPrototype{
-		Subnet: &vpcv1.SubnetIdentity{
-			ID: &subnetID,
-		},
 		Name: &name,
 		Mode: &mode,
+	}
+	if subnetID != "" {
+		vpnGatewayPrototype.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnetID,
+		}
+	}
+	if availabilityMode, ok := d.GetOk(isVPNGatewayAvailabilityMode); ok {
+		vpnGatewayPrototype.AvailabilityMode = core.StringPtr(availabilityMode.(string))
+	}
+	if membersIntf, ok := d.GetOk(isVPNGatewayMembers); ok {
+		members, err := resourceIBMISVPNGatewayMapToMemberPrototypes(membersIntf.([]interface{}))
+		if err != nil {
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "create", "parse-members")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		vpnGatewayPrototype.Members = members
 	}
 	if localAsnIntf, ok := d.GetOk(isVPNGatewayLocalAsn); ok {
 		localAsn := int64(localAsnIntf.(int))
@@ -743,25 +776,10 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-name").GetDiag()
 		}
 	}
-	// regional vpn
 	if !core.IsNil(vpnGateway.AvailabilityMode) {
-		if err = d.Set("availability_mode", vpnGateway.AvailabilityMode); err != nil {
+		if err = d.Set(isVPNGatewayAvailabilityMode, vpnGateway.AvailabilityMode); err != nil {
 			err = fmt.Errorf("Error setting availability_mode: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-availability_mode").GetDiag()
-		}
-	}
-	if !core.IsNil(vpnGateway.Members) {
-		members := []map[string]interface{}{}
-		for _, membersItem := range vpnGateway.Members {
-			membersItemMap, err := ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(&membersItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "members-to-map").GetDiag()
-			}
-			members = append(members, membersItemMap)
-		}
-		if err = d.Set("members", members); err != nil {
-			err = fmt.Errorf("Error setting members: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-members").GetDiag()
 		}
 	}
 	if !core.IsNil(vpnGateway.Subnet) {
@@ -791,11 +809,13 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 	for _, member := range vpnGateway.Members {
 		members = append(members, member)
 	}
-	if len(members) > 0 {
+	if len(members) > 0 && members[0].PublicIP != nil && members[0].PublicIP.Address != nil {
 		if err = d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address); err != nil {
 			err = fmt.Errorf("Error setting public_ip_address: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-public_ip_address").GetDiag()
 		}
+	}
+	if len(members) > 0 {
 		if members[0].PrivateIP != nil && members[0].PrivateIP.Address != nil {
 			if err = d.Set(isVPNGatewayPrivateIPAddress, *members[0].PrivateIP.Address); err != nil {
 				err = fmt.Errorf("Error setting private_ip_address: %s", err)
@@ -804,9 +824,11 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 		}
 	}
 	if len(members) > 1 {
-		if err = d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address); err != nil {
-			err = fmt.Errorf("Error setting public_ip_address2: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-public_ip_address2").GetDiag()
+		if members[1].PublicIP != nil && members[1].PublicIP.Address != nil {
+			if err = d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address); err != nil {
+				err = fmt.Errorf("Error setting public_ip_address2: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-public_ip_address2").GetDiag()
+			}
 		}
 		if members[1].PrivateIP != nil && members[1].PrivateIP.Address != nil {
 			if err = d.Set(isVPNGatewayPrivateIPAddress2, *members[1].PrivateIP.Address); err != nil {
@@ -882,17 +904,14 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-mode").GetDiag()
 	}
 	if vpnGateway.Members != nil {
-		vpcMembersIpsList := make([]map[string]interface{}, 0)
-		for _, memberIP := range vpnGateway.Members {
-			currentMemberIP := map[string]interface{}{}
-			if memberIP.PublicIP != nil {
-				currentMemberIP["address"] = *memberIP.PublicIP.Address
-				currentMemberIP["role"] = *memberIP.Role
-				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
+		memberSchema := ResourceIBMISVPNGateway().Schema[isVPNGatewayMembers].Elem.(*schema.Resource).Schema
+		vpcMembersIpsList := make([]map[string]interface{}, 0, len(vpnGateway.Members))
+		for _, membersItem := range vpnGateway.Members {
+			membersItemMap, err := vpnGatewayMemberMapForSchema(&membersItem, memberSchema) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "members-to-map").GetDiag()
 			}
-			if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
-				currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
-			}
+			vpcMembersIpsList = append(vpcMembersIpsList, membersItemMap)
 		}
 		if err = d.Set(isVPNGatewayMembers, vpcMembersIpsList); err != nil {
 			err = fmt.Errorf("Error setting members: %s", err)
@@ -932,7 +951,6 @@ func vpngwUpdate(context context.Context, d *schema.ResourceData, meta interface
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	if d.HasChange(isVPNGatewayTags) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
@@ -976,11 +994,6 @@ func vpngwUpdate(context context.Context, d *schema.ResourceData, meta interface
 		ID: &id,
 	}
 	vpnGatewayPatchModel := &vpcv1.VPNGatewayPatch{}
-	if d.HasChange("availability_mode") {
-		newAvailabilityMode := d.Get("availability_mode").(string)
-		vpnGatewayPatchModel.AvailabilityMode = &newAvailabilityMode
-		hasChanged = true
-	}
 	if d.HasChange(isVPNGatewayName) {
 		name := d.Get(isVPNGatewayName).(string)
 		vpnGatewayPatchModel.Name = &name
@@ -1156,8 +1169,79 @@ func resourceVPNGatewayFlattenLifecycleReasons(lifecycleReasons []vpcv1.VPNGatew
 	return lifecycleReasonsList
 }
 
+// resourceIBMISVPNGatewayCustomizeDiff validates the zonal and regional rules
+// at plan time for new gateways, so a bad combination fails before any API call.
+func resourceIBMISVPNGatewayCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	if diff.Id() != "" {
+		return nil
+	}
+	rawConfig := diff.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() {
+		return nil
+	}
+	availabilityMode := ""
+	if v := rawConfig.GetAttr(isVPNGatewayAvailabilityMode); v.IsKnown() && !v.IsNull() {
+		availabilityMode = v.AsString()
+	}
+	mode := "route"
+	if v := rawConfig.GetAttr(isVPNGatewayMode); v.IsKnown() && !v.IsNull() {
+		mode = v.AsString()
+	}
+	// An unknown value (for example a subnet created in the same apply) still counts as set.
+	subnetSet := !rawConfig.GetAttr(isVPNGatewaySubnet).IsNull()
+	memberCount := 0
+	if v := rawConfig.GetAttr(isVPNGatewayMembers); v.IsKnown() && !v.IsNull() {
+		memberCount = v.LengthInt()
+	} else if !v.IsKnown() {
+		return nil
+	}
+	return ResourceIBMISVPNGatewayValidateAvailability(availabilityMode, mode, subnetSet, memberCount)
+}
+
+// suppressVPNGatewayMemberSubnetDiff ignores member subnet changes on an
+// existing gateway. The member subnet is a create-time input; after create it
+// can be moved with ibm_is_vpn_gateway_member_replace, and that move must not
+// show up as drift that would destroy and recreate the gateway.
+func suppressVPNGatewayMemberSubnetDiff(k, old, new string, d *schema.ResourceData) bool {
+	return d.Id() != ""
+}
+
+func resourceIBMISVPNGatewayMapToMemberPrototypes(membersList []interface{}) ([]vpcv1.VPNGatewayMemberPrototype, error) {
+	members := make([]vpcv1.VPNGatewayMemberPrototype, 0, len(membersList))
+	for i, memberIntf := range membersList {
+		member, _ := memberIntf.(map[string]interface{})
+		privateIPList, _ := member["private_ip"].([]interface{})
+		if len(privateIPList) == 0 || privateIPList[0] == nil {
+			return nil, fmt.Errorf("members.%d.private_ip.subnet is required", i)
+		}
+		privateIP := privateIPList[0].(map[string]interface{})
+		subnetList, _ := privateIP["subnet"].([]interface{})
+		if len(subnetList) == 0 || subnetList[0] == nil {
+			return nil, fmt.Errorf("members.%d.private_ip.subnet is required", i)
+		}
+		subnetIdentity, err := vpnGatewaySubnetIdentityFromMap(subnetList[0].(map[string]interface{}))
+		if err != nil {
+			return nil, fmt.Errorf("members.%d.private_ip.%s", i, err)
+		}
+		members = append(members, vpcv1.VPNGatewayMemberPrototype{
+			PrivateIP: &vpcv1.VPNGatewayMemberPrivateIPPrototype{
+				Subnet: subnetIdentity,
+			},
+		})
+	}
+	return members, nil
+}
+
+// ResourceIBMIsVPNGatewayVPNGatewayMemberToMap flattens a VPN gateway member.
+// Every pointer is checked because a member that is still pending can come back
+// without private_ip or public_ip. The legacy keys (address, private_address,
+// public_ip_address, private_ip_address) are kept so existing configurations
+// that read them keep working.
 func ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(model *vpcv1.VPNGatewayMember) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model == nil {
+		return modelMap, nil
+	}
 	healthReasons := []map[string]interface{}{}
 	for _, healthReasonsItem := range model.HealthReasons {
 		healthReasonsItemMap, err := ResourceIBMIsVPNGatewayVPNGatewayMemberHealthReasonToMap(&healthReasonsItem) // #nosec G601
@@ -1167,7 +1251,9 @@ func ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(model *vpcv1.VPNGatewayMember)
 		healthReasons = append(healthReasons, healthReasonsItemMap)
 	}
 	modelMap["health_reasons"] = healthReasons
-	modelMap["health_state"] = *model.HealthState
+	if model.HealthState != nil {
+		modelMap["health_state"] = *model.HealthState
+	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
 	}
@@ -1180,25 +1266,61 @@ func ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(model *vpcv1.VPNGatewayMember)
 		lifecycleReasons = append(lifecycleReasons, lifecycleReasonsItemMap)
 	}
 	modelMap["lifecycle_reasons"] = lifecycleReasons
-	modelMap["lifecycle_state"] = *model.LifecycleState
-	privateIPMap, err := ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model.PrivateIP)
-	if err != nil {
-		return modelMap, err
+	if model.LifecycleState != nil {
+		modelMap["lifecycle_state"] = *model.LifecycleState
 	}
-	modelMap["private_ip"] = []map[string]interface{}{privateIPMap}
-	publicIPMap, err := ResourceIBMIsVPNGatewayIPToMap(model.PublicIP)
-	if err != nil {
-		return modelMap, err
+	if model.PrivateIP != nil {
+		privateIPMap, err := ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model.PrivateIP)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["private_ip"] = []map[string]interface{}{privateIPMap}
+		if model.PrivateIP.Address != nil {
+			modelMap["private_address"] = *model.PrivateIP.Address
+			modelMap["private_ip_address"] = *model.PrivateIP.Address
+		}
 	}
-	modelMap["public_ip"] = []map[string]interface{}{publicIPMap}
-	modelMap["role"] = *model.Role
+	if model.PublicIP != nil {
+		publicIPMap, err := ResourceIBMIsVPNGatewayIPToMap(model.PublicIP)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["public_ip"] = []map[string]interface{}{publicIPMap}
+		if model.PublicIP.Address != nil {
+			modelMap["address"] = *model.PublicIP.Address
+			modelMap["public_ip_address"] = *model.PublicIP.Address
+		}
+	}
+	if model.Role != nil {
+		modelMap["role"] = *model.Role
+	}
 	return modelMap, nil
+}
+
+// vpnGatewayMemberMapForSchema keeps only the keys that exist in the given
+// member schema, so one flattener can serve the resource and data sources.
+func vpnGatewayMemberMapForSchema(model *vpcv1.VPNGatewayMember, keys map[string]*schema.Schema) (map[string]interface{}, error) {
+	full, err := ResourceIBMIsVPNGatewayVPNGatewayMemberToMap(model)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[string]interface{}, len(keys))
+	for k, v := range full {
+		if _, ok := keys[k]; ok {
+			out[k] = v
+		}
+	}
+	return out, nil
 }
 
 func ResourceIBMIsVPNGatewayVPNGatewayMemberHealthReasonToMap(model *vpcv1.VPNGatewayMemberHealthReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
 	}
@@ -1207,8 +1329,12 @@ func ResourceIBMIsVPNGatewayVPNGatewayMemberHealthReasonToMap(model *vpcv1.VPNGa
 
 func ResourceIBMIsVPNGatewayVPNGatewayMemberLifecycleReasonToMap(model *vpcv1.VPNGatewayMemberLifecycleReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
 	}
@@ -1217,7 +1343,12 @@ func ResourceIBMIsVPNGatewayVPNGatewayMemberLifecycleReasonToMap(model *vpcv1.VP
 
 func ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayMemberContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Address != nil {
+		modelMap["address"] = *model.Address
+	}
 	if model.Deleted != nil {
 		deletedMap, err := ResourceIBMIsVPNGatewayDeletedToMap(model.Deleted)
 		if err != nil {
@@ -1225,27 +1356,44 @@ func ResourceIBMIsVPNGatewayReservedIPReferenceVPNGatewayContextToMap(model *vpc
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
-	subnetMap, err := ResourceIBMIsVPNGatewaySubnetReferenceToMap(model.Subnet)
-	if err != nil {
-		return modelMap, err
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
-	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
+	if model.Subnet != nil {
+		subnetMap, err := ResourceIBMIsVPNGatewaySubnetReferenceToMap(model.Subnet)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	}
 	return modelMap, nil
 }
 
 func ResourceIBMIsVPNGatewayDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = *model.MoreInfo
+	if model != nil && model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
 	return modelMap, nil
 }
 
 func ResourceIBMIsVPNGatewaySubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := ResourceIBMIsVPNGatewayDeletedToMap(model.Deleted)
 		if err != nil {
@@ -1253,15 +1401,66 @@ func ResourceIBMIsVPNGatewaySubnetReferenceToMap(model *vpcv1.SubnetReference) (
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 
 func ResourceIBMIsVPNGatewayIPToMap(model *vpcv1.IP) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
+	if model != nil && model.Address != nil {
+		modelMap["address"] = *model.Address
+	}
 	return modelMap, nil
+}
+
+// vpnGatewaySubnetIdentityFromMap builds a subnet identity from a nested
+// subnet block. Exactly one of id, crn or href is expected.
+func vpnGatewaySubnetIdentityFromMap(subnet map[string]interface{}) (vpcv1.SubnetIdentityIntf, error) {
+	if id, ok := subnet["id"].(string); ok && id != "" {
+		return &vpcv1.SubnetIdentityByID{ID: &id}, nil
+	}
+	if crn, ok := subnet["crn"].(string); ok && crn != "" {
+		return &vpcv1.SubnetIdentityByCRN{CRN: &crn}, nil
+	}
+	if href, ok := subnet["href"].(string); ok && href != "" {
+		return &vpcv1.SubnetIdentityByHref{Href: &href}, nil
+	}
+	return nil, fmt.Errorf("subnet must specify one of id, crn or href")
+}
+
+// ResourceIBMISVPNGatewayValidateAvailability checks the create-time rules for
+// availability_mode, mode, subnet and members:
+//   - regional gateways must be route based and need exactly two members and no subnet
+//   - zonal gateways (the default) need subnet and must not set members
+func ResourceIBMISVPNGatewayValidateAvailability(availabilityMode, mode string, subnetSet bool, memberCount int) error {
+	if availabilityMode == "regional" {
+		if mode != "route" {
+			return fmt.Errorf("availability_mode \"regional\" is supported only for route-based VPN gateways (mode = \"route\")")
+		}
+		if subnetSet {
+			return fmt.Errorf("subnet must not be set when availability_mode is \"regional\"; use members instead")
+		}
+		if memberCount != 2 {
+			return fmt.Errorf("availability_mode \"regional\" requires exactly 2 members, got %d", memberCount)
+		}
+		return nil
+	}
+	if memberCount > 0 {
+		return fmt.Errorf("members can be set only when availability_mode is \"regional\"")
+	}
+	if !subnetSet {
+		return fmt.Errorf("subnet is required when availability_mode is \"zonal\" or not set")
+	}
+	return nil
 }

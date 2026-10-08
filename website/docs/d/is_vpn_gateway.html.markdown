@@ -37,7 +37,7 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the is_vpn_gateway.
 - `access_tags`  - (List) Access management tags associated for the vpn gateway.
 - `advertised_cidrs` - (Optional, List) The additional CIDRs advertised through any enabled routing protocol (for example, BGP). The routing protocol will advertise routes with these CIDRs and VPC prefixes as route destinations.
-- `availability_mode` - (String) The availability mode of the VPN gateway:- `zonal`: The availability of this VPN gateway is limited only to a single zone of a  given region as provided by the `zone` of the VPN gateway.
+- `availability_mode` - (String) The availability mode of the VPN gateway. `zonal`: the gateway lives in a single zone, given by its `subnet`. `regional`: the gateway has two members that can be in the same or different zones of the region.
 - `connections` - (List) Connections for this VPN gateway.
   Nested scheme for **connections**:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
@@ -83,7 +83,6 @@ In addition to all argument references listed, you can access the following attr
 			- `more_info` - (String) A link to documentation about deleted resources.
 		- `href` - (String) The URL for this reserved IP.
 		- `id` - (String) The unique identifier for this reserved IP.
-		- `reserved_ip`- (String) The unique identifier for this reserved IP
 		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
 		- `resource_type` - (String) The resource type.
 		- `subnet` - (List)
