@@ -239,6 +239,8 @@ var (
 	IcdDbGen2TaskId           string
 	Gen2DeploymentId          string
 	Gen2BackupId              string
+	Gen2PointInTimeSourceId   string
+	Gen2PointInTime           string
 	KmsInstanceID             string
 	CrkID                     string
 	KmsAccountID              string
@@ -1270,6 +1272,12 @@ func init() {
 	if Gen2BackupId == "" {
 		Gen2BackupId = "crn:v1:bluemix:public:databases-independent-backups:us-east:a/23b09aee04da4545b6e32805fa93249d:4a7b205f-5469-4d23-a0fb-28035c8cb500::"
 		fmt.Println("[INFO] Set the environment variable GEN2_BACKUP_ID for testing ibm_database_backup Gen2 else it is set to default value")
+	}
+
+	Gen2PointInTimeSourceId = os.Getenv("GEN2_POINT_IN_TIME_RECOVERY_SOURCE_ID")
+	Gen2PointInTime = os.Getenv("GEN2_POINT_IN_TIME_RECOVERY_TIME")
+	if Gen2PointInTimeSourceId == "" || Gen2PointInTime == "" {
+		fmt.Println("[INFO] Set the environment variables GEN2_POINT_IN_TIME_RECOVERY_SOURCE_ID and GEN2_POINT_IN_TIME_RECOVERY_TIME for testing ibm_database Gen2 point-in-time recovery else the tests are skipped")
 	}
 
 	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")
