@@ -85,6 +85,8 @@ var (
 	ISCIDR                          string
 	ISCIDR2                         string
 	ISCatalogImageName              string
+	ISCatalogImageOfferingCRN       string
+	ISCatalogImagePlanCRN           string
 	ISIPV4Address                   string
 	ISPrivateSSHKeyFilePath         string
 	ISPublicSSHKeyFilePath          string
@@ -231,8 +233,10 @@ var (
 	IksClusterSubnetID        string
 	IksClusterResourceGroupID string
 	IcdDbDeploymentId         string
+	IcdDbGen2DeploymentId     string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
+	IcdDbGen2TaskId           string
 	Gen2DeploymentId          string
 	Gen2BackupId              string
 	Gen2PointInTimeSourceId   string
@@ -1090,6 +1094,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
 	}
 
+	ISCatalogImageOfferingCRN = os.Getenv("IS_CATALOG_IMAGE_OFFERING_CRN")
+	if ISCatalogImageOfferingCRN == "" {
+		ISCatalogImageOfferingCRN = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_OFFERING_CRN for testing catalog offering and software attachment acceptance tests else it is set to default value 'crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global'")
+	}
+
+	ISCatalogImagePlanCRN = os.Getenv("IS_CATALOG_IMAGE_PLAN_CRN")
+	if ISCatalogImagePlanCRN == "" {
+		ISCatalogImagePlanCRN = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_PLAN_CRN for testing catalog offering and software attachment acceptance tests else it is set to default value 'crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global'")
+	}
+
 	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")
 	if ISBootSnapshotID == "" {
 		ISBootSnapshotID = "r006-d7fejbe-2dhj-442df-b2iha-ccjbecbjbcejce"
@@ -1239,6 +1255,13 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
 	}
 
+	// ICD_DB_GEN2_DEPLOYMENT_ID is used for testing Gen2 database data sources (ibm_database_tasks with Gen2 backend)
+	// Requires a Gen2 database instance CRN (plan: standard-gen2)
+	IcdDbGen2DeploymentId = os.Getenv("ICD_DB_GEN2_DEPLOYMENT_ID")
+	if IcdDbGen2DeploymentId == "" {
+		IcdDbGen2DeploymentId = "crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_DEPLOYMENT_ID for testing Gen2 databases else it is set to default value 'crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::'")
+	}
 	Gen2DeploymentId = os.Getenv("GEN2_DEPLOYMENT_ID")
 	if Gen2DeploymentId == "" {
 		Gen2DeploymentId = "crn:v1:bluemix:public:databases-for-mysql:us-east:a/23b09aee04da4545b6e32805fa93249d:8ff728d1-35f2-4b35-86ce-8f9f9bea9721::"
@@ -1267,6 +1290,14 @@ func init() {
 	if IcdDbTaskId == "" {
 		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
+	}
+
+	// ICD_DB_GEN2_TASK_ID is used for testing Gen2 database data sources (ibm_database_task with Gen2 backend)
+	// Requires a Gen2 database instance CRN (plan: standard-gen2)
+	IcdDbGen2TaskId = os.Getenv("ICD_DB_GEN2_TASK_ID")
+	if IcdDbGen2TaskId == "" {
+		IcdDbGen2TaskId = "crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_TASK_ID for testing Gen2 databases else it is set to default value 'crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::'")
 	}
 
 	NotificationDistributionListAccountId = os.Getenv("NOTIFICATION_DIST_ACCOUNT_ID")

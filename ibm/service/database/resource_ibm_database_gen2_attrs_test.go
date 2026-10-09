@@ -88,14 +88,12 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
-			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
-		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("supported attr configuration does not return error", func(t *testing.T) {
@@ -329,13 +327,7 @@ func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) 
 		"plan":    "enterprise-sharding-gen2",
 	})
 
-	// dbType resolution: getDatabaseTypeFromResourceID("databases-for-mongodb") → "mongodb"
-	// then overridden to "mongodbees" for enterprise-sharding-gen2
-	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
-	}
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string), d.Get("plan").(string))
 
 	if dbType != "mongodbees" {
 		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
@@ -381,11 +373,7 @@ func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) 
 		"plan":    "standard-gen2",
 	})
 
-	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
-	}
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string), d.Get("plan").(string))
 
 	if dbType != "mongodb" {
 		t.Fatalf("expected dbType 'mongodb' for standard-gen2, got %q", dbType)

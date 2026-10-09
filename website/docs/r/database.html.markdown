@@ -23,6 +23,18 @@ IBM Cloud Databases offers two infrastructure generations:
 
 The plan you select determines which infrastructure your database uses. Both generations support the core database functionality, but have some differences in available features and management approaches. See the [Argument Reference](#argument-reference) section below for details on feature availability by plan type.
 
+### Plans by Service
+
+| Database service | Supported Classic plans | Supported Gen2 plans |
+|---|---|---|
+| databases-for-postgresql | standard | standard-gen2 |
+| databases-for-mysql | standard | standard-gen2 |
+| databases-for-redis | standard | standard-gen2 |
+| databases-for-valkey | — | standard-gen2 |
+| databases-for-mongodb | standard, enterprise, enterprise-sharding | standard-gen2, enterprise-sharding-gen2 |
+| databases-for-elasticsearch | standard, platinum | standard-gen2, enterprise-gen2 |
+| messages-for-rabbitmq | standard | standard-gen2 |
+
 ## Example usage
 To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
 
@@ -422,6 +434,49 @@ resource "ibm_database" "mongodb" {
 }
 ```
 
+### Sample MongoDB Gen2 database instance
+
+* `adminpassword` and `users` are not supported for Gen2. Use `ibm_resource_key` to manage credentials.
+* `allowlist` is not supported for Gen2. Use `ibm_cbr_rule` to manage IP allowlisting.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongodb" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "mongodb-gen2-test"
+  service                      = "databases-for-mongodb"
+  plan                         = "standard-gen2"
+  location                     = "eu-de"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    disk {
+      allocation_mb = 10240
+    }
+    host_flavor {
+      id = "bxf.4x16"
+    }
+  }
+  tags = ["one:two"]
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+# Use ibm_resource_key instead of users/adminpassword for Gen2
+resource "ibm_resource_key" "mongodb_credentials" {
+  name                 = "mongodb-credentials"
+  resource_instance_id = ibm_database.mongodb.id
+}
+```
+
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
 * To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`. Read more about Analytics and BI Connector [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics)
 
@@ -701,6 +756,33 @@ resource "ibm_database" "es" {
   }
 }
 ```
+
+### Gen2 Elasticsearch Standard instance
+
+An example to configure and deploy an Elasticsearch Gen2 instance using the `standard-gen2` plan. This plan uses Gen2 infrastructure and requires a dedicated host flavor. Use `ibm_resource_key` for credentials instead of `adminpassword` or `users`.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "es_standard_gen2" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "<your_database_name>"
+  service           = "databases-for-elasticsearch"
+  plan              = "standard-gen2"
+  location          = "<gen2_location>"
+  service_endpoints = "private"
+
+  tags = ["tag1", "tag2"]
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 ### Updating configuration for postgres database
 
 ```terraform
@@ -929,7 +1011,7 @@ Review the argument reference that you can specify for your resource.
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
-  `enterprise-gen2` is supported only for elasticsearch (`databases-for-elasticsearch`).
+  `enterprise-gen2` for elasticsearch (`databases-for-elasticsearch`). `standard-gen2` is supported for all services.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** The CRN of a Gen2 source instance of the same service, in the same region and account; `location` must be the source's region. Set it together with `point_in_time_recovery_time`, and not with `backup_id`. Applied only at creation.
@@ -937,13 +1019,17 @@ Review the argument reference that you can specify for your resource.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 
   **Gen2:** Required with `point_in_time_recovery_deployment_id`. An RFC 3339 timestamp with an offset, for example `2026-09-27T09:30:00Z`; the provider sends it in UTC. An empty string is refused because Gen2 has no restore to the latest time. Applied only at creation.
-- `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. Removing the `remote_leader_id` attribute from an existing read-only replica will promote the deployment to a standalone deployment. The deployment will restart and break its connection with the leader. This will disable all database users associated with this deployment. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+- `remote_leader_id` - (Optional, String) The CRN of the leader (source) database used to create a read-only replica. A read-only replica replicates all data from the leader asynchronously. Removing `remote_leader_id` from an existing replica promotes it to a standalone primary instance — the deployment restarts, its connection to the leader is broken, and all associated database users are disabled.
 
-  **Gen2:** Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.
+  **Classic:** Supported at provisioning time. Clear the attribute to promote the replica.
 
-- `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas]
+  **Gen2:** Supported. Set `remote_leader_id` to the CRN of an existing Gen1 (Classic) or Gen2 source instance to provision a Gen2 read-only replica. Clear the attribute on an existing Gen2 replica to promote it to a standalone primary instance.
 
-  **Gen2:** Accepted but ignored (Classic-only feature for read replica promotion).
+  For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+
+- `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+
+  **Gen2:** Accepted but ignored — promotion is triggered by clearing `remote_leader_id` and does not support skipping the initial backup.
 - `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance from `backup_id`.
 
 - `shards` - (Optional, Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only supported for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Accepted values are `1`, `2`, or `3`. If omitted, defaults to `1`. The shard count can be increased after provisioning, but **cannot be decreased**.
@@ -1034,7 +1120,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
-| Database configuration | ✅ Supported | ❌ Accepted but ignored |
+| Database configuration | ✅ Supported | ✅ Supported |
 | Auto-scaling | ✅ Supported | ❌ Accepted but ignored |
 | Logical replication slots | ✅ Supported | ❌ Accepted but ignored |
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
@@ -1046,7 +1132,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
+  - Examples: `users`, `allowlist`, `adminpassword`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`

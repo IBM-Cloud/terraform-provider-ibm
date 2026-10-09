@@ -188,7 +188,6 @@ func ResourceIBMISSubnet() *schema.Resource {
 			isSubnetRoutingTableID: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{isSubnetRoutingTableCrn},
 				Computed:      true,
 				Description:   "routing table id that is associated with the subnet",
@@ -196,7 +195,6 @@ func ResourceIBMISSubnet() *schema.Resource {
 			isSubnetRoutingTableCrn: {
 				Type:          schema.TypeString,
 				Computed:      true,
-				ForceNew:      true,
 				Optional:      true,
 				ConflictsWith: []string{isSubnetRoutingTableID},
 				Description:   "routing table crn that is associated with the subnet.",

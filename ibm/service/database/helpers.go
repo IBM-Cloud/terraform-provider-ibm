@@ -319,13 +319,22 @@ var databaseServicePrefixes = map[string]string{
 // getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.
 // Used in extensions for Gen2 and in parameters structure.
 // Returns an empty string if the resource ID doesn't match any known database service.
-func getDatabaseTypeFromResourceID(resourceID string) string {
-	for prefix, dbType := range databaseServicePrefixes {
+// For enterprise-sharding-gen2 MongoDB, returns "mongodbees" instead of "mongodb".
+func getDatabaseTypeFromResourceID(resourceID string, plan string) string {
+	dbType := ""
+	for prefix, t := range databaseServicePrefixes {
 		if strings.HasPrefix(resourceID, prefix) {
-			return dbType
+			dbType = t
+			break
 		}
 	}
-	return ""
+	if dbType == "" {
+		return ""
+	}
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		return "mongodbees"
+	}
+	return dbType
 }
 
 // expandPlatformOptionsFromRCExtension extracts platform options from instance extensions for Gen2.
@@ -360,11 +369,11 @@ func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []m
 // flattenIcdGroupsFromInstanceAndCatalog creates groups data from instance extensions and global catalog metadata for Gen2.
 // It combines actual allocation values from the instance with metadata constraints from the catalog.
 // Returns a slice of group configurations including memory, CPU, disk, and host flavor information.
-func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string) []map[string]interface{} {
+func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string, plan string) []map[string]interface{} {
 	groups := make([]map[string]interface{}, 0, len(catalogResources))
 
 	// Extract allocation values from instance extensions
-	allocations := extractDatabaseAllocations(instance, resourceID)
+	allocations := extractDatabaseAllocations(instance, resourceID, plan)
 
 	// Process catalog resources to build group configurations
 	for _, resource := range catalogResources {
@@ -409,10 +418,10 @@ type databaseAllocations struct {
 }
 
 // extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
-func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
+func extractDatabaseAllocations(instance map[string]interface{}, resourceID string, plan string) databaseAllocations {
 	var alloc databaseAllocations
 
-	dbType := getDatabaseTypeFromResourceID(resourceID)
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
 	if dbType == "" {
 		return alloc
 	}
@@ -621,12 +630,12 @@ func extractMemberCountFromMetadata(deployment *globalcatalogv1.CatalogEntry) in
 
 // extractVersionFromExtensions extracts the database version from instance extensions.
 // Returns an empty string if the version cannot be found.
-func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string) string {
+func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string, plan string) string {
 	if extensions == nil {
 		return ""
 	}
 
-	dbType := getDatabaseTypeFromResourceID(resourceID)
+	dbType := getDatabaseTypeFromResourceID(resourceID, plan)
 	if dbType == "" {
 		return ""
 	}
@@ -855,7 +864,8 @@ func setGen2VersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance, i
 	// Extract version from instance.Extensions based on database type
 	version := ""
 	if instance.Extensions != nil && instance.ResourceID != nil {
-		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID)
+		plan, _ := d.Get("plan").(string)
+		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID, plan)
 	}
 	d.Set(versionKey, version)
 
@@ -908,7 +918,8 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 
 	// Flatten groups using instance extensions and catalog metadata
 	if instance.Extensions != nil && len(catalogResources) > 0 && instance.ResourceID != nil {
-		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID))
+		plan, _ := d.Get("plan").(string)
+		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID, plan))
 	}
 
 	return nil
@@ -1045,4 +1056,93 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 		backupType = v
 	}
 	return
+}
+
+// gen2GetOperationDescription extracts a human-readable description from the instance's last operation or state.
+func gen2GetOperationDescription(instance *rc.ResourceInstance) string {
+	if instance.LastOperation != nil {
+		if instance.LastOperation.Description != nil && *instance.LastOperation.Description != "" {
+			return *instance.LastOperation.Description
+		}
+		if instance.LastOperation.Type != nil && *instance.LastOperation.Type != "" {
+			return fmt.Sprintf("Operation: %s", *instance.LastOperation.Type)
+		}
+	}
+
+	if instance.State != nil {
+		return fmt.Sprintf("Instance state: %s", *instance.State)
+	}
+
+	return "Gen2 database instance operation"
+}
+
+// gen2MapStateToStatus converts Resource Controller instance state to task status.
+// Maps Gen2 instance states to standardized task statuses for consistency with classic databases.
+func gen2MapStateToStatus(instance *rc.ResourceInstance) string {
+	if instance.State == nil {
+		// Instance state is not available
+		return "unknown"
+	}
+
+	state := *instance.State
+	switch state {
+	case "active":
+		// Instance is fully provisioned and operational
+		return "completed"
+	case "provisioning", "in progress":
+		// Instance is being created or an operation is in progress
+		return "running"
+	case "removed":
+		// Instance has been deleted, operation is complete
+		return "completed"
+	default:
+		// Return the original state for any unmapped states
+		return state
+	}
+}
+
+// gen2CalculateProgress estimates task completion percentage based on instance state.
+// Note: RC API doesn't provide granular progress data, so these are approximations.
+func gen2CalculateProgress(instance *rc.ResourceInstance) int {
+	if instance.State == nil {
+		// No state information available
+		return 0
+	}
+
+	state := *instance.State
+	switch state {
+	case "active":
+		// Instance is fully provisioned and operational - 100% complete
+		return 100
+	case "provisioning":
+		// Instance is being created - estimated at 50% (midpoint of provisioning process)
+		// Note: Actual progress may vary; RC API doesn't provide granular progress data
+		return 50
+	case "in progress":
+		// Operation is in progress - estimated at 75% (nearing completion)
+		// Note: This is an approximation as RC API doesn't provide actual progress percentage
+		return 75
+	case "failed", "removed":
+		// Operation has completed (either failed or instance removed) - 100% done
+		return 100
+	case "inactive":
+		// Instance is stopped/suspended - no progress (0%)
+		return 0
+	default:
+		// Unknown state - assume no progress
+		return 0
+	}
+}
+
+// gen2GetOperationTime returns the most recent timestamp for the instance operation.
+// Prefers UpdatedAt over CreatedAt, falls back to current time if neither is available.
+func gen2GetOperationTime(instance *rc.ResourceInstance) string {
+	if instance.UpdatedAt != nil {
+		return flex.DateTimeToString(instance.UpdatedAt)
+	}
+	if instance.CreatedAt != nil {
+		return flex.DateTimeToString(instance.CreatedAt)
+	}
+
+	return time.Now().UTC().Format(time.RFC3339)
 }

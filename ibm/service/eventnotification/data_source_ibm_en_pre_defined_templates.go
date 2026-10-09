@@ -38,12 +38,12 @@ func DataSourceIBMEnPreDefinedTemplates() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The type of template.",
+				Optional:    true,
+				Description: "The destination type.",
 			},
 			"source": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The type of source.",
 			},
 			"templates": {
