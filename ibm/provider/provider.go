@@ -68,6 +68,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcemanager"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/satellite"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/scc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
@@ -744,6 +745,11 @@ func Provider() *schema.Provider {
 			"ibm_service_key":       cloudfoundry.DataSourceIBMServiceKey(),
 			"ibm_service_plan":      cloudfoundry.DataSourceIBMServicePlan(),
 			"ibm_space":             cloudfoundry.DataSourceIBMSpace(),
+
+			// Red Hat AI Inference
+			"ibm_rhaii_project":          rhaii.DataSourceIBMRhaiiProject(),
+			"ibm_rhaii_inference_models": rhaii.DataSourceIBMRhaiiInferenceModels(),
+			"ibm_rhaii_inference_model":  rhaii.DataSourceIBMRhaiiInferenceModel(),
 
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.DataSourceIBMSchematicsWorkspace(),
@@ -1689,6 +1695,9 @@ func Provider() *schema.Provider {
 			// //Added for Usage Reports
 			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
 
+			// Red Hat AI Inference
+			"ibm_rhaii_project": rhaii.ResourceIBMRhaiiProject(),
+
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
@@ -2298,6 +2307,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_schematics_resource_query":                      schematics.ResourceIBMSchematicsResourceQueryValidator(),
 				"ibm_schematics_policy":                              schematics.ResourceIbmSchematicsPolicyValidator(),
 				"ibm_resource_instance":                              resourcecontroller.ResourceIBMResourceInstanceValidator(),
+				"ibm_rhaii_project":                                  rhaii.ResourceIBMRhaiiProjectValidator(),
 				"ibm_resource_key":                                   resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway_resource_binding":   vpc.ResourceIBMIsVirtualEndpointGatewayResourceBindingValidator(),
 				"ibm_is_virtual_endpoint_gateway":                    vpc.ResourceIBMISEndpointGatewayValidator(),
@@ -2474,6 +2484,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_dl_offering_speeds":            directlink.DataSourceIBMDLOfferingSpeedsValidator(),
 				"ibm_dl_routers":                    directlink.DataSourceIBMDLRoutersValidator(),
 				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
+				"ibm_rhaii_inference_model":         rhaii.DataSourceIBMRhaiiInferenceModelValidator(),
 				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
 				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
 				"ibm_resource_groups":               resourcemanager.DataSourceIBMResourceGroupsValidator(),
