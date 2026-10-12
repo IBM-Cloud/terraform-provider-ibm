@@ -17,12 +17,12 @@ import (
 )
 
 const (
-	ibmCISApiGatewayOperations          = "ibm_cis_api_gateway_operations"
-	cisApiGatewayOperationsOps          = "operations"
-	cisApiGatewayOperationsOpMethod     = "method"
-	cisApiGatewayOperationsOpHost       = "host"
-	cisApiGatewayOperationsOpEndpoint   = "endpoint"
-	cisApiGatewayOperationsOpID         = "operation_id"
+	ibmCISApiGatewayOperations        = "ibm_cis_api_gateway_operations"
+	cisApiGatewayOperationsOps        = "operations"
+	cisApiGatewayOperationsOpMethod   = "method"
+	cisApiGatewayOperationsOpHost     = "host"
+	cisApiGatewayOperationsOpEndpoint = "endpoint"
+	cisApiGatewayOperationsOpID       = "operation_id"
 )
 
 // ResourceIBMCISApiGatewayOperations returns the schema.Resource for managing a
@@ -293,7 +293,9 @@ func ResourceIBMCISApiGatewayOperationsUpdate(d *schema.ResourceData, meta inter
 	return ResourceIBMCISApiGatewayOperationsRead(d, meta)
 }
 
-// ResourceIBMCISApiGatewayOperationsDelete bulk-deletes all stored operations.
+// ResourceIBMCISApiGatewayOperationsDelete deletes each stored operation individually.
+// The bulk DELETE /api_gateway/operations endpoint returns an empty response body on
+// success which causes SDK unmarshal failures; the per-operation DELETE is reliable.
 func ResourceIBMCISApiGatewayOperationsDelete(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(conns.ClientSession).CisAiSecurityForAppsSession()
 	if err != nil {
@@ -308,20 +310,15 @@ func ResourceIBMCISApiGatewayOperationsDelete(d *schema.ResourceData, meta inter
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
 	ops := d.Get(cisApiGatewayOperationsOps).([]interface{})
-	var opIDs []string
 	for _, raw := range ops {
 		m := raw.(map[string]interface{})
-		if id, ok := m[cisApiGatewayOperationsOpID].(string); ok && id != "" {
-			opIDs = append(opIDs, id)
+		opID, ok := m[cisApiGatewayOperationsOpID].(string)
+		if !ok || opID == "" {
+			continue
 		}
-	}
-
-	if len(opIDs) > 0 {
-		delOpt := cisClient.NewDeleteZoneApiGatewayOperationsOptions()
-		delOpt.SetOperationIds(opIDs)
-		_, response, delErr := cisClient.DeleteZoneApiGatewayOperationsWithContext(context.Background(), delOpt)
-		if delErr != nil {
-			log.Printf("[ERROR] DeleteZoneApiGatewayOperations failed: %v", response)
+		delOpt := cisClient.NewDeleteZoneApiGatewayOperationOptions(opID)
+		if _, delErr := cisClient.DeleteZoneApiGatewayOperationWithContext(context.Background(), delOpt); delErr != nil {
+			log.Printf("[ERROR] DeleteZoneApiGatewayOperation(%s) failed: %v", opID, delErr)
 			return delErr
 		}
 	}

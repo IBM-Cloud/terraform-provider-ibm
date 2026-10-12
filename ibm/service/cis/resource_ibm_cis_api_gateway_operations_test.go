@@ -97,18 +97,17 @@ resource "ibm_cis_api_gateway_operations" "%[1]s" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 
-  operations = [
-    {
-      method   = "POST"
-      host     = "%[2]s"
-      endpoint = "/api/v1/chat/completions"
-    },
-    {
-      method   = "GET"
-      host     = "%[2]s"
-      endpoint = "/api/v1/models"
-    },
-  ]
+  operations {
+    method   = "POST"
+    host     = "%[2]s"
+    endpoint = "/api/v1/chat/completions"
+  }
+
+  operations {
+    method   = "GET"
+    host     = "%[2]s"
+    endpoint = "/api/v1/models"
+  }
 }
 `, id, cisDomainStatic)
 }
@@ -119,23 +118,23 @@ resource "ibm_cis_api_gateway_operations" "%[1]s" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 
-  operations = [
-    {
-      method   = "POST"
-      host     = "%[2]s"
-      endpoint = "/api/v1/chat/completions"
-    },
-    {
-      method   = "GET"
-      host     = "%[2]s"
-      endpoint = "/api/v1/models"
-    },
-    {
-      method   = "DELETE"
-      host     = "%[2]s"
-      endpoint = "/api/v1/sessions"
-    },
-  ]
+  operations {
+    method   = "POST"
+    host     = "%[2]s"
+    endpoint = "/api/v1/chat/completions"
+  }
+
+  operations {
+    method   = "GET"
+    host     = "%[2]s"
+    endpoint = "/api/v1/models"
+  }
+
+  operations {
+    method   = "DELETE"
+    host     = "%[2]s"
+    endpoint = "/api/v1/sessions"
+  }
 }
 `, id, cisDomainStatic)
 }

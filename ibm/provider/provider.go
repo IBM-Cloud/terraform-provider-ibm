@@ -2504,7 +2504,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_bot_managements":                     cis.DataSourceIBMCISBotManagementValidator(),
 				"ibm_cis_ai_security_settings":                cis.DataSourceIBMCISAiSecuritySettingsValidator(),
 				"ibm_cis_api_gateway_operation":               cis.DataSourceIBMCISApiGatewayOperationValidator(),
-				"ibm_cis_api_gateway_operations":               cis.DataSourceIBMCISApiGatewayOperationsValidator(),
+				"ibm_cis_api_gateway_operations":              cis.DataSourceIBMCISApiGatewayOperationsValidator(),
 				"ibm_cis_api_gateway_discovery_operations_ds": cis.DataSourceIBMCISApiGatewayDiscoveryOperationsValidator(),
 				"ibm_cis_api_gateway_discovery":               cis.DataSourceIBMCISApiGatewayDiscoveryValidator(),
 				"ibm_cis_api_gateway_schemas":                 cis.DataSourceIBMCISApiGatewaySchemasValidator(),
