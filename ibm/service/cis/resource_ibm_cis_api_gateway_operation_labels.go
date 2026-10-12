@@ -132,22 +132,22 @@ func ResourceIBMCISApiGatewayOperationLabelsCreateOrUpdate(d *schema.ResourceDat
 
 	// Selector: operation IDs
 	operationIDs := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsOperIDs).(*schema.Set).List())
-	selectorInclude := &aisecurityforappsv1.ApiGatewayOperationsLabelsInputSelectorInclude{
+	selectorInclude := &aisecurityforappsv1.ApiGatewayOperationsLabelsBulkInputSelectorInclude{
 		OperationIds: operationIDs,
 	}
-	opt.SetSelector(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputSelector{
+	opt.SetSelector(&aisecurityforappsv1.ApiGatewayOperationsLabelsBulkInputSelector{
 		Include: selectorInclude,
 	})
 
 	// User labels (always set to ensure updates clear previous values)
 	userLabels := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsUserLabels).(*schema.Set).List())
-	opt.SetUser(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputUser{
+	opt.SetUser(&aisecurityforappsv1.ApiGatewayOperationsLabelsBulkInputUser{
 		Labels: userLabels,
 	})
 
 	// Managed labels (always set to ensure updates clear previous values)
 	managedLabels := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsMgdLabels).(*schema.Set).List())
-	opt.SetManaged(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputManaged{
+	opt.SetManaged(&aisecurityforappsv1.ApiGatewayOperationsLabelsBulkInputManaged{
 		Labels: managedLabels,
 	})
 
@@ -190,15 +190,35 @@ func ResourceIBMCISApiGatewayOperationLabelsDelete(d *schema.ResourceData, meta 
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	// Rebuild operation IDs from current state.
 	operationIDs := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsOperIDs).(*schema.Set).List())
+	userLabels := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsUserLabels).(*schema.Set).List())
+	managedLabels := flex.ExpandStringList(d.Get(cisApiGatewayOperationLabelsMgdLabels).(*schema.Set).List())
 
-	opt := cisClient.NewUpdateApiGatewayOperationLabelsOptions()
-	opt.SetSelector(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputSelector{
-		Include: &aisecurityforappsv1.ApiGatewayOperationsLabelsInputSelectorInclude{
+	selector := &aisecurityforappsv1.ApiGatewayOperationsLabelsBulkDeleteInputSelector{
+		Include: &aisecurityforappsv1.ApiGatewayOperationsLabelsBulkDeleteInputSelectorInclude{
 			OperationIds: operationIDs,
 		},
-	})
+	}
+	opt := cisClient.NewDeleteZoneApiGatewayOperationLabelsOptions(selector)
+	if len(userLabels) > 0 {
+		opt.SetUser(&aisecurityforappsv1.ApiGatewayOperationsLabelsBulkDeleteInputUser{
+			Labels: userLabels,
+		})
+	}
+	if len(managedLabels) > 0 {
+		opt.SetManaged(&aisecurityforappsv1.ApiGatewayOperationsLabelsBulkDeleteInputManaged{
+			Labels: managedLabels,
+		})
+	}
+
+	if len(userLabels) > 0 || len(managedLabels) > 0 {
+		_, response, err := cisClient.DeleteZoneApiGatewayOperationLabelsWithContext(context.Background(), opt)
+		if err != nil {
+			log.Printf("[ERROR] DeleteZoneApiGatewayOperationLabels failed: %v", response)
+			return err
+		}
+	}
+
 	d.SetId("")
 	return nil
 }
@@ -211,12 +231,10 @@ func flattenLabelsResult(items []aisecurityforappsv1.ApiGatewayOperationsLabelsR
 		if item.OperationID != nil {
 			m[cisApiGatewayOperationLabelsResultOpID] = *item.OperationID
 		}
-		// Each label entry is a map[string]interface{}; serialise as a JSON string per entry
-		// so that Terraform can store them in a TypeList of TypeString.
 		lbls := make([]string, 0, len(item.Labels))
 		for _, lbl := range item.Labels {
-			for k, v := range lbl {
-				lbls = append(lbls, fmt.Sprintf("%s:%v", k, v))
+			if lbl.Name != nil {
+				lbls = append(lbls, *lbl.Name)
 			}
 		}
 		m[cisApiGatewayOperationLabelsResultLbls] = lbls
