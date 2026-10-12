@@ -67,6 +67,13 @@ func TestAccIBMCisApiGatewayOperations_Update(t *testing.T) {
 
 // TestAccIBMCisApiGatewayOperations_Import verifies that the resource state can be
 // imported using the zoneID:CRN composite ID.
+//
+// ImportStateVerify is intentionally disabled for this resource: the resource
+// manages a user-defined *subset* of zone operations.  On import, Read returns
+// all operations currently registered in the zone (there may be others created
+// outside Terraform), so the imported state will legitimately differ from the
+// pre-import state.  After importing, the operator re-applies their config to
+// reconcile the managed subset.
 func TestAccIBMCisApiGatewayOperations_Import(t *testing.T) {
 	name := "ibm_cis_api_gateway_operations.test"
 
@@ -81,9 +88,10 @@ func TestAccIBMCisApiGatewayOperations_Import(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      name,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            name,
+				ImportState:             true,
+				ImportStateVerify:       false,
+				ImportStateVerifyIgnore: []string{"operations"},
 			},
 		},
 	})

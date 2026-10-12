@@ -180,7 +180,15 @@ func ResourceIBMCISApiGatewayOperationsRead(d *schema.ResourceData, meta interfa
 		return nil
 	}
 
-	// Build a lookup map from the live API: (method+host+endpoint) → operation_id.
+	// On import the stored list is empty — populate directly from the live API.
+	stored := d.Get(cisApiGatewayOperationsOps).([]interface{})
+	if len(stored) == 0 {
+		d.Set(cisApiGatewayOperationsOps, flattenApiGatewayOperationsListResp(result.Result))
+		return nil
+	}
+
+	// Normal refresh: build a lookup map (method+host+endpoint) → operation_id from
+	// the live API and update the stored operation_ids in place.
 	liveOps := make(map[string]string)
 	for _, item := range result.Result {
 		if item.Method != nil && item.Host != nil && item.Endpoint != nil && item.OperationID != nil {
@@ -189,15 +197,12 @@ func ResourceIBMCISApiGatewayOperationsRead(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	// Reconcile against the stored list — update operation_ids from live data.
-	stored := d.Get(cisApiGatewayOperationsOps).([]interface{})
 	for _, raw := range stored {
 		m := raw.(map[string]interface{})
 		method, _ := m[cisApiGatewayOperationsOpMethod].(string)
 		host, _ := m[cisApiGatewayOperationsOpHost].(string)
 		endpoint, _ := m[cisApiGatewayOperationsOpEndpoint].(string)
-		key := operationKey(method, host, endpoint)
-		if id, ok := liveOps[key]; ok {
+		if id, ok := liveOps[operationKey(method, host, endpoint)]; ok {
 			m[cisApiGatewayOperationsOpID] = id
 		}
 	}
@@ -278,18 +283,14 @@ func ResourceIBMCISApiGatewayOperationsUpdate(d *schema.ResourceData, meta inter
 	if len(toCreate) > 0 {
 		createOpt := cisClient.NewCreateZoneApiGatewayOperationOptions()
 		createOpt.SetApiGatewayOperation(toCreate)
-		result, response, createErr := cisClient.CreateZoneApiGatewayOperationWithContext(context.Background(), createOpt)
+		_, response, createErr := cisClient.CreateZoneApiGatewayOperationWithContext(context.Background(), createOpt)
 		if createErr != nil {
 			log.Printf("[ERROR] CreateZoneApiGatewayOperation (update) failed: %v", response)
 			return createErr
 		}
-		if result != nil {
-			if err := d.Set(cisApiGatewayOperationsOps, flattenBulkOperationsResult(result.Result)); err != nil {
-				return fmt.Errorf("error setting operations after update: %w", err)
-			}
-		}
 	}
 
+	// Read reconciles the full list (unchanged + newly created) from the live API.
 	return ResourceIBMCISApiGatewayOperationsRead(d, meta)
 }
 
@@ -357,6 +358,30 @@ func expandApiGatewayOperations(raw []interface{}) []aisecurityforappsv1.ApiGate
 		})
 	}
 	return ops
+}
+
+// flattenApiGatewayOperationsListResp converts the SDK list response items into the
+// Terraform TypeList structure.  Used on import when there is no prior state to
+// reconcile against.
+func flattenApiGatewayOperationsListResp(items []aisecurityforappsv1.ApiGatewayOperationsListRespResultItem) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(items))
+	for _, item := range items {
+		m := map[string]interface{}{}
+		if item.OperationID != nil {
+			m[cisApiGatewayOperationsOpID] = *item.OperationID
+		}
+		if item.Method != nil {
+			m[cisApiGatewayOperationsOpMethod] = *item.Method
+		}
+		if item.Host != nil {
+			m[cisApiGatewayOperationsOpHost] = *item.Host
+		}
+		if item.Endpoint != nil {
+			m[cisApiGatewayOperationsOpEndpoint] = *item.Endpoint
+		}
+		result = append(result, m)
+	}
+	return result
 }
 
 // flattenBulkOperationsResult converts the SDK bulk-create response items back into
