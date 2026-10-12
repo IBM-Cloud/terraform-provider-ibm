@@ -32,7 +32,7 @@ func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineBindingDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineBindingConfigBasic(projectID, appName, secretName, resourceKeyId, serviceInstanceId, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineBindingExists("ibm_code_engine_binding.code_engine_binding_instance", conf),
@@ -47,7 +47,7 @@ func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "secret_name", secretName),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_binding.code_engine_binding_instance",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -48,8 +48,9 @@ func ResourceIBMEnSource() *schema.Resource {
 			},
 			"store_notifications": {
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
 				Description: "enable to view the payload of incoming events for troubleshooting.",
+				Default:     false,
 			},
 			"source_id": {
 				Type:        schema.TypeString,

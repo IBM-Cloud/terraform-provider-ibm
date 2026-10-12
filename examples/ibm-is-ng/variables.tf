@@ -33,6 +33,18 @@ variable "cidr1" {
   default = "10.120.0.0/24"
 }
 
+// Software-licensed catalog offering used for the software attachment examples.
+// Set these to a software-licensed catalog offering version and its billing plan.
+variable "software_catalog_offering_version_crn" {
+  description = "CRN of a software-licensed catalog offering version."
+  type        = string
+}
+
+variable "software_catalog_offering_plan_crn" {
+  description = "CRN of the billing plan for the software-licensed catalog offering version."
+  type        = string
+}
+
 
 // Data source arguments for is_security_groups
 

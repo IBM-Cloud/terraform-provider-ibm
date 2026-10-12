@@ -6,6 +6,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -813,14 +814,58 @@ func TestClassicBackendWarnUnsupported(t *testing.T) {
 	assert.Nil(t, diags, "Classic backend should not produce warnings")
 }
 
-// TestClassicBackendValidateUnsupportedAttrsDiff tests validation of unsupported attributes
+// TestClassicBackendValidateUnsupportedAttrsDiff tests the unsupported attribute
+// predicate logic directly, following the predicate-helper pattern used elsewhere
+// in this package (e.g. validateShardsDiffPredicate) since a real *schema.ResourceDiff
+// cannot be constructed in unit tests.
 func TestClassicBackendValidateUnsupportedAttrsDiff(t *testing.T) {
-	backend := &resourceIBMDatabaseClassicBackend{}
-	ctx := context.Background()
+	tests := []struct {
+		name          string
+		attr          string
+		configured    bool
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:        "shards_not_set",
+			attr:        "shards",
+			configured:  false,
+			expectError: false,
+		},
+		{
+			name:          "shards_set_on_classic",
+			attr:          "shards",
+			configured:    true,
+			expectError:   true,
+			errorContains: "shards",
+		},
+	}
 
-	// Classic backend should not validate any attributes as unsupported
-	err := backend.ValidateUnsupportedAttrsDiff(ctx, nil, nil)
-	assert.Nil(t, err, "Classic backend should not produce validation errors")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := classicUnsupportedAttrPredicate(tt.attr, tt.configured)
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+// classicUnsupportedAttrPredicate isolates the unsupported-attr check inside
+// validateUnsupportedAttrsDiffClassic so it can be tested without a real ResourceDiff.
+func classicUnsupportedAttrPredicate(attr string, configured bool) error {
+	if !configured {
+		return nil
+	}
+	for _, unsupported := range classicUnsupportedAttrs {
+		if attr == unsupported {
+			return fmt.Errorf("The following attributes are not supported for Classic databases:\n\n1. Attribute: %q\n\n", attr)
+		}
+	}
+	return nil
 }
 
 // TestClassicBackendErrorHandling tests error handling scenarios

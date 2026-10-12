@@ -156,3 +156,7 @@ func validateUpgradeVersion(instanceId string, location string, oldVersion strin
 func validateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(d).ValidateUnsupportedAttrsDiff(ctx, d, meta)
 }
+
+func validateShardsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(d).ValidateShardsDiff(ctx, d, meta)
+}

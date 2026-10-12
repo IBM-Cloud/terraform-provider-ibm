@@ -48,6 +48,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.encryption"),
+					resource.TestCheckResourceAttr(snpName, "snapshots.0.software_attachments.#", "0"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.captured_at"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.allowed_use.#"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.allowed_use.0.bare_metal_server"),
@@ -110,8 +111,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
-	planCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
-	versionCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+	planCrn := acc.ISCatalogImagePlanCRN
+	versionCrn := acc.ISCatalogImageOfferingCRN
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -123,6 +124,11 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.catalog_offering.#"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.catalog_offering.0.plan_crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.software_attachments.#"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.software_attachments.0.name"),
+					resource.TestCheckResourceAttr(snpName, "snapshots.0.software_attachments.0.resource_type", "snapshot_software_attachment"),
 				),
 			},
 		},

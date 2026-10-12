@@ -30,14 +30,14 @@ func ResourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_persistent_data_store", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"data": &schema.Schema{
+			"data": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
@@ -45,19 +45,19 @@ func ResourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 				Description: "Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bucket_location": &schema.Schema{
+						"bucket_location": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
 							Description: "Specify the location of the bucket.",
 						},
-						"bucket_name": &schema.Schema{
+						"bucket_name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
 							Description: "Specify the name of the bucket.",
 						},
-						"secret_name": &schema.Schema{
+						"secret_name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
@@ -66,41 +66,51 @@ func ResourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 					},
 				},
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_persistent_data_store", "name"),
 				Description:  "The name of the persistent data store.",
 			},
-			"storage_type": &schema.Schema{
+			"storage_type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_persistent_data_store", "storage_type"),
 				Description:  "Specify the storage type of the persistent data store.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the persistent data store, which is used to achieve optimistic locking.",
 			},
-			"persistent_data_store_id": &schema.Schema{
+			"href": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "When you provision a new persistent data store, a URL is created identifying the location of the instance.",
+			},
+			"persistent_data_store_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"etag": &schema.Schema{
+			"resource_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of the persistent data store.",
+			},
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -237,6 +247,12 @@ func resourceIbmCodeEnginePersistentDataStoreRead(context context.Context, d *sc
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-entity_tag").GetDiag()
 	}
+	if !core.IsNil(persistentDataStore.Href) {
+		if err = d.Set("href", persistentDataStore.Href); err != nil {
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-href").GetDiag()
+		}
+	}
 	if !core.IsNil(persistentDataStore.ID) {
 		if err = d.Set("persistent_data_store_id", persistentDataStore.ID); err != nil {
 			err = fmt.Errorf("Error setting persistent_data_store_id: %s", err)
@@ -247,6 +263,12 @@ func resourceIbmCodeEnginePersistentDataStoreRead(context context.Context, d *sc
 		if err = d.Set("region", persistentDataStore.Region); err != nil {
 			err = fmt.Errorf("Error setting region: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-region").GetDiag()
+		}
+	}
+	if !core.IsNil(persistentDataStore.ResourceType) {
+		if err = d.Set("resource_type", persistentDataStore.ResourceType); err != nil {
+			err = fmt.Errorf("Error setting resource_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-resource_type").GetDiag()
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

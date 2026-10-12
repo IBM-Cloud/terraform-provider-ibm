@@ -6,6 +6,8 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -14,6 +16,42 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
+
+type dataSourceIBMDatabaseTaskBackend interface {
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+}
+
+// getDeploymentIDFromTask fetches a task and returns its deployment_id
+func getDeploymentIDFromTask(taskID string, meta interface{}) (string, error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return "", fmt.Errorf("error getting database client: %s", err)
+	}
+
+	task, _, err := cloudDatabasesClient.GetTask(&clouddatabasesv5.GetTaskOptions{
+		ID: &taskID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to get task: %s", err)
+	}
+
+	if task.Task == nil || task.Task.DeploymentID == nil {
+		return "", fmt.Errorf("task or deployment_id is nil")
+	}
+
+	return *task.Task.DeploymentID, nil
+}
+
+func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTaskBackend, error) {
+	taskID := d.Get("task_id").(string)
+
+	// Classic task CRNs contain a :task: segment (e.g., crn:...:instance-id:task:task-uuid).
+	// Gen2 uses the instance CRN directly as the task_id, so no :task: segment is present.
+	if strings.Contains(taskID, ":task:") {
+		return newDataSourceIBMDatabaseTaskClassicBackend(), nil
+	}
+	return newDataSourceIBMDatabaseTaskGen2Backend(), nil
+}
 
 func DataSourceIBMDatabaseTask() *schema.Resource {
 	return &schema.Resource{
@@ -55,54 +93,77 @@ func DataSourceIBMDatabaseTask() *schema.Resource {
 }
 
 func dataSourceIBMDatabaseTaskRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b, err := pickDataSourceTaskBackend(d, meta)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_task", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	return b.Read(context, d, meta)
+}
+
+type dataSourceIBMDatabaseTaskClassicBackend struct{}
+
+func newDataSourceIBMDatabaseTaskClassicBackend() dataSourceIBMDatabaseTaskBackend {
+	return &dataSourceIBMDatabaseTaskClassicBackend{}
+}
+
+func (c *dataSourceIBMDatabaseTaskClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_task", "read")
+		return tfErr.GetDiag()
 	}
 
 	getTaskOptions := &clouddatabasesv5.GetTaskOptions{}
-
 	getTaskOptions.SetID(d.Get("task_id").(string))
 
 	task, response, err := cloudDatabasesClient.GetTaskWithContext(context, getTaskOptions)
-
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("GetTaskWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTaskWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_database_task", "read")
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*task.Task.ID)
 
 	if err = d.Set("task_id", task.Task.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting task_id: %s", err), "(Data) ibm_database_task", "read")
+		return tfErr.GetDiag()
 	}
 
 	if task.Task.Description != nil {
 		if err = d.Set("description", task.Task.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_database_task", "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if task.Task.Status != nil {
 		if err = d.Set("status", task.Task.Status); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_database_task", "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if task.Task.DeploymentID != nil {
 		if err = d.Set("deployment_id", task.Task.DeploymentID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deployment_id: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deployment_id: %s", err), "(Data) ibm_database_task", "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if task.Task.ProgressPercent != nil {
 		if err = d.Set("progress_percent", task.Task.ProgressPercent); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting progress_percent: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting progress_percent: %s", err), "(Data) ibm_database_task", "read")
+			return tfErr.GetDiag()
 		}
 	}
 
 	if task.Task.CreatedAt != nil {
 		if err = d.Set("created_at", flex.DateTimeToString(task.Task.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_database_task", "read")
+			return tfErr.GetDiag()
 		}
 	}
 

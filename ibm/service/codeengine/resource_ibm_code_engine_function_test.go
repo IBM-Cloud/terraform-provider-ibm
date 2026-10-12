@@ -38,7 +38,7 @@ func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineFunctionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionConfigBasic(projectID, functionCodeReference, functionName, functionRuntime, envVars),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineFunctionExists("ibm_code_engine_function.code_engine_function_instance", conf),
@@ -57,7 +57,7 @@ func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "run_env_variables.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionConfigBasic(projectID, functionCodeReferenceUpdate, functionName, functionRuntime, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "project_id", projectID),
@@ -119,7 +119,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineFunctionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReference, functionManagedDomainMappings, functionName, functionRuntime, functionScaleCPULimit, functionScaleDownDelay, functionScaleMaxExecutionTime, functionScaleMemoryLimit, runComputeResourceTokenEnabled, envVars),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineFunctionExists("ibm_code_engine_function.code_engine_function_instance", conf),
@@ -138,7 +138,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "run_env_variables.#", "3"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReferenceUpdate, functionManagedDomainMappingsUpdate, functionName, functionRuntime, functionScaleCPULimitUpdate, functionScaleDownDelayUpdate, functionScaleMaxExecutionTimeUpdate, functionScaleMemoryLimitUpdate, runComputeResourceTokenEnabledUpdate, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "project_id", projectID),

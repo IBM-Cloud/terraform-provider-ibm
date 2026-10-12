@@ -1,3 +1,65 @@
+# 2.7.0 (October 7, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* resolve enterprise-sharding-gen2 read returning empty version and groups ([7032](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7032))
+* pass plan argument to getDatabaseTypeFromResourceID in Gen2 replica promotion ([7039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7039))
+* stop ICD readiness poll on a persistent 404 ([7047](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7047))
+* skip Gen1 SDK-based configuration validation for Gen2 plans ([7008](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7008))
+* Use standard-gen2 plan for gen2 test case, fix the build ([7041](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7041))
+* poll ICD readiness after active state and bound by timeout ([7035](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7035))
+
+### Event Notifications
+* fix for sms and email subscriptions to manage invitee via invited parameter ([7013](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7013))
+* Fix for Subscription resources provider regression issue ([7048](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7048))
+
+### Event Streams
+* Add Gen2 support to Event Streams topic data source/resource ([7026](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7026))
+
+### General
+* fixed contributing, security and custom service endpoints documents ([7019](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7019))
+
+### Power Systems
+* Bug pi dhcp enable ([7028](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7028))
+
+### VPC Infrastructure
+* fixed vpc instance profile(s) test ([7018](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7018))
+* fix prevent incremental_rule_update false to null drift in ibm_is_network_acl ([7036](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7036))
+* remove forcenew from vpc subnet routing table schema ([7046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7046))
+* added support for vpc volume, snapshots software attachments ([6675](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6675))
+
+
+## Enhancements
+
+### Backup/Recovery
+* fix and validate 3-2-1 vault failover and recovery scan resources ([7006](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7006))
+
+### Cloud Databases
+* Support scale beyond one shard for MongoDB EES Gen2 ([7004](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7004))
+* add read-only replica support for Gen2 instances (Gen1 and Gen2 sources) ([7017](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7017))
+* Implement Gen2 Support for `ibm_database_task/tasks` datasource ([6821](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6821))
+* Adding support for elasticsearch standard plan in Gen2 ([7015](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7015))
+* Added the Documentation for Available Gen2 datasources ([7005](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7005))
+* Doc Update: Add plan by service table and mongodb gen2 example ([7022](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7022))
+
+### Code Engine
+* bump SDK, suppress quantity diffs, add persistent data store fields, and update docs ([6994](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6994))
+
+### General
+* bump google.golang.org/grpc from 1.83.1 to 1.83.2 ([6991](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6991))
+* update purego version ([7009](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7009))
+
+### Power Systems
+* Enable NSG In Private ([7027](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7027))
+* add force_enable to pi_metadata_service ([7029](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7029))
+
+### Secrets Manager
+* Handle blank line in certificate chain ([7034](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7034))
+
+### Transit Gateway
+* Add support for redundant global TGWs in TransitGateway ([6959](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6959))
+
 # 2.6.2 (September 16, 2026)
 
 ## Bug Fixes

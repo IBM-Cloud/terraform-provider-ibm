@@ -809,7 +809,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		versionModel := &secretsmanagerv2.ImportedCertificateVersionPrototype{}
 		versionModel.Certificate = core.StringPtr(d.Get("certificate").(string))
 		if _, ok := d.GetOk("intermediate"); ok {
-			versionModel.Intermediate = core.StringPtr(formatCertificate(d.Get("intermediate").(string)))
+			versionModel.Intermediate = core.StringPtr(normalizeLines(d.Get("intermediate").(string)))
 		}
 		if _, ok := d.GetOk("private_key"); ok {
 			versionModel.PrivateKey = core.StringPtr(formatCertificate(d.Get("private_key").(string)))
@@ -933,7 +933,7 @@ func resourceIbmSmImportedCertificateMapToSecretPrototype(d *schema.ResourceData
 	}
 
 	if _, ok := d.GetOk("intermediate"); ok {
-		model.Intermediate = core.StringPtr(formatCertificate(d.Get("intermediate").(string)))
+		model.Intermediate = core.StringPtr(normalizeLines(d.Get("intermediate").(string)))
 	}
 
 	if _, ok := d.GetOk("private_key"); ok {
@@ -1152,4 +1152,19 @@ func formatCertificate(originalCert string) string {
 		i++
 	}
 	return certParsed
+}
+
+// Normalize all line seperators to "\r\n" and remove empty lines
+func normalizeLines(s string) string {
+	s = strings.ReplaceAll(s, "\r", "")
+	lines := strings.Split(s, "\n")
+
+	var result []string
+	for _, line := range lines {
+		if line != "" {
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\r\n")
 }

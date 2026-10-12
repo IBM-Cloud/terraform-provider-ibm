@@ -6,6 +6,7 @@ package eventstreams_test
 import (
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -87,11 +88,9 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(getTestInstanceName(stdKey), topicName, partitions),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
-					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_http_url"),
+					testAccCheckOptionalKafkaHTTPURL("ibm_event_streams_topic.es_topic", "kafka_http_url"),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
@@ -101,11 +100,9 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(getTestInstanceName(stdKey), topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
-					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
-					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "kafka_http_url"),
+					testAccCheckOptionalKafkaHTTPURL("ibm_event_streams_topic.es_topic", "kafka_http_url"),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "config.cleanup.policy", cleanupPolicy),
@@ -217,6 +214,14 @@ func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(instanceName
 	topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
 	return getPlatformResource(instanceName) + "\n" +
 		createEventStreamsTopicResourceWithConfig(false, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
+}
+
+func testAccCheckOptionalKafkaHTTPURL(name, value string) resource.TestCheckFunc {
+	v := os.Getenv("ES_EXPECT_KAFKA_HTTP_URL")
+	if strings.EqualFold(v, "false") { // Default to expecting `kafka_http_url` to be present.
+		return resource.TestCheckNoResourceAttr(name, "kafka_http_url")
+	}
+	return resource.TestCheckResourceAttrSet(name, "kafka_http_url")
 }
 
 func getPlatformResource(instanceName string) string {

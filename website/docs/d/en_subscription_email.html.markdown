@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_id` - (String) Topic ID.
 
-- `attributes` - (Required, List)
+- `attributes` - (List)
 
   - `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
 
@@ -49,12 +49,26 @@ In addition to all argument references listed, you can access the following attr
 
   - `reply_to_mail` - (String) The email address to reply to.
 
-  - `signing_enabled`- (Boolean) Signing webhook attributes.
+  - `from_name` - (String) The name of email address from which email is sourced.
 
-  - `susbscribed`- (Map) The Email address who have subscribed for topic.
+  - `subscribed` - (List) The email addresses that are subscribed to the topic.
 
-  - `unsubscribed`- (List) The Email address which has opted for unsusbscribtion from that topic.
+    - `email` - (String) The subscribed email address.
 
-  - `invited`- (List) The Email address for invitation.
+    - `updated_at` - (String) The updated date of subscription.
+
+  - `unsubscribed` - (List) The email addresses that have opted out of subscription from the topic.
+
+    - `email` - (String) The unsubscribed email address.
+
+    - `updated_at` - (String) The updated date of unsubscription.
+
+  - `invited` - (List) The email addresses for invitation.
+
+    - `email` - (String) The invited email address.
+
+    - `updated_at` - (String) The updated date of invitation.
+
+    - `expires_at` - (String) The expiry date of the invitation mail.
 
 - `updated_at` - (String) Last updated time.
