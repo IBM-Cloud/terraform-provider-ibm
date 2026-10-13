@@ -189,7 +189,7 @@ func resourceIBMRhaiiProjectCreate(ctx context.Context, d *schema.ResourceData, 
 	// it. The next plan shows the tag difference instead.
 	if _, ok := d.GetOk("tags"); ok || os.Getenv("IC_ENV_TAGS") != "" {
 		oldList, newList := d.GetChange("tags")
-		if err := flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN); err != nil {
+		if err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", "user"); err != nil {
 			log.Printf("[ERROR] Error on create of %s (%s) tags: %s", rhaiiProjectResourceName, d.Id(), err)
 		}
 	}
@@ -271,7 +271,7 @@ func resourceIBMRhaiiProjectUpdate(ctx context.Context, d *schema.ResourceData, 
 	crn := d.Get("crn").(string)
 	if d.HasChange("tags") {
 		oldList, newList := d.GetChange("tags")
-		if err := flex.UpdateTagsUsingCRN(oldList, newList, meta, crn); err != nil {
+		if err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn, "", "user"); err != nil {
 			return rhaiiDiag(fmt.Errorf("error updating tags: %s", err), "update", "update-tags")
 		}
 	}
