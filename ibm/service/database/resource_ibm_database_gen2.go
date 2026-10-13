@@ -360,6 +360,11 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Add independent backups settings. "backups" is a sibling of the db-type key.
+	if backups := buildBackupsConfig(d); backups != nil {
+		dataservices["backups"] = backups
+	}
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
@@ -824,6 +829,11 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	if err := g.setGroupsInfo(d, instance, meta); err != nil {
 		return diag.FromErr(err)
 	}
+
+	// Set backups configuration from the instance extensions
+	if err := d.Set("backups", flattenBackupsFromExtensions(instance.Extensions)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting backups: %w", err))
+	}
 	if err := g.setShardsInfo(d, instance); err != nil {
 		return diag.FromErr(err)
 	}
@@ -1029,6 +1039,72 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// applyBackupsWithDiagnostics applies backups configuration updates and returns diagnostics.
+// Backups settings are sent through the same Resource Controller parameters update as
+// group scaling and configuration, and have their own HasChange guard so that a
+// backups-only change is never dropped.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupsWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("backups") {
+		return nil
+	}
+
+	// Nothing explicit to send (for example the block was removed from HCL).
+	if buildBackupsConfig(d) == nil {
+		return nil
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance: %s", err)
+	}
+
+	configCtx := &instanceConfigContext{
+		ctx:        ctx,
+		d:          d,
+		instanceID: instanceID,
+		meta:       meta,
+		instance:   instance,
+	}
+
+	if err := g.applyBackupsUpdate(configCtx); err != nil {
+		return diagError("error applying backups update: %s", err)
+	}
+
+	return nil
+}
+
+// applyBackupsUpdate sends the backups settings via Resource Controller.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupsUpdate(configCtx *instanceConfigContext) error {
+	updateCtx, err := g.prepareUpdateContext(configCtx)
+	if err != nil {
+		return err
+	}
+
+	clientSession := configCtx.meta.(conns.ClientSession)
+	metadata, err := g.getServiceMetadata(configCtx.d, updateCtx.location, clientSession)
+	if err != nil {
+		return err
+	}
+
+	parameters, err := g.buildGen2Parameters(configCtx.d, metadata.serviceName, configCtx.meta, metadata.catalogCRN)
+	if err != nil {
+		return fmt.Errorf("failed to build parameters: %w", err)
+	}
+
+	if err := g.updateResourceInstanceParameters(updateCtx.client, configCtx.instanceID, parameters); err != nil {
+		return err
+	}
+
+	_, err = g.waitForGen2InstanceUpdate(configCtx.d, configCtx.meta)
+	if err != nil {
+		return fmt.Errorf("error waiting for instance update to complete: %w", err)
+	}
+
+	return nil
+}
+
 // promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
 // Triggered when remote_leader_id is cleared (set to "") on an existing replica.
 // Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
@@ -1120,6 +1196,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.applyBackupsWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 

@@ -64,7 +64,22 @@ In addition to all argument references list, you can access the following attrib
    Nested scheme for `platform_options`:
    - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
    - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
-   
+- `backups` - (List) The backup configuration of the instance. Only populated for Gen2 plans; empty for Classic instances.
+
+  Nested scheme for `backups`:
+  - `preserve` - (Boolean) Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted.
+  - `retention` - (Integer) The number of days backups are retained.
+  - `automatic_backups` - (List) Settings for automatic backups.
+
+    Nested scheme for `automatic_backups`:
+    - `copy` - (List) Settings for cross-regional copies of automatic backups.
+
+      Nested scheme for `copy`:
+      - `enabled` - (Boolean) Whether cross-regional copies of automatic backups are created.
+      - `target` - (List) The regions that automatic backup copies are created in.
+
+        Nested scheme for `target`:
+        - `region` - (String) The region the automatic backup copy is created in.
 - `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
   Nested scheme for `auto_scaling`:

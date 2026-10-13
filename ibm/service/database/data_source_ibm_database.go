@@ -134,6 +134,62 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"backups": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Backup configuration for the database. Gen2 only: empty for Classic instances.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"preserve": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted.",
+						},
+						"retention": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of days backups are retained before they can be deleted.",
+						},
+						"automatic_backups": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Settings for automatic backups.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"copy": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Settings for cross-regional copies of automatic backups.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"enabled": {
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Whether cross-regional copies of automatic backups are created.",
+												},
+												"target": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The regions that automatic backup copies are created in.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"region": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The region the automatic backup copy is created in.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
