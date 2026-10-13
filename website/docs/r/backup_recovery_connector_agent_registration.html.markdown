@@ -12,6 +12,8 @@ Create Connector agent registration requests with this resource.
 
 ~> **NOTE:** This resource must be executed on the source VSI (Virtual Server Instance) where the connector agent is installed, as it calls localhost APIs.
 
+~> **NOTE:** Destroying this resource unregisters the connector agent from the backup instance it is claimed by. Make sure the agent is not linked to or in use by any source before running `terraform destroy`; otherwise the destroy fails. After unregistering, the agent restarts briefly and comes back idle and unclaimed, ready to be registered again.
+
 ## Example Usage
 
 ```hcl
