@@ -46,6 +46,44 @@ resource "ibm_is_vpn_gateway" "example" {
 
 ```
 
+The following example creates a regional, route-based VPN gateway with one member in each of two zones:
+
+```terraform
+resource "ibm_is_subnet" "zone1" {
+  name                     = "example-subnet-zone1"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-1"
+  total_ipv4_address_count = 16
+}
+
+resource "ibm_is_subnet" "zone2" {
+  name                     = "example-subnet-zone2"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
+  total_ipv4_address_count = 16
+}
+
+resource "ibm_is_vpn_gateway" "regional" {
+  name              = "example-regional-vpn-gateway"
+  availability_mode = "regional"
+  mode              = "route"
+  members {
+    private_ip {
+      subnet {
+        id = ibm_is_subnet.zone1.id
+      }
+    }
+  }
+  members {
+    private_ip {
+      subnet {
+        id = ibm_is_subnet.zone2.id
+      }
+    }
+  }
+}
+```
+
 ## Timeouts
 The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -56,11 +94,28 @@ The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `availability_mode` - (Optional, Forces new resource, String) The availability mode of the VPN gateway. Allowable values are `zonal` and `regional`. If not set, the gateway is `zonal`.
+  - `zonal`: the gateway lives in the single zone of `subnet`.
+  - `regional`: the gateway has two `members` that can be in the same zone or in different zones of the region. Supported only when `mode` is `route`.
+
+  ~>**Note:** `availability_mode` cannot be updated in place. Changing it destroys the gateway and creates a new one.
 - `local_asn` - (Optional, Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
+- `members` - (Optional, Forces new resource, List) The members of a regional VPN gateway. Required when `availability_mode` is `regional`, with exactly 2 items. Must not be set for a zonal gateway.
+
+  Nested scheme for `members`:
+  - `private_ip` - (Required, List) The reserved IP for the member. Exactly one item.
+
+    Nested scheme for `private_ip`:
+    - `subnet` - (Required, List) The subnet to create the member in. Exactly one item. Set exactly one of the following:
+      - `crn` - (Optional, String) The CRN of the subnet.
+      - `href` - (Optional, String) The URL of the subnet.
+      - `id` - (Optional, String) The unique identifier of the subnet.
+
+  ~>**Note:** The member subnet is used only when the gateway is created. To move a member to another subnet or zone later, use [ibm_is_vpn_gateway_member_replace](is_vpn_gateway_member_replace.html). After such a move, Terraform does not report a difference for `members`, and does not recreate the gateway.
 - `mode`- (Optional, String) Mode in VPN gateway. Supported values are `route` or `policy`. The default value is `route`.
 - `name` - (Required, String) The name of the VPN gateway.
 - `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
-- `subnet` - (Required, Forces new resource, String) The unique identifier for this subnet.
+- `subnet` - (Optional, Forces new resource, String) The unique identifier of the subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set when `availability_mode` is `regional`.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your VPN gateway. Tags can help you find your VPN gateway more easily later.
 
 
@@ -70,12 +125,39 @@ In addition to all argument reference list, you can access the following attribu
 - `created_at` -  (String) The Second IP address assigned to this VPN gateway.
 - `crn` - (String) The CRN for this VPN gateway.
 - `id` - (String) The unique identifier of the VPN gateway.
-- `members` - (List) Collection of VPN gateway members.
+- `availability_mode` - (String) The availability mode of the VPN gateway: `zonal` or `regional`.
+- `members` - (List) The members of the VPN gateway.
 
   Nested scheme for `members`:
-  - `address` -  (String) The public IP address assigned to the VPN gateway member.
-  - `private_address` -  (String) The private IP address assigned to the VPN gateway member.
-  - `role` -  (String) The high availability role assigned to the VPN gateway member.
+  - `address` - (String) The public IP address assigned to the VPN gateway member. Same as `public_ip.0.address`.
+  - `health_reasons` - (List) The reasons for the current `health_state` (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A reason code for this health state, for example `cannot_reserve_ip_address` or `internal_error`.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) A link to documentation about the reason for this health state.
+  - `health_state` - (String) The health of the member: `ok`, `degraded`, `faulted` or `inapplicable`.
+  - `id` - (String) The unique identifier for this VPN gateway member. Use it with `ibm_is_vpn_gateway_member_replace` or the `ibm_is_vpn_gateway_member` data source.
+  - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
+
+    Nested scheme for `lifecycle_reasons`:
+    - `code` - (String) A reason code for this lifecycle state, for example `internal_error` or `resource_suspended_by_provider`.
+    - `message` - (String) An explanation of the reason for this lifecycle state.
+    - `more_info` - (String) A link to documentation about the reason for this lifecycle state.
+  - `lifecycle_state` - (String) The lifecycle state of the member: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating` or `waiting`.
+  - `private_address` - (String) The private IP address assigned to the VPN gateway member. Same as `private_ip.0.address`.
+  - `private_ip` - (List) The reserved IP assigned to the VPN gateway member. Present only when the VPN gateway status is `available`.
+
+    Nested scheme for `private_ip`:
+    - `address` - (String) The IP address. The value is `0.0.0.0` if the address has not been selected yet.
+    - `deleted` - (List) If present, the reserved IP has been deleted. Contains `more_info`.
+    - `href` - (String) The URL for this reserved IP.
+    - `id` - (String) The unique identifier for this reserved IP.
+    - `name` - (String) The name for this reserved IP.
+    - `resource_type` - (String) The resource type.
+    - `subnet` - (List) The subnet of the member, with `crn`, `deleted`, `href`, `id`, `name` and `resource_type`.
+  - `public_ip` - (List) The public IP assigned to the VPN gateway member, with `address`.
+  - `role` - (String) The high availability role assigned to the VPN gateway member, for example `active` or `standby`.
 - `public_ip_address` - (String) The IP address assigned to this VPN gateway.
 - `public_ip_address2` -  (String) The Second Public IP address assigned to this VPN gateway member.
 

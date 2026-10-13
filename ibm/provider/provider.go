@@ -671,6 +671,8 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc_address_prefix":          vpc.DataSourceIBMIsVPCAddressPrefix(),
 			"ibm_is_vpn_gateway_connection":      vpc.DataSourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_connections":     vpc.DataSourceIBMISVPNGatewayConnections(),
+			"ibm_is_vpn_gateway_member":          vpc.DataSourceIBMIsVPNGatewayMember(),
+			"ibm_is_vpn_gateway_members":         vpc.DataSourceIBMIsVPNGatewayMembers(),
 
 			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
 			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
@@ -1513,6 +1515,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_advertised_cidr":           vpc.ResourceIBMISVPNGatewayAdvertisedCidr(),
+			"ibm_is_vpn_gateway_member_replace":            vpc.ResourceIBMISVpnGatewayMemberReplace(),
 			"ibm_is_vpc":                                   vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                    vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_dns_resolution_binding":            vpc.ResourceIBMIsVPCDnsResolutionBinding(),
