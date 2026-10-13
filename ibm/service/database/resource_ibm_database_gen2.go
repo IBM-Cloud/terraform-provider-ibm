@@ -360,10 +360,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
-	// Add backup_configuration if provided
-	if backupConfig, ok := d.GetOk("backup_configuration"); ok {
-		if backupMap := expandBackupConfiguration(backupConfig.([]interface{})); backupMap != nil {
-			dataservices["backups"] = backupMap
+	// Add backup_configuration at create time only. "backups" is a direct child of "dataservices"
+	// (a sibling of the database-type key and "encryption"), per the decoupled backups ADR.
+	// Updates deliberately do not go through here: group scaling and configuration PATCHes reuse
+	// this builder, and re-sending backups on them would overwrite settings the user did not touch.
+	// Backup changes on an existing instance are sent by applyBackupConfigurationWithDiagnostics.
+	if d.Id() == "" {
+		if backups := buildBackupsPayload(d, true); backups != nil {
+			dataservices["backups"] = backups
 		}
 	}
 
@@ -836,7 +840,9 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	}
 
 	// Set backup configuration from instance extensions
-	setGen2BackupConfiguration(d, instance)
+	if err := setGen2BackupConfiguration(d, instance); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
@@ -1361,82 +1367,44 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(_ context.Context, d
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateBackupConfigurationDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	backupConfigRaw, ok := d.GetOk("backup_configuration")
-	if !ok {
+	cfg := backupConfigFromValue(d.Get("backup_configuration"))
+	if cfg == nil {
 		return nil
 	}
 
-	configs, ok := backupConfigRaw.([]interface{})
-	if !ok || len(configs) == 0 || configs[0] == nil {
-		return nil
-	}
-
-	cfg, ok := configs[0].(map[string]interface{})
-	if !ok {
-		return nil
-	}
-
-	service := d.Get("service").(string)
-
-	// Retention validation (30 to 60 days)
-	if retention, ok := cfg["retention"].(int); ok && retention != 0 {
-		if retention < 30 || retention > 60 {
-			return fmt.Errorf("retention in backup_configuration must be between 30 and 60 days, got %d", retention)
-		}
-	}
-
-	// MySQL preserve restriction
-	if preserve, ok := cfg["preserve"].(bool); ok && preserve {
-		if service == "databases-for-mysql" {
-			return fmt.Errorf("preserve backups is not supported for Databases for MySQL")
-		}
+	service, _ := d.Get("service").(string)
+	if err := validateBackupConfigRules(service, cfg); err != nil {
+		return err
 	}
 
 	// Preserve immutability: once enabled (true), cannot be disabled (false)
 	if d.HasChange("backup_configuration") {
 		oldVal, newVal := d.GetChange("backup_configuration")
-		oldConfigs, okOld := oldVal.([]interface{})
-		newConfigs, okNew := newVal.([]interface{})
-		if okOld && len(oldConfigs) > 0 && oldConfigs[0] != nil &&
-			okNew && len(newConfigs) > 0 && newConfigs[0] != nil {
-			oldCfg, okOldMap := oldConfigs[0].(map[string]interface{})
-			newCfg, okNewMap := newConfigs[0].(map[string]interface{})
-			if okOldMap && okNewMap {
-				oldPreserve, _ := oldCfg["preserve"].(bool)
-				newPreserve, _ := newCfg["preserve"].(bool)
-				if oldPreserve && !newPreserve {
-					return fmt.Errorf("preserve backups cannot be disabled once enabled")
-				}
-			}
+		oldCfg := backupConfigFromValue(oldVal)
+		newCfg := backupConfigFromValue(newVal)
+		if oldCfg != nil && newCfg != nil {
+			oldPreserve, _ := oldCfg["preserve"].(bool)
+			newPreserve, _ := newCfg["preserve"].(bool)
+			return validatePreserveImmutability(oldPreserve, newPreserve)
 		}
 	}
 
 	return nil
 }
 
-// applyBackupConfigurationWithDiagnostics applies updates to backup_configuration and returns diagnostics.
+// applyBackupConfigurationWithDiagnostics sends backup_configuration changes on an existing
+// instance in a single dedicated PATCH containing only the fields that changed.
 func (g *resourceIBMDatabaseGen2Backend) applyBackupConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("backup_configuration") {
 		return nil
 	}
 
-	backupConfigRaw, ok := d.GetOk("backup_configuration")
-	if !ok {
+	backups := buildBackupsPayload(d, false)
+	if backups == nil {
 		return nil
 	}
 
-	backupMap := expandBackupConfiguration(backupConfigRaw.([]interface{}))
-	if backupMap == nil {
-		return nil
-	}
-
-	parameters := map[string]interface{}{
-		"dataservices": map[string]interface{}{
-			"backups": backupMap,
-		},
-	}
-
-	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, backupsParameters(backups)); err != nil {
 		return diagError("error updating backup configuration: %s", err)
 	}
 

@@ -68,7 +68,9 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 
 	// Set backup configuration from instance extensions
-	setGen2BackupConfiguration(d, instance)
+	if err := setGen2BackupConfiguration(d, instance); err != nil {
+		return err
+	}
 
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)

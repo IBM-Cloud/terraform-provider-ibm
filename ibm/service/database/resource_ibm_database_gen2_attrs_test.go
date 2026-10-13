@@ -593,16 +593,18 @@ func TestIsShardAttrConfigured(t *testing.T) {
 	})
 }
 
+// TestValidateBackupConfigurationConstraints exercises the production rule functions
+// (validateBackupConfigRules / validatePreserveImmutability) used by ValidateBackupConfigurationDiff.
 func TestValidateBackupConfigurationConstraints(t *testing.T) {
 	t.Run("rejects retention < 30", func(t *testing.T) {
-		err := validateBackupConfigRules("databases-for-postgresql", "standard-gen2", map[string]interface{}{
+		err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
 			"retention": 29,
 		})
 		requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
 	})
 
 	t.Run("rejects retention > 60", func(t *testing.T) {
-		err := validateBackupConfigRules("databases-for-postgresql", "standard-gen2", map[string]interface{}{
+		err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
 			"retention": 61,
 		})
 		requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
@@ -610,7 +612,7 @@ func TestValidateBackupConfigurationConstraints(t *testing.T) {
 
 	t.Run("accepts retention between 30 and 60", func(t *testing.T) {
 		for _, r := range []int{30, 45, 60} {
-			err := validateBackupConfigRules("databases-for-postgresql", "standard-gen2", map[string]interface{}{
+			err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
 				"retention": r,
 			})
 			if err != nil {
@@ -620,7 +622,7 @@ func TestValidateBackupConfigurationConstraints(t *testing.T) {
 	})
 
 	t.Run("rejects preserve for MySQL", func(t *testing.T) {
-		err := validateBackupConfigRules("databases-for-mysql", "standard-gen2", map[string]interface{}{
+		err := validateBackupConfigRules("databases-for-mysql", map[string]interface{}{
 			"preserve": true,
 		})
 		requireErrContains(t, err, "preserve backups is not supported for Databases for MySQL")
@@ -628,7 +630,7 @@ func TestValidateBackupConfigurationConstraints(t *testing.T) {
 
 	t.Run("accepts preserve for PostgreSQL and Valkey", func(t *testing.T) {
 		for _, svc := range []string{"databases-for-postgresql", "databases-for-valkey"} {
-			err := validateBackupConfigRules(svc, "standard-gen2", map[string]interface{}{
+			err := validateBackupConfigRules(svc, map[string]interface{}{
 				"preserve": true,
 			})
 			if err != nil {
@@ -655,27 +657,4 @@ func TestValidateBackupConfigurationConstraints(t *testing.T) {
 			t.Fatalf("expected unchanged true to be allowed, got %v", err)
 		}
 	})
-}
-
-func validateBackupConfigRules(service, plan string, cfg map[string]interface{}) error {
-	if retention, ok := cfg["retention"].(int); ok && retention != 0 {
-		if retention < 30 || retention > 60 {
-			return fmt.Errorf("retention in backup_configuration must be between 30 and 60 days, got %d", retention)
-		}
-	}
-
-	if preserve, ok := cfg["preserve"].(bool); ok && preserve {
-		if service == "databases-for-mysql" {
-			return fmt.Errorf("preserve backups is not supported for Databases for MySQL")
-		}
-	}
-
-	return nil
-}
-
-func validatePreserveImmutability(oldPreserve, newPreserve bool) error {
-	if oldPreserve && !newPreserve {
-		return fmt.Errorf("preserve backups cannot be disabled once enabled")
-	}
-	return nil
 }

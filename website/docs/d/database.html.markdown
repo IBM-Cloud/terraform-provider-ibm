@@ -93,11 +93,12 @@ In addition to all argument references list, you can access the following attrib
     - `rate_units` - (String) Auto scaling rate in units.
 - `allowlist`  - (List) A list of allowed IP addresses or ranges.
 - `users` - (List) A list of users configured for the database.
-- `backup_configuration` - (List) Configuration for automatic and decoupled independent backups.
+- `backup_configuration` - (List) Configuration for automatic and decoupled independent backups. Gen2 instances only; empty for Classic instances and for instances where the service reports no backup configuration.
   - Nested scheme for `backup_configuration`:
-    - `preserve` - (Boolean) Whether independent backups survive hard deletion of the database instance.
-    - `retention` - (Integer) The retention duration in days for automatic backups.
-    - `target_regions` - (List of Strings) The target regions where automatic backups are copied.
+    - `preserve` - (Boolean) Whether independent backups survive hard deletion of the database instance. On-demand backup copies are not affected by this setting.
+    - `retention` - (Integer) The retention duration in days for automatic and on-demand backups, as reported by the service.
+    - `copy_enabled` - (Boolean) Whether automatic backups are copied to other regions.
+    - `target_regions` - (Set of Strings) The target regions where automatic backups are copied.
 
 
 **Note**

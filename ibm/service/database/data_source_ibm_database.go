@@ -137,7 +137,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			"backup_configuration": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Decoupled / Independent backup configuration for Gen2 databases.",
+				Description: "Decoupled/Independent backup configuration for Gen2 databases.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"preserve": {
@@ -150,13 +150,19 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Retention period in days for automatic backups.",
 						},
-						"target_regions": {
-							Type:        schema.TypeList,
+						"copy_enabled": {
+							Type:        schema.TypeBool,
 							Computed:    true,
+							Description: "Whether automatic backups are copied to other regions.",
+						},
+						"target_regions": {
+							Type:     schema.TypeSet,
+							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Description: "List of target regions for automatic backup copies.",
+							Set:         schema.HashString,
+							Description: "Set of target regions for automatic backup copies.",
 						},
 					},
 				},

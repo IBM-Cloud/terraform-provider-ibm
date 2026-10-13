@@ -538,14 +538,21 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Retention period in days for automatic backups (30-60 days, default 30).",
 						},
-						"target_regions": {
-							Type:        schema.TypeList,
+						"copy_enabled": {
+							Type:        schema.TypeBool,
 							Optional:    true,
-							Computed:    true,
+							Default:     true,
+							Description: "Whether automatic backups are copied to other regions (default true). Set to false to stop creating new cross-region copies; existing copies are kept until their retention expires.",
+						},
+						"target_regions": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Description: "List of target regions for automatic backup copies.",
+							Set:         schema.HashString,
+							Description: "Set of target regions for automatic backup copies. Order is not significant. Ignored when copy_enabled is false.",
 						},
 					},
 				},
