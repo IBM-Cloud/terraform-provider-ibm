@@ -47,6 +47,11 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: "VPN Gateway instance name",
 						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "VPN Gateway instance id",
+						},
 						isVPNGatewayCreatedAt: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -295,6 +300,7 @@ func dataSourceIBMVPNGatewaysRead(context context.Context, d *schema.ResourceDat
 		gateway := map[string]interface{}{}
 		data := instance.(*vpcv1.VPNGateway)
 		gateway[isVPNGatewayName] = *data.Name
+		gateway["id"] = *data.ID
 		gateway[isVPNGatewayCreatedAt] = data.CreatedAt.String()
 		gateway[isVPNGatewayResourceType] = *data.ResourceType
 		gateway[isVPNGatewayHealthState] = *data.HealthState
