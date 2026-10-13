@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -982,6 +983,123 @@ func hasIndependentBackups(extensions map[string]interface{}) bool {
 	}
 	backups, exists := dataservices["backups"]
 	return exists && backups != nil
+}
+
+// setGen2BackupConfiguration populates backup_configuration in resource data from instance extensions.
+func setGen2BackupConfiguration(d *schema.ResourceData, instance *rc.ResourceInstance) {
+	if instance == nil || instance.Extensions == nil {
+		return
+	}
+	if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
+		if backups, ok := dataservices["backups"]; ok && backups != nil {
+			if flattened := flattenBackupConfiguration(backups); len(flattened) > 0 {
+				d.Set("backup_configuration", flattened)
+			}
+		}
+	}
+}
+
+// flattenBackupConfiguration extracts backup configuration from dataservices["backups"].
+func flattenBackupConfiguration(backupsRaw interface{}) []map[string]interface{} {
+	if backupsRaw == nil {
+		return nil
+	}
+	backups, ok := backupsRaw.(map[string]interface{})
+	if !ok || len(backups) == 0 {
+		return nil
+	}
+
+	config := map[string]interface{}{
+		"preserve":       false,
+		"retention":      30,
+		"target_regions": []string{},
+	}
+
+	if preserve, ok := backups["preserve"].(bool); ok {
+		config["preserve"] = preserve
+	}
+
+	if retRaw, ok := backups["retention"]; ok {
+		config["retention"] = parseRetentionDays(retRaw)
+	}
+
+	if autoBackups, ok := backups["automatic_backups"].(map[string]interface{}); ok {
+		if copyObj, ok := autoBackups["copy"].(map[string]interface{}); ok {
+			if targets, ok := copyObj["target"].([]interface{}); ok {
+				var regions []string
+				for _, t := range targets {
+					if targetMap, ok := t.(map[string]interface{}); ok {
+						if region, ok := targetMap["region"].(string); ok && region != "" {
+							regions = append(regions, region)
+						}
+					}
+				}
+				config["target_regions"] = regions
+			}
+		}
+	}
+
+	return []map[string]interface{}{config}
+}
+
+// parseRetentionDays parses retention from string (e.g. "30d", "45") or number into integer days.
+func parseRetentionDays(val interface{}) int {
+	switch v := val.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case int64:
+		return int(v)
+	case string:
+		v = strings.TrimSuffix(strings.TrimSpace(v), "d")
+		if d, err := strconv.Atoi(v); err == nil {
+			return d
+		}
+	}
+	return 30
+}
+
+// expandBackupConfiguration converts Terraform backup_configuration into API payload structure.
+func expandBackupConfiguration(cfg []interface{}) map[string]interface{} {
+	if len(cfg) == 0 || cfg[0] == nil {
+		return nil
+	}
+	m, ok := cfg[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	backups := make(map[string]interface{})
+
+	if preserve, ok := m["preserve"].(bool); ok {
+		backups["preserve"] = preserve
+	}
+
+	if retention, ok := m["retention"].(int); ok && retention > 0 {
+		backups["retention"] = fmt.Sprintf("%dd", retention)
+	}
+
+	if targetRegionsRaw, ok := m["target_regions"].([]interface{}); ok && len(targetRegionsRaw) > 0 {
+		var targets []map[string]interface{}
+		for _, tr := range targetRegionsRaw {
+			if region, ok := tr.(string); ok && region != "" {
+				targets = append(targets, map[string]interface{}{
+					"region": region,
+				})
+			}
+		}
+		if len(targets) > 0 {
+			backups["automatic_backups"] = map[string]interface{}{
+				"copy": map[string]interface{}{
+					"enabled": true,
+					"target":  targets,
+				},
+			}
+		}
+	}
+
+	return backups
 }
 
 // checkS2SAuthorization returns true only when both "independent_backups" and

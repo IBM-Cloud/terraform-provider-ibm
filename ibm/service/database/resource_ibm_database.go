@@ -195,6 +195,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateBackupConfigurationDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -241,6 +242,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateAsyncRestoreDiff,
 			validateShardsDiff,
 			validateBackendSpecificServiceEndpointsDiff,
+			validateBackupConfigurationDiff,
 		),
 
 		Importer: &schema.ResourceImporter{
@@ -512,6 +514,38 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Description: "Plugin Type",
 							Type:        schema.TypeString,
 							Required:    true,
+						},
+					},
+				},
+			},
+			"backup_configuration": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Decoupled / Independent backup configuration for Gen2 databases.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"preserve": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Preserve independent backups after database instance is deleted. Once enabled, cannot be disabled. Not supported for MySQL.",
+						},
+						"retention": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "Retention period in days for automatic backups (30-60 days, default 30).",
+						},
+						"target_regions": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "List of target regions for automatic backup copies.",
 						},
 					},
 				},

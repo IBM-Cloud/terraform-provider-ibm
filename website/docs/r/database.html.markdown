@@ -879,6 +879,12 @@ Review the argument reference that you can specify for your resource.
          - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
          - `rate_units` - (Optional, String) Auto scaling rate in units.
 
+- `backup_configuration` - (Optional, List) Configuration for automatic and decoupled independent backups. Supported for **Gen2 plans only**. Setting this block on Classic plans will fail validation at plan time.
+  - Nested scheme for `backup_configuration`:
+    - `preserve` - (Optional, Boolean) When set to `true`, independent backups survive the hard deletion of the database instance. Default is `false`. **Note:** Can be transitioned from `false` to `true`, but cannot be disabled (`true` to `false`) once enabled. Setting `preserve = true` is not supported on `databases-for-mysql` instances.
+    - `retention` - (Optional, Integer) Retention duration in days for automatic backups. Valid values are between `30` and `60` days. Default is `30`.
+    - `target_regions` - (Optional, List of Strings) List of target regions to copy automatic backups across regions.
+
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is loaded after provisioning and the new deployment starts up that uses that data. If omitted, the database is provisioned empty.
 
   **Classic:** Supports backups from Classic instances. Backup CRN format: `crn:v1:<…>:backup:<backup-id>`.
@@ -1054,6 +1060,7 @@ In addition to all argument references list, you can access the following attrib
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
 - `groups` - (List) A list of scaling groups for the database. This is a computed attribute that shows the current resource allocations.
+- `backup_configuration` - (List) The decoupled and independent backup configuration for the database instance.
 
 ## Gen2 Feature Summary
 
@@ -1067,6 +1074,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
+| Automatic backup configuration (backup_configuration) | ❌ Plan fails if set | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |

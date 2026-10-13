@@ -160,3 +160,7 @@ func validateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, m
 func validateShardsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(d).ValidateShardsDiff(ctx, d, meta)
 }
+
+func validateBackupConfigurationDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(d).ValidateBackupConfigurationDiff(ctx, d, meta)
+}

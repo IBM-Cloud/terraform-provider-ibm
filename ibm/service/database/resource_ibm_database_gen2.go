@@ -360,6 +360,13 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Add backup_configuration if provided
+	if backupConfig, ok := d.GetOk("backup_configuration"); ok {
+		if backupMap := expandBackupConfiguration(backupConfig.([]interface{})); backupMap != nil {
+			dataservices["backups"] = backupMap
+		}
+	}
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
@@ -828,6 +835,9 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	// Set backup configuration from instance extensions
+	setGen2BackupConfiguration(d, instance)
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -1123,6 +1133,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
+	if diags := g.applyBackupConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
 	readDiags := g.Read(ctx, d, meta)
 	return appendGen2DiagnosticsErrorsThenWarnings(readDiags, warnings)
 }
@@ -1341,6 +1355,94 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(_ context.Context, d
 		if oldShards > 0 && newShards < oldShards {
 			return fmt.Errorf("[ERROR] Shard count cannot be decreased. Current: %d, Requested: %d", oldShards, newShards)
 		}
+	}
+
+	return nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateBackupConfigurationDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	backupConfigRaw, ok := d.GetOk("backup_configuration")
+	if !ok {
+		return nil
+	}
+
+	configs, ok := backupConfigRaw.([]interface{})
+	if !ok || len(configs) == 0 || configs[0] == nil {
+		return nil
+	}
+
+	cfg, ok := configs[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	service := d.Get("service").(string)
+
+	// Retention validation (30 to 60 days)
+	if retention, ok := cfg["retention"].(int); ok && retention != 0 {
+		if retention < 30 || retention > 60 {
+			return fmt.Errorf("retention in backup_configuration must be between 30 and 60 days, got %d", retention)
+		}
+	}
+
+	// MySQL preserve restriction
+	if preserve, ok := cfg["preserve"].(bool); ok && preserve {
+		if service == "databases-for-mysql" {
+			return fmt.Errorf("preserve backups is not supported for Databases for MySQL")
+		}
+	}
+
+	// Preserve immutability: once enabled (true), cannot be disabled (false)
+	if d.HasChange("backup_configuration") {
+		oldVal, newVal := d.GetChange("backup_configuration")
+		oldConfigs, okOld := oldVal.([]interface{})
+		newConfigs, okNew := newVal.([]interface{})
+		if okOld && len(oldConfigs) > 0 && oldConfigs[0] != nil &&
+			okNew && len(newConfigs) > 0 && newConfigs[0] != nil {
+			oldCfg, okOldMap := oldConfigs[0].(map[string]interface{})
+			newCfg, okNewMap := newConfigs[0].(map[string]interface{})
+			if okOldMap && okNewMap {
+				oldPreserve, _ := oldCfg["preserve"].(bool)
+				newPreserve, _ := newCfg["preserve"].(bool)
+				if oldPreserve && !newPreserve {
+					return fmt.Errorf("preserve backups cannot be disabled once enabled")
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// applyBackupConfigurationWithDiagnostics applies updates to backup_configuration and returns diagnostics.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("backup_configuration") {
+		return nil
+	}
+
+	backupConfigRaw, ok := d.GetOk("backup_configuration")
+	if !ok {
+		return nil
+	}
+
+	backupMap := expandBackupConfiguration(backupConfigRaw.([]interface{}))
+	if backupMap == nil {
+		return nil
+	}
+
+	parameters := map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			"backups": backupMap,
+		},
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
+		return diagError("error updating backup configuration: %s", err)
+	}
+
+	_, err := g.waitForGen2InstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("error waiting for backup configuration update: %s", err)
 	}
 
 	return nil

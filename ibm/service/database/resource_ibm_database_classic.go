@@ -9,6 +9,7 @@ import (
 
 var classicUnsupportedAttrs = []string{
 	"shards",
+	"backup_configuration",
 }
 
 type resourceIBMDatabaseClassicBackend struct{}
@@ -54,5 +55,9 @@ func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return nil
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateBackupConfigurationDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }

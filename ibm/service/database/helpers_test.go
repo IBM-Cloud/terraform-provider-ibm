@@ -1275,3 +1275,90 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		}
 	})
 }
+
+func TestFlattenBackupConfiguration(t *testing.T) {
+	t.Run("returns nil for nil input", func(t *testing.T) {
+		require.Nil(t, flattenBackupConfiguration(nil))
+	})
+
+	t.Run("returns nil for empty map", func(t *testing.T) {
+		require.Nil(t, flattenBackupConfiguration(map[string]interface{}{}))
+	})
+
+	t.Run("flattens full backup configuration", func(t *testing.T) {
+		backups := map[string]interface{}{
+			"preserve":  true,
+			"retention": "45d",
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"enabled": true,
+					"target": []interface{}{
+						map[string]interface{}{"region": "ca-mon"},
+						map[string]interface{}{"region": "us-south"},
+					},
+				},
+			},
+		}
+
+		result := flattenBackupConfiguration(backups)
+		require.Len(t, result, 1)
+		require.Equal(t, true, result[0]["preserve"])
+		require.Equal(t, 45, result[0]["retention"])
+		require.Equal(t, []string{"ca-mon", "us-south"}, result[0]["target_regions"])
+	})
+
+	t.Run("flattens default backup configuration", func(t *testing.T) {
+		backups := map[string]interface{}{
+			"preserve":  false,
+			"retention": "30d",
+		}
+
+		result := flattenBackupConfiguration(backups)
+		require.Len(t, result, 1)
+		require.Equal(t, false, result[0]["preserve"])
+		require.Equal(t, 30, result[0]["retention"])
+		require.Empty(t, result[0]["target_regions"])
+	})
+}
+
+func TestParseRetentionDays(t *testing.T) {
+	require.Equal(t, 30, parseRetentionDays("30d"))
+	require.Equal(t, 45, parseRetentionDays("45d"))
+	require.Equal(t, 60, parseRetentionDays("60"))
+	require.Equal(t, 40, parseRetentionDays(40))
+	require.Equal(t, 50, parseRetentionDays(float64(50)))
+	require.Equal(t, 30, parseRetentionDays("invalid"))
+}
+
+func TestExpandBackupConfiguration(t *testing.T) {
+	t.Run("returns nil for empty input", func(t *testing.T) {
+		require.Nil(t, expandBackupConfiguration(nil))
+		require.Nil(t, expandBackupConfiguration([]interface{}{}))
+	})
+
+	t.Run("expands full backup configuration", func(t *testing.T) {
+		cfg := []interface{}{
+			map[string]interface{}{
+				"preserve":       true,
+				"retention":      45,
+				"target_regions": []interface{}{"ca-mon", "us-south"},
+			},
+		}
+
+		result := expandBackupConfiguration(cfg)
+		require.NotNil(t, result)
+		require.Equal(t, true, result["preserve"])
+		require.Equal(t, "45d", result["retention"])
+
+		autoBackups, ok := result["automatic_backups"].(map[string]interface{})
+		require.True(t, ok)
+		copyObj, ok := autoBackups["copy"].(map[string]interface{})
+		require.True(t, ok)
+		require.Equal(t, true, copyObj["enabled"])
+		targets, ok := copyObj["target"].([]map[string]interface{})
+		require.True(t, ok)
+		require.Len(t, targets, 2)
+		require.Equal(t, "ca-mon", targets[0]["region"])
+		require.Equal(t, "us-south", targets[1]["region"])
+	})
+}
