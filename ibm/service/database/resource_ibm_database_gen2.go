@@ -699,6 +699,15 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationUpdate(configCtx *ins
 }
 
 // waitForGen2InstanceUpdate waits for a Gen2 database instance update to complete.
+// It polls last_operation.state every 10 seconds rather than instance.state, because
+// instance.state flips to "active" as soon as RC accepts the request — well before the
+// underlying database operation (disk resize, shard add, host-flavor change) finishes.
+// last_operation.state reflects the actual operation result:
+//
+//	"in progress" → operation still running
+//	"succeeded"   → operation fully complete
+//	"failed"      → operation failed
+//
 // Unlike Classic databases, Gen2 only uses Resource Controller API and doesn't require ICD API checks.
 func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
@@ -708,31 +717,48 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 	instanceID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
-		Target:  []string{databaseInstanceSuccessStatus},
+		Pending: []string{gen2LastOperationInProgress},
+		Target:  []string{gen2LastOperationSucceeded},
 		Refresh: func() (interface{}, string, error) {
-			rsInst := rc.GetResourceInstanceOptions{
+			instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 				ID: &instanceID,
-			}
-			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+			})
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %s %s", d.Id(), err, response)
 				}
 				return nil, "", fmt.Errorf("[ERROR] GetResourceInstance on %s failed with error %s %s", d.Id(), err, response)
 			}
-			if *instance.State == databaseInstanceFailStatus {
-				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
+
+			// Fail fast if the top-level instance state is "failed"
+			if instance.State != nil && *instance.State == databaseInstanceFailStatus {
+				return *instance, gen2LastOperationFailed, fmt.Errorf("[ERROR] The resource instance %s failed", d.Id())
 			}
-			return *instance, *instance.State, nil
+
+			// Poll last_operation.state — this tracks the actual database operation.
+			// Fall back to gen2LastOperationInProgress when last_operation is absent so
+			// the poll keeps running rather than exiting prematurely on a nil pointer.
+			if instance.LastOperation == nil || instance.LastOperation.State == nil {
+				return *instance, gen2LastOperationInProgress, nil
+			}
+
+			lastOpState := *instance.LastOperation.State
+
+			if lastOpState == gen2LastOperationFailed {
+				desc := ""
+				if instance.LastOperation.Description != nil {
+					desc = *instance.LastOperation.Description
+				}
+				return *instance, gen2LastOperationFailed, fmt.Errorf("[ERROR] The resource instance %s update failed: %s", d.Id(), desc)
+			}
+
+			return *instance, lastOpState, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
-	// Gen2 databases don't use ICD API - only Resource Controller
-	// No need to call waitForICDReady() like Classic databases do
 	return stateConf.WaitForState()
 }
 
