@@ -1,28 +1,22 @@
-#!/usr/bin/env python3
-import subprocess
-import json
+#!/usr/bin/env bash
+# Scan the repository with IBM detect-secrets and fail CI when new or
+# confirmed secrets are present. This matches the GitHub Actions check used
+# by other IBM Go providers and SDKs (for example IBM/go-sdk-core).
+#
+# Requires: pip install "git+https://github.com/ibm/detect-secrets.git@0.13.1+ibm.64.dss#egg=detect-secrets"
+set -euo pipefail
 
-print(subprocess.run(['detect-secrets', 'scan', '--update', '.secrets.baseline']))
+# pip --user installs land here on some runners and local machines.
+export PATH="${HOME}/.local/bin:${PATH}"
 
-found_secrets = []
+if ! command -v detect-secrets >/dev/null 2>&1; then
+  echo "detect-secrets is not installed."
+  echo "Install it with:"
+  echo "  pip install --upgrade \"git+https://github.com/ibm/detect-secrets.git@0.13.1+ibm.64.dss#egg=detect-secrets\""
+  exit 1
+fi
 
-with open('.secrets.baseline', 'r') as f:
-    baseline = json.loads(f.read())
-    for file, secrets in baseline['results'].items():
-        for secret in secrets:
-            if secret.get('is_secret', True):
-                found_secrets.append((file, secret))
-
-if found_secrets:
-    print('Secrets were found in the source code!')
-    print('If these contain false positives, they can be marked as such with the `detect-secrets audit .secrets.baseline` command and committing the updated baseline file into the application repo.')
-    print('Read more about the tool at https://github.com/ibm/detect-secrets#about\n\n')
-    print('FOUND SECRETS:')
-    for secret in found_secrets:
-        print('File: ' + secret[0] + ' Line: ' + str(secret[1]['line_number']) + ' Type: ' + secret[1]['type'])
-    print('failure')
-    exit(1)
-else:
-    print('NO SECRETS FOUND')
-    print('success')
-
+# Refresh the baseline so newly introduced secrets are recorded, then audit
+# against the committed allow-list of known false positives.
+detect-secrets scan --update .secrets.baseline
+detect-secrets -v audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline

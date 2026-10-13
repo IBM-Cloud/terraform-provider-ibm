@@ -128,6 +128,8 @@ Working on an existing resources is a great way to start as a Terraform contribu
 
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
 
+ - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys. Known false positives are tracked in `.secrets.baseline`; if CI reports a false positive, run `detect-secrets audit .secrets.baseline` and commit the updated baseline.
+
 #### New resource
 
 Implementing a new resource is a good way to learn more about how Terraform interacts with upstream APIs. There are plenty of examples to draw from in the existing resources, but you still get to implement something completely new.
@@ -139,6 +141,7 @@ Implementing a new resource is a good way to learn more about how Terraform inte
  - [ ] __Run go mod tidy__: If you add new dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
  - [ ] __Run go vet__: Before submitting your PR, run `go vet ./...` to catch common Go programming errors. The CI build will fail if `go vet` reports any issues.
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
+ - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys.
 
 ### Writing acceptance tests
 
