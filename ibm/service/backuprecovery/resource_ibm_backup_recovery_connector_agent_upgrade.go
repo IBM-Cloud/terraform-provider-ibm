@@ -26,6 +26,7 @@ func ResourceIbmBackupRecoveryConnectorAgentUpgrade() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryConnectorAgentUpgradeCreate,
 		ReadContext:   resourceIbmBackupRecoveryConnectorAgentUpgradeRead,
+		UpdateContext: resourceIbmBackupRecoveryConnectorAgentUpgradeUpdate,
 		DeleteContext: resourceIbmBackupRecoveryConnectorAgentUpgradeDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -148,5 +149,17 @@ func resourceIbmBackupRecoveryConnectorAgentUpgradeDelete(context context.Contex
 	}
 	diags = append(diags, warning)
 	d.SetId("")
+	return diags
+}
+
+func resourceIbmBackupRecoveryConnectorAgentUpgradeUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "update" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
+	}
+	diags = append(diags, warning)
 	return diags
 }
