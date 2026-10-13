@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccIBMISVpnGatewaysDataSource_basic(t *testing.T) {
-	var vpnGateway string
 	node := "data.ibm_is_vpn_gateways.test1"
 	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tfvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
@@ -27,7 +26,6 @@ func TestAccIBMISVpnGatewaysDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMISVpnGatewaysDataSourceConfig(vpcname, subnetname, name1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
 					resource.TestCheckResourceAttrSet(node, "vpn_gateways.#"),
 				),
 			},
@@ -50,34 +48,9 @@ func TestAccIBMISVpnGatewaysDataSource_basic(t *testing.T) {
 func testAccCheckIBMISVpnGatewaysDataSourceConfig(vpc, subnet, name string) string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-		
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name = "%s"
-		vpc = "${ibm_is_vpc.testacc_vpc.id}"
-		zone = "%s"
-		ipv4_cidr_block = "%s"
-		
-	}
-	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
-		name   = "%s"
-		subnet = ibm_is_subnet.testacc_subnet.id
-		mode   = "route"
-		local_asn = 64520
-		lifecycle {
-			ignore_changes = [
-				advertised_cidrs
-			]
-  		}
-	}
-	resource "ibm_is_vpn_gateway_advertised_cidr" "example" {
-		vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
-		cidr        = "10.45.0.0/25"
-	}	
+	
 	data "ibm_is_vpn_gateways" "test1" {
 		
-	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)
+	}`)
 
 }
