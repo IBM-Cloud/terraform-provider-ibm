@@ -10,6 +10,25 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 | `ibm_rhaii_inference_models` | Data source | Red Hat AI Inference API (`rhaiiv1`) |
 | `ibm_rhaii_inference_model` | Data source | Red Hat AI Inference API (`rhaiiv1`) |
 
+All four are implemented with the Terraform Plugin Framework and registered in
+`ibm/provider_framework/provider.go`. The framework provider is muxed with the
+SDKv2 provider in `main.go`, so users see one `ibm` provider. A type name must be
+registered in only one of the two providers; `TestRhaiiMuxRegistration` checks it.
+
+Mapping of the SDKv2 patterns used by the other resources:
+
+| SDKv2 | Here |
+|-------|------|
+| `Default` + `ForceNew` | `stringdefault.StaticString` + `stringplanmodifier.RequiresReplace()` |
+| Optional + Computed tags (unset keeps server tags, `[]` detaches) | Optional + Computed + `setplanmodifier.UseStateForUnknown()` |
+| `flex.ResourceTagsCustomizeDiff` (`IC_ENV_TAGS`) | `ModifyPlan` adds the env tags to the planned tags |
+| `flex.ResourceValidateAccessTags` | `ModifyPlan` checks the access tags exist (`rhaiiMissingAccessTags`) |
+| validator dictionary (`validate.InvokeValidator`) | `terraform-plugin-framework-validators` |
+| `timeouts` block | `terraform-plugin-framework-timeouts`, as a block, so the HCL is the same |
+
+Two SDKv2 packages are still imported on purpose: `helper/retry` for the wait
+loops, and `helper/schema` only to pass sets to the shared `flex` tag helpers.
+
 A project is a resource controller instance of the `instructlab` service. The
 project resource has its own create, read, update and delete logic and does not
 call into the `resourcecontroller` package, so changes to `ibm_resource_instance`
@@ -31,7 +50,8 @@ data sources use. The endpoint can be overridden with `IBMCLOUD_RHAII_API_ENDPOI
 ## Tests
 
 * Unit tests (no cloud access): `go test ./ibm/service/rhaii/... -run 'TestRhaii|TestFlatten|TestList|TestGet|TestOptions|TestService|TestClone'`
-* Acceptance tests: `TF_ACC=1 IC_API_KEY=<key> go test ./ibm/service/rhaii/ -run TestAcc -timeout 60m`
+  * `TestRhaiiProjectPlan*` and `TestRhaiiProjectValidateConfig` run plan and validation through the real mux server, without credentials
+* Acceptance tests use `acc.TestAccProtoV6ProviderFactories()`: `TF_ACC=1 IC_API_KEY=<key> go test ./ibm/service/rhaii/ -run TestAcc -timeout 60m`
   * `TestAccIBMRhaiiProject_accessTags` runs only when `IBM_RHAII_ACCESS_TAG` is set to an existing access management tag.
 
 ## Handy Links

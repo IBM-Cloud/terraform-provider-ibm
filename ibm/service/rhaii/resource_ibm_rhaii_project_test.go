@@ -25,9 +25,9 @@ func TestAccIBMRhaiiProject_basic(t *testing.T) {
 	updateName := fmt.Sprintf("tf-rhaii-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMRhaiiProjectDestroy,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckIBMRhaiiProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMRhaiiProjectConfig(name),
@@ -52,6 +52,7 @@ func TestAccIBMRhaiiProject_basic(t *testing.T) {
 				),
 			},
 			{
+				// An empty list detaches all tags (Optional + Computed, as in ibm_is_ssh_key).
 				Config: testAccCheckIBMRhaiiProjectEmptyTagsConfig(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
@@ -77,9 +78,9 @@ func TestAccIBMRhaiiProject_accessTags(t *testing.T) {
 	name := fmt.Sprintf("tf-rhaii-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMRhaiiProjectDestroy,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckIBMRhaiiProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMRhaiiProjectAccessTagsConfig(name, accessTag),

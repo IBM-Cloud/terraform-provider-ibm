@@ -62,7 +62,7 @@ After your data source is created, you can read values from the following attrib
 * `display_name` - (String) The display name of the model.
 * `state` - (String) The state of the model, for example `model_loaded`.
 * `status` - (String) The status of the model, for example `loaded`.
-* `total_params` - (Float) The total number of parameters of the model, for example `70553706496`.
+* `total_params` - (Integer) The total number of parameters of the model, for example `70553706496`.
 * `config_json` - (String) The model configuration (architecture details and hyperparameters) as a JSON string. Use `jsondecode()` to read it.
 * `model_card` - (String) The model card in markdown format.
 * `source_json` - (String) The source of a custom model (`huggingface`, `ibmcos`, `oci` or `s3`) as a JSON string. Empty when the API does not return a source.

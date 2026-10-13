@@ -6,117 +6,158 @@ package rhaii
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const rhaiiProjectDataSourceName = "ibm_rhaii_project"
+var (
+	_ datasource.DataSource              = &rhaiiProjectDataSource{}
+	_ datasource.DataSourceWithConfigure = &rhaiiProjectDataSource{}
+)
 
-// DataSourceIBMRhaiiProject reads an existing Red Hat AI Inference (RHAII) project
-// by name or by ID.
-func DataSourceIBMRhaiiProject() *schema.Resource {
-	s := map[string]*schema.Schema{
-		"name": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ExactlyOneOf: []string{"name", "identifier"},
-			Description:  "The name of the project.",
+// NewRhaiiProjectDataSource returns the ibm_rhaii_project data source, which
+// reads an existing Red Hat AI Inference project by name or by ID.
+func NewRhaiiProjectDataSource() datasource.DataSource {
+	return &rhaiiProjectDataSource{}
+}
+
+type rhaiiProjectDataSource struct {
+	meta conns.ClientSession
+}
+
+type rhaiiProjectDataSourceModel struct {
+	Name            types.String `tfsdk:"name"`
+	Identifier      types.String `tfsdk:"identifier"`
+	ResourceGroupID types.String `tfsdk:"resource_group_id"`
+	Location        types.String `tfsdk:"location"`
+	PlanName        types.String `tfsdk:"plan_name"`
+	Tags            types.Set    `tfsdk:"tags"`
+	AccessTags      types.Set    `tfsdk:"access_tags"`
+	rhaiiProjectComputedModel
+}
+
+func (d *rhaiiProjectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_rhaii_project"
+}
+
+func (d *rhaiiProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	attributes := map[string]schema.Attribute{
+		"name": schema.StringAttribute{
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the project.",
 		},
-		"identifier": {
-			Type:          schema.TypeString,
-			Optional:      true,
-			ExactlyOneOf:  []string{"name", "identifier"},
-			ConflictsWith: []string{"resource_group_id", "location"},
-			Description:   "The ID (GUID) or CRN of the project.",
+		"identifier": schema.StringAttribute{
+			Optional:    true,
+			Description: "The ID (GUID) or CRN of the project.",
+			Validators: []validator.String{
+				stringvalidator.ExactlyOneOf(path.MatchRoot("name"), path.MatchRoot("identifier")),
+				stringvalidator.ConflictsWith(path.MatchRoot("resource_group_id"), path.MatchRoot("location")),
+			},
 		},
-		"resource_group_id": {
-			Type:        schema.TypeString,
+		"resource_group_id": schema.StringAttribute{
 			Optional:    true,
 			Computed:    true,
 			Description: "The ID of the resource group to search in.",
 		},
-		"location": {
-			Type:        schema.TypeString,
+		"location": schema.StringAttribute{
 			Optional:    true,
 			Computed:    true,
 			Description: "The region of the project.",
 		},
-		"plan_name": {
-			Type:        schema.TypeString,
+		"plan_name": schema.StringAttribute{
 			Computed:    true,
 			Description: "The name of the pricing plan of the project.",
 		},
-		"tags": {
-			Type:        schema.TypeSet,
+		"tags": schema.SetAttribute{
+			ElementType: types.StringType,
 			Computed:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			Set:         flex.ResourceIBMVPCHash,
 			Description: "The user tags of the project.",
 		},
-		"access_tags": {
-			Type:        schema.TypeSet,
+		"access_tags": schema.SetAttribute{
+			ElementType: types.StringType,
 			Computed:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			Set:         flex.ResourceIBMVPCHash,
 			Description: "The access management tags of the project.",
 		},
 	}
-	for k, v := range rhaiiProjectComputedSchema() {
-		s[k] = v
+	for k, v := range rhaiiProjectDataSourceComputedAttributes() {
+		attributes[k] = v
 	}
-
-	return &schema.Resource{
-		ReadContext: dataSourceIBMRhaiiProjectRead,
-		Schema:      s,
+	resp.Schema = schema.Schema{
+		Description: "Reads a Red Hat AI Inference project.",
+		Attributes:  attributes,
 	}
 }
 
-func dataSourceIBMRhaiiProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rcClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+func (d *rhaiiProjectDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	meta, ok := req.ProviderData.(conns.ClientSession)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected provider data", fmt.Sprintf("Expected conns.ClientSession, got %T.", req.ProviderData))
+		return
+	}
+	d.meta = meta
+}
+
+func (d *rhaiiProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var m rhaiiProjectDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &m)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	rcClient, err := d.meta.ResourceControllerV2API()
 	if err != nil {
-		return rhaiiDiagFor(err, rhaiiProjectDataSourceName, "read", "initialize-client")
+		resp.Diagnostics.AddError("Error initializing the Resource Controller client", err.Error())
+		return
 	}
 
 	var instance *rc.ResourceInstance
-	if id, ok := d.GetOk("identifier"); ok {
-		instance, _, err = rcClient.GetResourceInstanceWithContext(ctx, &rc.GetResourceInstanceOptions{ID: ptr(id.(string))})
+	if !m.Identifier.IsNull() {
+		id := m.Identifier.ValueString()
+		instance, _, err = rcClient.GetResourceInstanceWithContext(ctx, &rc.GetResourceInstanceOptions{ID: &id})
 		if err != nil {
-			return rhaiiDiagFor(fmt.Errorf("GetResourceInstanceWithContext failed: %s", err), rhaiiProjectDataSourceName, "read", "get-instance")
+			resp.Diagnostics.AddError("Error reading the Red Hat AI Inference project", fmt.Sprintf("GetResourceInstanceWithContext failed: %s", err))
+			return
 		}
 		if !isRhaiiInstance(instance) {
-			return rhaiiDiagFor(fmt.Errorf("resource instance %s is not a Red Hat AI Inference project (service is %q, expected %q)", id, strDeref(instance.ResourceID), rhaiiServiceName), rhaiiProjectDataSourceName, "read", "check-service")
+			resp.Diagnostics.AddError("Not a Red Hat AI Inference project",
+				fmt.Sprintf("Resource instance %s is not a Red Hat AI Inference project (service is %q, expected %q).", id, strDeref(instance.ResourceID), rhaiiServiceName))
+			return
 		}
 	} else {
-		instance, err = rhaiiFindProjectByName(ctx, rcClient, d.Get("name").(string), d.Get("resource_group_id").(string), d.Get("location").(string))
+		instance, err = rhaiiFindProjectByName(ctx, rcClient, m.Name.ValueString(), m.ResourceGroupID.ValueString(), m.Location.ValueString())
 		if err != nil {
-			return rhaiiDiagFor(err, rhaiiProjectDataSourceName, "read", "find-instance")
+			resp.Diagnostics.AddError("Error finding the Red Hat AI Inference project", err.Error())
+			return
 		}
 	}
 
-	d.SetId(*instance.ID)
-	if err := setRhaiiProjectAttributes(ctx, d, meta, instance); err != nil {
-		return rhaiiDiagFor(err, rhaiiProjectDataSourceName, "read", "set-attributes")
+	values, diags := flattenRhaiiProject(ctx, d.meta, instance, &m.rhaiiProjectComputedModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	m.Name = types.StringValue(values.Name)
+	m.Location = types.StringValue(values.Location)
+	m.PlanName = types.StringValue(values.PlanName)
+	m.ResourceGroupID = types.StringValue(values.ResourceGroupID)
 
-	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
-	if err != nil {
-		log.Printf("[ERROR] Error on get of %s (%s) tags: %s", rhaiiProjectDataSourceName, d.Id(), err)
-	}
-	d.Set("tags", tags)
+	tags, accessTags, diags := rhaiiReadTags(ctx, d.meta, strDeref(instance.CRN))
+	resp.Diagnostics.Append(diags...)
+	m.Tags = tags
+	m.AccessTags = accessTags
 
-	accessTags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", rhaiiAccessTagType)
-	if err != nil {
-		log.Printf("[ERROR] Error on get of %s (%s) access tags: %s", rhaiiProjectDataSourceName, d.Id(), err)
-	}
-	d.Set("access_tags", accessTags)
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
 }
 
 // rhaiiFindProjectByName lists the RHAII instances with a name and returns the

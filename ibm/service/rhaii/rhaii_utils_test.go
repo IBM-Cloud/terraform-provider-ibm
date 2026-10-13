@@ -13,12 +13,9 @@ import (
 	"testing"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii/rhaiiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const testProjectID = "917bc95a-fef0-4039-b936-e0b6fb17b721"
@@ -203,121 +200,6 @@ func TestRhaiiNextStart(t *testing.T) {
 	}
 }
 
-func TestFlattenRhaiiInferenceModelMetadata(t *testing.T) {
-	params := int64(70553706496)
-	m := &rhaiiv1.InferenceModelMetadata{
-		Name:        ptr("llama"),
-		TotalParams: &params,
-		Config:      map[string]interface{}{"model_type": "llama"},
-		ModelCard:   ptr("# card"),
-		Pricing:     &rhaiiv1.ModelPricing{InputMeasure: ptr("IN"), OutputMeasure: ptr("OUT")},
-	}
-
-	out, err := flattenRhaiiInferenceModelMetadata(m, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if out["config_json"] != `{"model_type":"llama"}` || out["total_params"] != float64(70553706496) {
-		t.Errorf("unexpected flatten result: %v", out)
-	}
-	if _, ok := out["model_card"]; ok {
-		t.Error("model_card must only be set when requested")
-	}
-	if p := out["pricing"].([]interface{})[0].(map[string]interface{}); p["input_measure"] != "IN" {
-		t.Errorf("unexpected pricing: %v", p)
-	}
-
-	out, _ = flattenRhaiiInferenceModelMetadata(m, true)
-	if out["model_card"] != "# card" || out["source_json"] != "" {
-		t.Errorf("unexpected flatten result with model card: %v", out)
-	}
-
-	if out, _ := flattenRhaiiInferenceModelMetadata(nil, true); len(out) != 0 {
-		t.Errorf("nil metadata must flatten to an empty map, got %v", out)
-	}
-}
-
-func TestRhaiiSchemas(t *testing.T) {
-	r := ResourceIBMRhaiiProject()
-	if err := r.InternalValidate(nil, true); err != nil {
-		t.Fatalf("resource schema is not valid: %s", err)
-	}
-	s := r.Schema
-	if !s["name"].Required || s["plan_name"].Default != rhaiiDefaultPlan || s["location"].Default != rhaiiDefaultLocation || !s["location"].ForceNew {
-		t.Error("unexpected name, plan_name or location schema")
-	}
-	for _, k := range []string{"tags", "access_tags"} {
-		if !s[k].Optional || !s[k].Computed {
-			t.Errorf("%s must be optional and computed", k)
-		}
-	}
-	if _, ok := s["plan"]; ok {
-		t.Error("plan was renamed to plan_name")
-	}
-	for _, k := range []string{"service", "project_id", "endpoint", "crn", "guid", "plan_id"} {
-		if s[k] == nil || s[k].Optional || !s[k].Computed {
-			t.Errorf("%s must be computed only", k)
-		}
-	}
-
-	if err := DataSourceIBMRhaiiProject().InternalValidate(nil, false); err != nil {
-		t.Errorf("ibm_rhaii_project data source schema is not valid: %s", err)
-	}
-	if err := DataSourceIBMRhaiiInferenceModels().InternalValidate(nil, false); err != nil {
-		t.Errorf("ibm_rhaii_inference_models data source schema is not valid: %s", err)
-	}
-	if err := DataSourceIBMRhaiiInferenceModel().InternalValidate(nil, false); err != nil {
-		t.Errorf("ibm_rhaii_inference_model data source schema is not valid: %s", err)
-	}
-}
-
-func TestRhaiiProjectValidators(t *testing.T) {
-	validate.SetValidatorDict(validate.ValidatorDict{
-		ResourceValidatorDictionary: map[string]*validate.ResourceValidator{
-			rhaiiProjectResourceName: ResourceIBMRhaiiProjectValidator(),
-		},
-		DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
-			rhaiiInferenceModelDataSourceName: DataSourceIBMRhaiiInferenceModelValidator(),
-		},
-	})
-	r := ResourceIBMRhaiiProject()
-	model := DataSourceIBMRhaiiInferenceModel()
-
-	cases := []struct {
-		name  string
-		fn    func(interface{}, string) ([]string, []error)
-		value string
-		valid bool
-	}{
-		{"name simple", r.Schema["name"].ValidateFunc, "rhaii-nkashyap", true},
-		{"name allowed specials", r.Schema["name"].ValidateFunc, "my project_1.dev:a", true},
-		{"name non ascii letters", r.Schema["name"].ValidateFunc, "projet-été", true},
-		{"name 180 chars", r.Schema["name"].ValidateFunc, strings.Repeat("a", 180), true},
-		{"name 181 chars", r.Schema["name"].ValidateFunc, strings.Repeat("a", 181), false},
-		{"name slash", r.Schema["name"].ValidateFunc, "a/b", false},
-		{"name empty", r.Schema["name"].ValidateFunc, "", false},
-		{"tag", r.Schema["tags"].Elem.(*schema.Schema).ValidateFunc, "env:dev", true},
-		{"tag bad char", r.Schema["tags"].Elem.(*schema.Schema).ValidateFunc, "env=dev", false},
-		{"access tag", r.Schema["access_tags"].Elem.(*schema.Schema).ValidateFunc, "project:rhaii", true},
-		{"access tag without value", r.Schema["access_tags"].Elem.(*schema.Schema).ValidateFunc, "project", false},
-		{"model", model.Schema["model"].ValidateFunc, "llama-3-3-70b-instruct", true},
-		{"model uppercase", model.Schema["model"].ValidateFunc, "Llama", false},
-	}
-	for _, c := range cases {
-		if c.fn == nil {
-			t.Fatalf("%s: no validate function", c.name)
-		}
-		_, errs := c.fn(c.value, "field")
-		if (len(errs) == 0) != c.valid {
-			t.Errorf("%s: value %q valid = %v, want %v (%v)", c.name, c.value, len(errs) == 0, c.valid, errs)
-		}
-	}
-
-	if !r.Schema["plan_name"].ForceNew {
-		t.Error("plan_name must force a new resource, the service does not support plan updates")
-	}
-}
-
 func TestRhaiiServiceURLForLocation(t *testing.T) {
 	t.Setenv("IBMCLOUD_ENDPOINTS_FILE_PATH", "")
 	t.Setenv("IC_ENDPOINTS_FILE_PATH", "")
@@ -359,55 +241,33 @@ func TestRhaiiServiceURLForLocation(t *testing.T) {
 	}
 }
 
-// TestRhaiiProjectTagRemovalDiff checks the plan for tags and access_tags:
-// an empty list detaches all tags, an unset attribute keeps the server tags.
-func TestRhaiiProjectTagRemovalDiff(t *testing.T) {
-	state := &terraform.InstanceState{
-		ID: "crn:v1:bluemix:public:instructlab:us-east:a/acc:guid::",
-		Attributes: map[string]string{
-			"id":                     "crn:v1:bluemix:public:instructlab:us-east:a/acc:guid::",
-			"name":                   "p",
-			"location":               "us-east",
-			"plan_name":              "instructlab-pricing-plan",
-			"resource_group_id":      "rg",
-			"access_tags.#":          "1",
-			"access_tags.1234567890": "project:rhaii",
-			"tags.#":                 "1",
-			"tags.987654321":         "env:test",
-		},
+func TestFlattenRhaiiInferenceModelMetadata(t *testing.T) {
+	params := int64(70553706496)
+	m, diags := flattenRhaiiInferenceModelMetadata(&rhaiiv1.InferenceModelMetadata{
+		Name:        ptr("llama"),
+		TotalParams: &params,
+		Config:      map[string]interface{}{"model_type": "llama"},
+		Pricing:     &rhaiiv1.ModelPricing{InputMeasure: ptr("IN"), OutputMeasure: ptr("OUT")},
+	})
+	if diags.HasError() {
+		t.Fatal(diags)
+	}
+	if m.ConfigJSON.ValueString() != `{"model_type":"llama"}` || m.TotalParams.ValueInt64() != 70553706496 || m.Name.ValueString() != "llama" {
+		t.Errorf("unexpected flatten result: %+v", m)
+	}
+	if len(m.Pricing.Elements()) != 1 || len(m.Validation.Elements()) != 0 {
+		t.Errorf("unexpected pricing or validation: %v %v", m.Pricing, m.Validation)
 	}
 
-	diffFor := func(cfg map[string]interface{}) *terraform.InstanceDiff {
-		r := ResourceIBMRhaiiProject()
-		r.CustomizeDiff = nil // the access tag check needs a live Global Tagging client
-		diff, err := r.Diff(context.Background(), state, terraform.NewResourceConfigRaw(cfg), nil)
-		if err != nil {
-			t.Fatalf("Diff() error: %s", err)
-		}
-		return diff
+	empty, diags := flattenRhaiiInferenceModelMetadata(nil)
+	if diags.HasError() || !empty.TotalParams.IsNull() || len(empty.Pricing.Elements()) != 0 {
+		t.Errorf("nil metadata must flatten to empty values, got %+v", empty)
 	}
+}
 
-	// Empty lists detach all tags, without replacing the project.
-	diff := diffFor(map[string]interface{}{"name": "p", "tags": []interface{}{}, "access_tags": []interface{}{}})
-	if diff == nil {
-		t.Fatal("empty lists: expected a diff that removes the tags, got none")
-	}
-	for _, k := range []string{"access_tags.#", "tags.#"} {
-		if a, ok := diff.Attributes[k]; !ok || a.New != "0" {
-			t.Errorf("empty lists: %s diff = %+v, want New \"0\"", k, a)
-		}
-	}
-	if diff.RequiresNew() {
-		t.Error("empty lists: removing tags must not replace the project")
-	}
-
-	// An unset attribute keeps the tags of the server: no tag diff.
-	diff = diffFor(map[string]interface{}{"name": "p"})
-	if diff != nil {
-		for _, k := range []string{"access_tags.#", "tags.#"} {
-			if a, ok := diff.Attributes[k]; ok {
-				t.Errorf("attributes removed: unexpected %s diff %+v", k, a)
-			}
-		}
+func TestRhaiiMergeTags(t *testing.T) {
+	got := rhaiiMergeTags([]string{"b", "a"}, []string{"a", "env:schematics"})
+	if strings.Join(got, ",") != "a,b,env:schematics" {
+		t.Errorf("rhaiiMergeTags() = %v", got)
 	}
 }

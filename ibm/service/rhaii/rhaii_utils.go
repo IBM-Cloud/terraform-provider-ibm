@@ -18,7 +18,6 @@ import (
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -161,126 +160,6 @@ func isRhaiiInstanceGone(instance *rc.ResourceInstance) bool {
 		return false
 	}
 	return *instance.State == rhaiiStateRemoved || *instance.State == rhaiiStatePendingReclamation
-}
-
-// setRhaiiProjectAttributes sets the computed attributes that the resource and
-// the data source have in common.
-func setRhaiiProjectAttributes(ctx context.Context, d *schema.ResourceData, meta interface{}, instance *rc.ResourceInstance) error {
-	location := ""
-	if instance.RegionID != nil {
-		location = *instance.RegionID
-	}
-	projectID := ""
-	if instance.GUID != nil {
-		projectID = *instance.GUID
-	}
-
-	values := map[string]interface{}{
-		"name":               instance.Name,
-		"location":           location,
-		"resource_group_id":  instance.ResourceGroupID,
-		"project_id":         projectID,
-		"guid":               projectID,
-		"crn":                instance.CRN,
-		"service":            rhaiiServiceName,
-		"state":              instance.State,
-		"dashboard_url":      instance.DashboardURL,
-		"account_id":         instance.AccountID,
-		"resource_group_crn": instance.ResourceGroupCRN,
-		"plan_id":            instance.ResourcePlanID,
-		"target_crn":         instance.TargetCRN,
-		"created_by":         instance.CreatedBy,
-		"updated_by":         instance.UpdatedBy,
-		"locked":             instance.Locked,
-	}
-	if projectID != "" && location != "" {
-		values["endpoint"] = rhaiiProjectEndpoint(location, projectID)
-		values["private_endpoint"] = rhaiiProjectPrivateEndpoint(location, projectID)
-	}
-	if instance.CreatedAt != nil {
-		values["created_at"] = instance.CreatedAt.String()
-	}
-	if instance.UpdatedAt != nil {
-		values["updated_at"] = instance.UpdatedAt.String()
-	}
-	if instance.LastOperation != nil {
-		values["last_operation"] = flattenRhaiiLastOperation(instance.LastOperation)
-	}
-	if instance.ResourcePlanID != nil {
-		gcClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
-		if err != nil {
-			return err
-		}
-		plan, err := rhaiiPlanName(ctx, gcClient, *instance.ResourcePlanID)
-		if err != nil {
-			return err
-		}
-		values["plan_name"] = plan
-	}
-
-	for k, v := range values {
-		if err := d.Set(k, v); err != nil {
-			return fmt.Errorf("error setting %s: %s", k, err)
-		}
-	}
-	return nil
-}
-
-func flattenRhaiiLastOperation(op *rc.ResourceInstanceLastOperation) []interface{} {
-	m := map[string]interface{}{}
-	if op.Type != nil {
-		m["type"] = *op.Type
-	}
-	if op.State != nil {
-		m["state"] = *op.State
-	}
-	if op.Async != nil {
-		m["async"] = *op.Async
-	}
-	if op.Description != nil {
-		m["description"] = *op.Description
-	}
-	return []interface{}{m}
-}
-
-// rhaiiProjectComputedSchema returns the computed attributes of a project that
-// the resource and the data source have in common.
-func rhaiiProjectComputedSchema() map[string]*schema.Schema {
-	computed := func(t schema.ValueType, description string) *schema.Schema {
-		return &schema.Schema{Type: t, Computed: true, Description: description}
-	}
-	return map[string]*schema.Schema{
-		"project_id":         computed(schema.TypeString, "The ID of the project. Use this value as `project_id` in the Red Hat AI Inference API."),
-		"endpoint":           computed(schema.TypeString, "The public base URL of the Red Hat AI Inference API for this project."),
-		"private_endpoint":   computed(schema.TypeString, "The private base URL of the Red Hat AI Inference API for this project. It can be reached only from the IBM Cloud private network."),
-		"guid":               computed(schema.TypeString, "The GUID of the resource instance. Same value as `project_id`."),
-		"crn":                computed(schema.TypeString, "The CRN of the project."),
-		"service":            computed(schema.TypeString, "The service name of the project. Always `instructlab`."),
-		"state":              computed(schema.TypeString, "The state of the project, for example `active`."),
-		"dashboard_url":      computed(schema.TypeString, "The relative URL of the project in the IBM Cloud console."),
-		"account_id":         computed(schema.TypeString, "The ID of the account that owns the project."),
-		"resource_group_crn": computed(schema.TypeString, "The CRN of the resource group of the project."),
-		"plan_id":            computed(schema.TypeString, "The global catalog ID of the pricing plan of the project."),
-		"target_crn":         computed(schema.TypeString, "The deployment CRN of the project in the global catalog."),
-		"created_at":         computed(schema.TypeString, "The date when the project was created."),
-		"created_by":         computed(schema.TypeString, "The subject who created the project."),
-		"updated_at":         computed(schema.TypeString, "The date when the project was last updated."),
-		"updated_by":         computed(schema.TypeString, "The subject who last updated the project."),
-		"locked":             computed(schema.TypeBool, "Whether the project is locked."),
-		"last_operation": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "The last operation on the project.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"type":        computed(schema.TypeString, "The type of the operation, for example `create`."),
-					"state":       computed(schema.TypeString, "The state of the operation, for example `succeeded`."),
-					"async":       computed(schema.TypeBool, "Whether the operation is asynchronous."),
-					"description": computed(schema.TypeString, "The description of the operation."),
-				},
-			},
-		},
-	}
 }
 
 // waitForRhaiiProject polls a resource instance until refresh reports rhaiiWaitDone.

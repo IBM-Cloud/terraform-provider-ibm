@@ -4,99 +4,152 @@
 package rhaii
 
 import (
+	"regexp"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii/rhaiiv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// rhaiiInferenceModelMetadataSchema returns the attributes built from the IBM
-// metadata of an inference model. withModelCard adds the model card, which can
-// be large and is only returned by the single model data source.
-func rhaiiInferenceModelMetadataSchema(withModelCard bool) map[string]*schema.Schema {
-	computed := func(t schema.ValueType, description string) *schema.Schema {
-		return &schema.Schema{Type: t, Computed: true, Description: description}
+// rhaiiModelIDRegexp is the pattern of the model path parameter in the API spec.
+var rhaiiModelIDRegexp = regexp.MustCompile(`^[a-z0-9-]+$`)
+
+var (
+	rhaiiPricingAttrTypes = map[string]attr.Type{
+		"input_measure":  types.StringType,
+		"output_measure": types.StringType,
 	}
-	s := map[string]*schema.Schema{
-		"name":         computed(schema.TypeString, "The name of the model."),
-		"display_name": computed(schema.TypeString, "The display name of the model."),
-		"state":        computed(schema.TypeString, "The state of the model, for example `model_loaded`."),
-		"status":       computed(schema.TypeString, "The status of the model, for example `loaded`."),
-		// TypeFloat, not TypeInt: values such as 70553706496 overflow int on
-		// 32-bit builds, and the spec maximum (2^53-1) fits a float64 exactly.
-		"total_params": computed(schema.TypeFloat, "The total number of parameters of the model."),
-		"config_json":  computed(schema.TypeString, "The model configuration (architecture details and hyperparameters) as a JSON string."),
-		"pricing": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "The pricing measures of the model.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"input_measure":  computed(schema.TypeString, "The billing measure for input tokens."),
-					"output_measure": computed(schema.TypeString, "The billing measure for output tokens."),
-				},
-			},
-		},
-		"validation": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "The validation information of a custom model.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"status":       computed(schema.TypeString, "The validation status."),
-					"error":        computed(schema.TypeString, "The validation error message, if any."),
-					"completed_at": computed(schema.TypeString, "The date when the validation completed."),
-				},
-			},
-		},
+	rhaiiValidationAttrTypes = map[string]attr.Type{
+		"status":       types.StringType,
+		"error":        types.StringType,
+		"completed_at": types.StringType,
 	}
-	if withModelCard {
-		s["model_card"] = computed(schema.TypeString, "The model card in markdown format.")
-		s["source_json"] = computed(schema.TypeString, "The source of a custom model (huggingface, ibmcos, oci or s3) as a JSON string.")
-	}
-	return s
+)
+
+// rhaiiInferenceModelMetadataModel holds the attributes built from the IBM
+// metadata of an inference model.
+type rhaiiInferenceModelMetadataModel struct {
+	Name        types.String `tfsdk:"name"`
+	DisplayName types.String `tfsdk:"display_name"`
+	State       types.String `tfsdk:"state"`
+	Status      types.String `tfsdk:"status"`
+	TotalParams types.Int64  `tfsdk:"total_params"`
+	ConfigJSON  types.String `tfsdk:"config_json"`
+	Pricing     types.List   `tfsdk:"pricing"`
+	Validation  types.List   `tfsdk:"validation"`
 }
 
-// flattenRhaiiInferenceModelMetadata flattens the IBM metadata of a model into a
-// map whose keys match rhaiiInferenceModelMetadataSchema.
-func flattenRhaiiInferenceModelMetadata(m *rhaiiv1.InferenceModelMetadata, withModelCard bool) (map[string]interface{}, error) {
-	out := map[string]interface{}{}
-	if m == nil {
-		return out, nil
+// rhaiiInferenceModelMetadataAttributes returns the schema of the IBM metadata
+// attributes. total_params is Int64, which is 64-bit on every platform in the
+// framework, so 70553706496 does not overflow on 32-bit builds.
+func rhaiiInferenceModelMetadataAttributes() map[string]schema.Attribute {
+	str := func(d string) schema.Attribute { return schema.StringAttribute{Computed: true, Description: d} }
+	return map[string]schema.Attribute{
+		"name":         str("The name of the model."),
+		"display_name": str("The display name of the model."),
+		"state":        str("The state of the model, for example `model_loaded`."),
+		"status":       str("The status of the model, for example `loaded`."),
+		"total_params": schema.Int64Attribute{Computed: true, Description: "The total number of parameters of the model."},
+		"config_json":  str("The model configuration (architecture details and hyperparameters) as a JSON string."),
+		"pricing": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "The pricing measures of the model.",
+			NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+				"input_measure":  str("The billing measure for input tokens."),
+				"output_measure": str("The billing measure for output tokens."),
+			}},
+		},
+		"validation": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "The validation information of a custom model.",
+			NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+				"status":       str("The validation status."),
+				"error":        str("The validation error message, if any."),
+				"completed_at": str("The date when the validation completed."),
+			}},
+		},
 	}
-	out["name"] = strDeref(m.Name)
-	out["display_name"] = strDeref(m.DisplayName)
-	out["state"] = strDeref(m.State)
-	out["status"] = strDeref(m.Status)
-	if m.TotalParams != nil {
-		out["total_params"] = float64(*m.TotalParams)
+}
+
+// flattenRhaiiInferenceModelMetadata converts the IBM metadata of a model.
+func flattenRhaiiInferenceModelMetadata(m *rhaiiv1.InferenceModelMetadata) (rhaiiInferenceModelMetadataModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	pricingType := types.ObjectType{AttrTypes: rhaiiPricingAttrTypes}
+	validationType := types.ObjectType{AttrTypes: rhaiiValidationAttrTypes}
+	out := rhaiiInferenceModelMetadataModel{
+		Name:        types.StringValue(""),
+		DisplayName: types.StringValue(""),
+		State:       types.StringValue(""),
+		Status:      types.StringValue(""),
+		TotalParams: types.Int64Null(),
+		ConfigJSON:  types.StringValue(""),
+		Pricing:     types.ListValueMust(pricingType, []attr.Value{}),
+		Validation:  types.ListValueMust(validationType, []attr.Value{}),
+	}
+	if m == nil {
+		return out, diags
 	}
 
+	out.Name = types.StringValue(strDeref(m.Name))
+	out.DisplayName = types.StringValue(strDeref(m.DisplayName))
+	out.State = types.StringValue(strDeref(m.State))
+	out.Status = types.StringValue(strDeref(m.Status))
+	if m.TotalParams != nil {
+		out.TotalParams = types.Int64Value(*m.TotalParams)
+	}
 	configJSON, err := rhaiiToJSON(m.Config)
 	if err != nil {
-		return nil, err
+		diags.AddError("Error converting the model configuration to JSON", err.Error())
 	}
-	out["config_json"] = configJSON
+	out.ConfigJSON = types.StringValue(configJSON)
 
-	if m.Pricing != nil {
-		out["pricing"] = []interface{}{map[string]interface{}{
-			"input_measure":  strDeref(m.Pricing.InputMeasure),
-			"output_measure": strDeref(m.Pricing.OutputMeasure),
-		}}
+	if p := m.Pricing; p != nil {
+		obj, d := types.ObjectValue(rhaiiPricingAttrTypes, map[string]attr.Value{
+			"input_measure":  types.StringValue(strDeref(p.InputMeasure)),
+			"output_measure": types.StringValue(strDeref(p.OutputMeasure)),
+		})
+		diags.Append(d...)
+		out.Pricing = types.ListValueMust(pricingType, []attr.Value{obj})
 	}
-	if m.Validation != nil {
-		out["validation"] = []interface{}{map[string]interface{}{
-			"status":       strDeref(m.Validation.Status),
-			"error":        strDeref(m.Validation.Error),
-			"completed_at": strDeref(m.Validation.CompletedAt),
-		}}
+	if v := m.Validation; v != nil {
+		obj, d := types.ObjectValue(rhaiiValidationAttrTypes, map[string]attr.Value{
+			"status":       types.StringValue(strDeref(v.Status)),
+			"error":        types.StringValue(strDeref(v.Error)),
+			"completed_at": types.StringValue(strDeref(v.CompletedAt)),
+		})
+		diags.Append(d...)
+		out.Validation = types.ListValueMust(validationType, []attr.Value{obj})
 	}
+	return out, diags
+}
 
-	if withModelCard {
-		out["model_card"] = strDeref(m.ModelCard)
-		sourceJSON, err := rhaiiToJSON(m.Source)
-		if err != nil {
-			return nil, err
-		}
-		out["source_json"] = sourceJSON
+// rhaiiInferenceModelMetadataAttrTypes returns the object attribute types of
+// the metadata attributes, for list elements of the models data source.
+func rhaiiInferenceModelMetadataAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":         types.StringType,
+		"display_name": types.StringType,
+		"state":        types.StringType,
+		"status":       types.StringType,
+		"total_params": types.Int64Type,
+		"config_json":  types.StringType,
+		"pricing":      types.ListType{ElemType: types.ObjectType{AttrTypes: rhaiiPricingAttrTypes}},
+		"validation":   types.ListType{ElemType: types.ObjectType{AttrTypes: rhaiiValidationAttrTypes}},
 	}
-	return out, nil
+}
+
+// metadataAttrValues returns the metadata as attribute values, for an object.
+func (m rhaiiInferenceModelMetadataModel) metadataAttrValues() map[string]attr.Value {
+	return map[string]attr.Value{
+		"name":         m.Name,
+		"display_name": m.DisplayName,
+		"state":        m.State,
+		"status":       m.Status,
+		"total_params": m.TotalParams,
+		"config_json":  m.ConfigJSON,
+		"pricing":      m.Pricing,
+		"validation":   m.Validation,
+	}
 }

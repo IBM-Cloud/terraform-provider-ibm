@@ -17,9 +17,9 @@ func TestAccIBMRhaiiInferenceModelsDataSource_basic(t *testing.T) {
 	name := fmt.Sprintf("tf-rhaii-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMRhaiiProjectDestroy,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		CheckDestroy:             testAccCheckIBMRhaiiProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMRhaiiInferenceModelsDataSourceConfig(name),
