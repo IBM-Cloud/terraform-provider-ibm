@@ -52,6 +52,13 @@ func TestAccIBMRhaiiProject_basic(t *testing.T) {
 				),
 			},
 			{
+				// An empty list detaches all tags (Optional + Computed, as in ibm_is_ssh_key).
+				Config: testAccCheckIBMRhaiiProjectEmptyTagsConfig(updateName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
+				),
+			},
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -83,7 +90,9 @@ func TestAccIBMRhaiiProject_accessTags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMRhaiiProjectConfig(name),
+				// An empty list detaches all access tags. Removing the attribute would
+				// keep them, as in the other resources of the provider.
+				Config: testAccCheckIBMRhaiiProjectEmptyTagsConfig(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "access_tags.#", "0"),
 				),
@@ -105,6 +114,16 @@ func testAccCheckIBMRhaiiProjectTagsConfig(name string) string {
 	resource "ibm_rhaii_project" "project" {
 		name = "%s"
 		tags = ["env:test", "team:terraform"]
+	}
+	`, name)
+}
+
+func testAccCheckIBMRhaiiProjectEmptyTagsConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_rhaii_project" "project" {
+		name        = "%s"
+		tags        = []
+		access_tags = []
 	}
 	`, name)
 }
