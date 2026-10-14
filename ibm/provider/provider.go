@@ -643,6 +643,20 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interfaces":    vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
 			"ibm_is_public_address_range":          vpc.DataSourceIBMIsPublicAddressRange(),
 			"ibm_is_public_address_ranges":         vpc.DataSourceIBMIsPublicAddressRanges(),
+
+			// dynamic route servers
+			"ibm_is_dynamic_route_server":                     vpc.DataSourceIBMIsDynamicRouteServer(),
+			"ibm_is_dynamic_route_servers":                    vpc.DataSourceIBMIsDynamicRouteServers(),
+			"ibm_is_dynamic_route_server_member":              vpc.DataSourceIBMIsDynamicRouteServerMember(),
+			"ibm_is_dynamic_route_server_members":             vpc.DataSourceIBMIsDynamicRouteServerMembers(),
+			"ibm_is_dynamic_route_server_peer_group":          vpc.DataSourceIBMIsDynamicRouteServerPeerGroup(),
+			"ibm_is_dynamic_route_server_peer_group_peer":     vpc.DataSourceIBMIsDynamicRouteServerPeerGroupPeer(),
+			"ibm_is_dynamic_route_server_peer_group_peers":    vpc.DataSourceIBMIsDynamicRouteServerPeerGroupPeers(),
+			"ibm_is_dynamic_route_server_peer_group_policy":   vpc.DataSourceIBMIsDynamicRouteServerPeerGroupPolicy(),
+			"ibm_is_dynamic_route_server_peer_group_policies": vpc.DataSourceIBMIsDynamicRouteServerPeerGroupPolicies(),
+			"ibm_is_dynamic_route_server_route_report_job":    vpc.DataSourceIBMIsDynamicRouteServerRouteReportJob(),
+			"ibm_is_dynamic_route_server_route_report_jobs":   vpc.DataSourceIBMIsDynamicRouteServerRouteReportJobs(),
+			"ibm_is_dynamic_route_server_static_route":        vpc.DataSourceIBMIsDynamicRouteServerStaticRoute(),
 			// vni
 
 			"ibm_is_virtual_network_interface_floating_ip":  vpc.DataSourceIBMIsVirtualNetworkInterfaceFloatingIP(),
@@ -1442,6 +1456,15 @@ func Provider() *schema.Provider {
 			"ibm_is_bare_metal_server_network_interface":             vpc.ResourceIBMIsBareMetalServerNetworkInterface(),
 			"ibm_is_bare_metal_server":                               vpc.ResourceIBMIsBareMetalServer(),
 
+			// dynamic route servers
+			"ibm_is_dynamic_route_server":                   vpc.ResourceIBMIsDynamicRouteServer(),
+			"ibm_is_dynamic_route_server_member":            vpc.ResourceIBMIsDynamicRouteServerMember(),
+			"ibm_is_dynamic_route_server_peer_group":        vpc.ResourceIBMIsDynamicRouteServerPeerGroup(),
+			"ibm_is_dynamic_route_server_peer_group_peer":   vpc.ResourceIBMIsDynamicRouteServerPeerGroupPeer(),
+			"ibm_is_dynamic_route_server_peer_group_policy": vpc.ResourceIBMIsDynamicRouteServerPeerGroupPolicy(),
+			"ibm_is_dynamic_route_server_route_report_job":  vpc.ResourceIBMIsDynamicRouteServerRouteReportJob(),
+			"ibm_is_dynamic_route_server_static_route":      vpc.ResourceIBMIsDynamicRouteServerStaticRoute(),
+
 			"ibm_is_dedicated_host":                              vpc.ResourceIbmIsDedicatedHost(),
 			"ibm_is_dedicated_host_group":                        vpc.ResourceIbmIsDedicatedHostGroup(),
 			"ibm_is_dedicated_host_disk_management":              vpc.ResourceIBMISDedicatedHostDiskManagement(),
@@ -2215,6 +2238,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_bare_metal_server_network_attachment": vpc.ResourceIBMIsBareMetalServerNetworkAttachmentValidator(),
 				"ibm_is_bare_metal_server_network_interface":  vpc.ResourceIBMIsBareMetalServerNetworkInterfaceValidator(),
 				"ibm_is_bare_metal_server":                    vpc.ResourceIBMIsBareMetalServerValidator(),
+
+				// dynamic route servers
+				"ibm_is_dynamic_route_server":                   vpc.ResourceIBMIsDynamicRouteServerValidator(),
+				"ibm_is_dynamic_route_server_member":            vpc.ResourceIBMIsDynamicRouteServerMemberValidator(),
+				"ibm_is_dynamic_route_server_peer_group":        vpc.ResourceIBMIsDynamicRouteServerPeerGroupValidator(),
+				"ibm_is_dynamic_route_server_peer_group_peer":   vpc.ResourceIBMIsDynamicRouteServerPeerGroupPeerValidator(),
+				"ibm_is_dynamic_route_server_peer_group_policy": vpc.ResourceIBMIsDynamicRouteServerPeerGroupPolicyValidator(),
+				"ibm_is_dynamic_route_server_route_report_job":  vpc.ResourceIBMIsDynamicRouteServerRouteReportJobValidator(),
+				"ibm_is_dynamic_route_server_static_route":      vpc.ResourceIBMIsDynamicRouteServerStaticRouteValidator(),
 
 				// cluster
 
