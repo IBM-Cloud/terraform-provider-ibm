@@ -234,7 +234,7 @@ func TestRhaiiProjectPlanCreateDefaults(t *testing.T) {
 	}
 }
 
-// Optional + Computed tags, as in ibm_is_ssh_key: an unset attribute keeps the
+// Optional + Computed tags : an unset attribute keeps the
 // tags of the server, an empty list detaches all of them.
 func TestRhaiiProjectPlanTags(t *testing.T) {
 	t.Setenv("IC_ENV_TAGS", "")

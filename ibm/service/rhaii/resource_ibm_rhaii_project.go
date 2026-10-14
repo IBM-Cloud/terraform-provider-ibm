@@ -114,7 +114,7 @@ func (r *rhaiiProjectResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		// tags and access_tags are Optional + Computed, as in ibm_is_ssh_key and the
+		// tags and access_tags are Optional + Computed and the
 		// other resources of the provider: an unset attribute keeps the tags of the
 		// server, and an empty list ([]) detaches all of them.
 		"tags": schema.SetAttribute{

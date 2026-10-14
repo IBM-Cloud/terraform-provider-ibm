@@ -52,7 +52,7 @@ func TestAccIBMRhaiiProject_basic(t *testing.T) {
 				),
 			},
 			{
-				// An empty list detaches all tags (Optional + Computed, as in ibm_is_ssh_key).
+				// An empty list detaches all tags (Optional + Computed).
 				Config: testAccCheckIBMRhaiiProjectEmptyTagsConfig(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
