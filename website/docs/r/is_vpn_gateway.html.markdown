@@ -94,11 +94,11 @@ The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `availability_mode` - (Optional, Forces new resource, String) The availability mode of the VPN gateway. Allowable values are `zonal` and `regional`. If not set, the gateway is `zonal`.
+- `availability_mode` - (Optional, String) The availability mode of the VPN gateway. Allowable values are `zonal` and `regional`. If not set, the gateway is `zonal`.
   - `zonal`: the gateway lives in the single zone of `subnet`.
   - `regional`: the gateway has two `members` that can be in the same zone or in different zones of the region. Supported only when `mode` is `route`.
 
-  ~>**Note:** `availability_mode` cannot be updated in place. Changing it destroys the gateway and creates a new one.
+  ~>**Note:** `availability_mode` is set at create time only. Changing it on an existing gateway fails the plan with an error; the gateway is not recreated. See [Migrating a zonal VPN gateway to regional](#migrating-a-zonal-vpn-gateway-to-regional).
 - `local_asn` - (Optional, Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
 - `members` - (Optional, Forces new resource, List) The members of a regional VPN gateway. Required when `availability_mode` is `regional`, with exactly 2 items. Must not be set for a zonal gateway.
 
@@ -115,7 +115,7 @@ Review the argument references that you can specify for your resource.
 - `mode`- (Optional, String) Mode in VPN gateway. Supported values are `route` or `policy`. The default value is `route`.
 - `name` - (Required, String) The name of the VPN gateway.
 - `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
-- `subnet` - (Optional, Forces new resource, String) The unique identifier of the subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set when `availability_mode` is `regional`.
+- `subnet` - (Optional, Forces new resource, String) The unique identifier of the subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set when creating a `regional` gateway. On a gateway that is already `regional`, for example after a migration, changes to `subnet` are ignored.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your VPN gateway. Tags can help you find your VPN gateway more easily later.
 
 
@@ -201,6 +201,17 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_type` - (String) - The resource type.
 
 
+
+## Migrating a zonal VPN gateway to regional
+
+Terraform cannot change `availability_mode` on an existing VPN gateway, and it does not recreate the gateway for it, because a new gateway gets new public IP addresses and loses its connections.
+
+To migrate a zonal VPN gateway to regional:
+
+1. Raise a support ticket to migrate the gateway.
+2. After the migration, run `terraform plan`. You can keep `subnet` in your configuration; it is ignored for a regional gateway, so no replacement is planned. `availability_mode` is read back as `regional`.
+3. Optionally, set `availability_mode = "regional"` in your configuration to match the gateway.
+4. To move a member to another subnet or zone, use [ibm_is_vpn_gateway_member_replace](is_vpn_gateway_member_replace.html).
 
 ## Import
 

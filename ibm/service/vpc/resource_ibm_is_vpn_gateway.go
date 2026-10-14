@@ -86,10 +86,11 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewaySubnet: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: suppressVPNGatewaySubnetDiffWhenRegional,
 				Description: "The subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set for a regional VPN gateway.",
 			},
 
@@ -502,9 +503,8 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_vpn_gateway", isVPNGatewayAvailabilityMode),
-				Description:  "The availability mode of the VPN gateway. `zonal`: the gateway lives in the single zone of its `subnet`. `regional`: the gateway has two `members` that can be in the same or different zones of the region (route-based gateways only). This value cannot be updated in place; changing it recreates the gateway.",
+				Description:  "The availability mode of the VPN gateway. `zonal`: the gateway lives in the single zone of its `subnet`. `regional`: the gateway has two `members` that can be in the same or different zones of the region (route-based gateways only). Set at create time only; it cannot be updated. To migrate a zonal gateway to regional, raise a support ticket.",
 			},
 			"vpc": {
 				Type:        schema.TypeList,
@@ -1173,7 +1173,11 @@ func resourceVPNGatewayFlattenLifecycleReasons(lifecycleReasons []vpcv1.VPNGatew
 // at plan time for new gateways, so a bad combination fails before any API call.
 func resourceIBMISVPNGatewayCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	if diff.Id() != "" {
-		return nil
+		if !diff.HasChange(isVPNGatewayAvailabilityMode) || !diff.NewValueKnown(isVPNGatewayAvailabilityMode) {
+			return nil
+		}
+		oldMode, newMode := diff.GetChange(isVPNGatewayAvailabilityMode)
+		return ResourceIBMISVPNGatewayCheckAvailabilityModeChange(oldMode.(string), newMode.(string))
 	}
 	rawConfig := diff.GetRawConfig()
 	if rawConfig.IsNull() || !rawConfig.IsKnown() {
@@ -1196,6 +1200,33 @@ func resourceIBMISVPNGatewayCustomizeDiff(_ context.Context, diff *schema.Resour
 		return nil
 	}
 	return ResourceIBMISVPNGatewayValidateAvailability(availabilityMode, mode, subnetSet, memberCount)
+}
+
+// ResourceIBMISVPNGatewayCheckAvailabilityModeChange rejects an in-place
+// change of availability_mode on an existing gateway. The API does not allow
+// clients to patch it, and recreating the gateway would replace its public IPs
+// and delete its connections, so the plan fails with guidance instead.
+// An empty old value (state written by an older provider) is not a change.
+func ResourceIBMISVPNGatewayCheckAvailabilityModeChange(oldMode, newMode string) error {
+	if oldMode == "" || newMode == "" || oldMode == newMode {
+		return nil
+	}
+	return fmt.Errorf("availability_mode cannot be updated from %q to %q on an existing VPN gateway. "+
+		"To migrate a zonal VPN gateway to regional, raise a support ticket. "+
+		"After the migration, set availability_mode = \"regional\" (or remove it) in your configuration", oldMode, newMode)
+}
+
+// suppressVPNGatewaySubnetDiffWhenRegional ignores the top-level subnet on a
+// regional gateway. A zonal gateway migrated to regional (through support) no
+// longer reports a top-level subnet, while the user's configuration still has
+// it. Without this, the ForceNew subnet would destroy the migrated gateway.
+func suppressVPNGatewaySubnetDiffWhenRegional(k, old, new string, d *schema.ResourceData) bool {
+	if d.Id() == "" {
+		return false
+	}
+	// A real change of availability_mode is rejected in CustomizeDiff, so the
+	// value here is the gateway's current mode.
+	return d.Get(isVPNGatewayAvailabilityMode).(string) == "regional"
 }
 
 // suppressVPNGatewayMemberSubnetDiff ignores member subnet changes on an

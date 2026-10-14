@@ -382,14 +382,14 @@ func TestAccIBMISVPNGateway_zonal_default(t *testing.T) {
 	})
 }
 
-// availability_mode cannot be patched. Moving from zonal to regional in
-// config must replace the gateway instead of calling update.
-func TestAccIBMISVPNGateway_availability_mode_forces_new(t *testing.T) {
+// availability_mode cannot be patched, and the gateway must not be recreated
+// either (that would replace its public IPs and drop its connections). The
+// plan must fail with guidance, and the gateway must be left untouched.
+func TestAccIBMISVPNGateway_availability_mode_change_rejected(t *testing.T) {
 	var firstID string
 	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
 	subnet1name := fmt.Sprintf("tfvpnuat-subnet1-%d", acctest.RandIntRange(10, 100))
-	subnet2name := fmt.Sprintf("tfvpnuat-subnet2-%d", acctest.RandIntRange(10, 100))
-	name1 := fmt.Sprintf("tfvpnuat-forcenew-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-nopatch-%d", acctest.RandIntRange(10, 100))
 	res := "ibm_is_vpn_gateway.testacc_vpnGateway"
 
 	resource.Test(t, resource.TestCase{
@@ -398,18 +398,23 @@ func TestAccIBMISVPNGateway_availability_mode_forces_new(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVPNGatewayZonalWithSecondSubnetConfig(vpcname, subnet1name, subnet2name, name1),
+				Config: testAccCheckIBMISVPNGatewayZonalConfig(vpcname, subnet1name, name1, ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(res, "availability_mode", "zonal"),
 					testAccCaptureResourceID(res, &firstID),
 				),
 			},
 			{
-				Config: testAccCheckIBMISVPNGatewayRegionalConfig(vpcname, subnet1name, subnet2name, name1, acc.ISZoneName, acc.ISZoneName2),
+				Config:      testAccCheckIBMISVPNGatewayZonalConfig(vpcname, subnet1name, name1, "regional"),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`availability_mode cannot be updated(.|\n)*support ticket`),
+			},
+			{
+				// Back to the original config: same gateway, no changes.
+				Config: testAccCheckIBMISVPNGatewayZonalConfig(vpcname, subnet1name, name1, ""),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(res, "availability_mode", "regional"),
-					resource.TestCheckResourceAttr(res, "members.#", "2"),
-					testAccCheckResourceIDChanged(res, &firstID),
+					resource.TestCheckResourceAttr(res, "availability_mode", "zonal"),
+					testAccCheckResourceIDUnchanged(res, &firstID),
 				),
 			},
 		},
@@ -517,7 +522,8 @@ func TestResourceIBMISVPNGatewayValidateAvailability(t *testing.T) {
 
 func TestResourceIBMISVPNGatewaySchemaAvailability(t *testing.T) {
 	s := vpc.ResourceIBMISVPNGateway().Schema
-	assert.True(t, s["availability_mode"].ForceNew, "availability_mode must not be patchable")
+	assert.False(t, s["availability_mode"].ForceNew, "changing availability_mode must fail the plan, not recreate the gateway")
+	assert.NotNil(t, s["subnet"].DiffSuppressFunc, "subnet must not force a new gateway after a zonal to regional migration")
 	assert.True(t, s["availability_mode"].Optional)
 	assert.True(t, s["availability_mode"].Computed)
 	assert.False(t, s["subnet"].Required, "subnet must be optional so regional gateways can omit it")
@@ -532,6 +538,37 @@ func TestResourceIBMISVPNGatewaySchemaAvailability(t *testing.T) {
 		assert.NotNil(t, subnet[k].DiffSuppressFunc, "members.private_ip.subnet.%s must ignore moves made after create", k)
 	}
 	assert.NoError(t, vpc.ResourceIBMISVPNGateway().InternalValidate(nil, true))
+}
+
+func TestResourceIBMISVPNGatewayCheckAvailabilityModeChange(t *testing.T) {
+	assert.NoError(t, vpc.ResourceIBMISVPNGatewayCheckAvailabilityModeChange("zonal", "zonal"))
+	assert.NoError(t, vpc.ResourceIBMISVPNGatewayCheckAvailabilityModeChange("", "regional"), "state from an older provider has no availability_mode")
+	assert.NoError(t, vpc.ResourceIBMISVPNGatewayCheckAvailabilityModeChange("regional", ""))
+	err := vpc.ResourceIBMISVPNGatewayCheckAvailabilityModeChange("zonal", "regional")
+	assert.ErrorContains(t, err, "cannot be updated")
+	assert.ErrorContains(t, err, "support ticket")
+	assert.ErrorContains(t, vpc.ResourceIBMISVPNGatewayCheckAvailabilityModeChange("regional", "zonal"), "cannot be updated")
+}
+
+// After support migrates a zonal gateway to regional, the API reports
+// availability_mode = regional and no top-level subnet, while the config still
+// has subnet. That must not plan a replacement.
+func TestResourceIBMISVPNGatewayMigratedSubnetNoReplace(t *testing.T) {
+	r := vpc.ResourceIBMISVPNGateway()
+	subnetSchema := r.Schema["subnet"]
+
+	migrated := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"name": "gw", "subnet": "subnet-1"})
+	migrated.SetId("r006-gw")
+	assert.NoError(t, migrated.Set("availability_mode", "regional"))
+	assert.True(t, subnetSchema.DiffSuppressFunc("subnet", "", "subnet-1", migrated))
+
+	zonal := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"name": "gw", "subnet": "subnet-2"})
+	zonal.SetId("r006-gw")
+	assert.NoError(t, zonal.Set("availability_mode", "zonal"))
+	assert.False(t, subnetSchema.DiffSuppressFunc("subnet", "subnet-1", "subnet-2", zonal), "a zonal gateway must still be replaced when its subnet changes")
+
+	newGateway := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"name": "gw", "subnet": "subnet-1"})
+	assert.False(t, subnetSchema.DiffSuppressFunc("subnet", "", "subnet-1", newGateway))
 }
 
 func TestResourceIBMIsVPNGatewayVPNGatewayMemberToMap(t *testing.T) {
@@ -621,14 +658,14 @@ func testAccCaptureResourceID(n string, id *string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckResourceIDChanged(n string, oldID *string) resource.TestCheckFunc {
+func testAccCheckResourceIDUnchanged(n string, oldID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		if rs.Primary.ID == *oldID {
-			return fmt.Errorf("expected %s to be replaced, but ID is still %s", n, *oldID)
+		if rs.Primary.ID != *oldID {
+			return fmt.Errorf("expected %s to be kept, but ID changed from %s to %s", n, *oldID, rs.Primary.ID)
 		}
 		return nil
 	}
@@ -699,33 +736,6 @@ func testAccCheckIBMISVPNGatewayZonalConfig(vpc, subnet1, name, availabilityMode
 		mode   = "route"
 		%s
 	}`, vpc, subnet1, acc.ISZoneName, name, availabilityModeLine)
-}
-
-func testAccCheckIBMISVPNGatewayZonalWithSecondSubnetConfig(vpc, subnet1, subnet2, name string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet1" {
-		name                     = "%s"
-		vpc                      = ibm_is_vpc.testacc_vpc.id
-		zone                     = "%s"
-		total_ipv4_address_count = 16
-	}
-
-	resource "ibm_is_subnet" "testacc_subnet2" {
-		name                     = "%s"
-		vpc                      = ibm_is_vpc.testacc_vpc.id
-		zone                     = "%s"
-		total_ipv4_address_count = 16
-	}
-
-	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
-		name   = "%s"
-		subnet = ibm_is_subnet.testacc_subnet1.id
-		mode   = "route"
-	}`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName2, name)
 }
 
 func testAccCheckIBMISVPNGatewayRegionalWithAdvertisedCIDRsConfig(vpc, subnet1, subnet2, name string) string {
