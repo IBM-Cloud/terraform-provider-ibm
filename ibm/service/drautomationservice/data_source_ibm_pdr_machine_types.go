@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice
@@ -20,17 +20,19 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func dataSourceIBMPdrMachineTypesCommon() *schema.Resource {
+func DataSourceIBMPdrMachineTypes() *schema.Resource {
 	return &schema.Resource{
+		ReadContext: dataSourceIBMPdrMachineTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Service Instance ID.",
 			},
 			"primary_workspace_name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -50,7 +52,7 @@ func dataSourceIBMPdrMachineTypesCommon() *schema.Resource {
 			"workspaces": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of workspaces with their machine types.",
+				Description: "The Map of workspace IDs to lists of machine types.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -69,47 +71,26 @@ func dataSourceIBMPdrMachineTypesCommon() *schema.Resource {
 	}
 }
 
-func DataSourceIBMPdrMachineTypes() *schema.Resource {
-	res := dataSourceIBMPdrMachineTypesCommon()
-	res.ReadContext = dataSourceIBMPdrMachineTypesRead
-	return res
-}
-
-func DataSourceIBMPdrGetMachineTypes() *schema.Resource {
-	res := dataSourceIBMPdrMachineTypesCommon()
-	res.ReadContext = dataSourceIBMPdrGetMachineTypesRead
-	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_machine_types` instead."
-	return res
-}
-
-func dataSourceIBMPdrMachineTypesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrMachineTypesReadCommon(ctx, d, meta, "ibm_pdr_machine_types")
-}
-
-func dataSourceIBMPdrGetMachineTypesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrMachineTypesReadCommon(ctx, d, meta, "ibm_pdr_get_machine_types")
-}
-
-func dataSourceIBMPdrMachineTypesReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
+func dataSourceIBMPdrMachineTypesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_machine_types", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getMachineTypeOptions := &drautomationservicev1.GetMachineTypeOptions{}
+	getMachinetypeOptions := &drautomationservicev1.GetMachinetypeOptions{}
 
-	getMachineTypeOptions.SetInstanceID(d.Get("instance_id").(string))
-	getMachineTypeOptions.SetPrimaryWorkspaceName(d.Get("primary_workspace_name").(string))
+	getMachinetypeOptions.SetInstanceID(d.Get("instance_id").(string))
+	getMachinetypeOptions.SetPrimaryWorkspaceName(d.Get("primary_workspace_name").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getMachinetypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 	if _, ok := d.GetOk("standby_workspace_name"); ok {
-		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
+		getMachinetypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
 	}
 
-	machineTypesByWorkspace, response, err := drAutomationServiceClient.GetMachineTypeWithContext(context, getMachineTypeOptions)
+	machineTypesByWorkspace, response, err := drAutomationServiceClient.GetMachinetypeWithContext(context, getMachinetypeOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetMachineTypeWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -119,7 +100,7 @@ func dataSourceIBMPdrMachineTypesReadCommon(context context.Context, d *schema.R
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_machine_types", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -139,7 +120,7 @@ func dataSourceIBMPdrMachineTypesReadCommon(context context.Context, d *schema.R
 		if err := d.Set("workspaces", workspacesList); err != nil {
 			return flex.DiscriminatedTerraformErrorf(
 				err, fmt.Sprintf("Error setting workspaces: %s", err),
-				"(Data) "+dsname, "read", "set-workspaces",
+				"(Data) ibm_pdr_machine_types", "read", "set-workspaces",
 			).GetDiag()
 		}
 	}
@@ -155,7 +136,6 @@ func dataSourceIBMPdrMachineTypesID(d *schema.ResourceData) string {
 	}
 	return d.Get("instance_id").(string)
 }
-
 func convertToInterfaceList(items []string) []interface{} {
 	if items == nil {
 		return nil

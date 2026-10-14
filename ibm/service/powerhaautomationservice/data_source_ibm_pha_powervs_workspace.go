@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package powerhaautomationservice
@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,7 +25,7 @@ func DataSourceIBMPhaPowervsWorkspace() *schema.Resource {
 		ReadContext: dataSourceIBMPhaPowervsWorkspaceRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
+			"pha_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of the provisioned instance.",
@@ -72,23 +71,23 @@ func DataSourceIBMPhaPowervsWorkspace() *schema.Resource {
 func dataSourceIBMPhaPowervsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	powerhaAutomationServiceClient, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspaces", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspace", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getPowervsWorkspaceOptions := &powerhaautomationservicev1.GetPowervsWorkspaceOptions{}
+	getPhaPowervsWorkspaceOptions := &powerhaautomationservicev1.GetPhaPowervsWorkspaceOptions{}
 
-	getPowervsWorkspaceOptions.SetPhaInstanceID(d.Get("instance_id").(string))
-	getPowervsWorkspaceOptions.SetLocationID(d.Get("location_id").(string))
+	getPhaPowervsWorkspaceOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	getPhaPowervsWorkspaceOptions.SetLocationID(d.Get("location_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getPowervsWorkspaceOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getPhaPowervsWorkspaceOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 	if _, ok := d.GetOk("if_none_match"); ok {
-		getPowervsWorkspaceOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+		getPhaPowervsWorkspaceOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	phaWorkspacesRegionResponse, response, err := powerhaAutomationServiceClient.GetPowervsWorkspaceWithContext(context, getPowervsWorkspaceOptions)
+	phaWorkspacesRegionResponse, response, err := powerhaAutomationServiceClient.GetPhaPowervsWorkspaceWithContext(context, getPhaPowervsWorkspaceOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetPowervsWorkspaceWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -103,33 +102,24 @@ func dataSourceIBMPhaPowervsWorkspaceRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIBMPhaGetPowervsWorkspaceID(d))
+	d.SetId(*phaWorkspacesRegionResponse.ID)
 
 	workspaces := []map[string]interface{}{}
 	for _, workspacesItem := range phaWorkspacesRegionResponse.Workspaces {
-		workspacesItemMap, err := DataSourceIBMPhaGetPowervsWorkspacePhaWorkspaceSummaryToMap(&workspacesItem) // #nosec G601
+		workspacesItemMap, err := DataSourceIBMPhaPowervsWorkspacePhaWorkspaceSummaryToMap(&workspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspaces", "read", "workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspace", "read", "workspaces-to-map").GetDiag()
 		}
 		workspaces = append(workspaces, workspacesItemMap)
 	}
 	if err = d.Set("workspaces", workspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting workspaces: %s", err), "(Data) ibm_pha_powervs_workspaces", "read", "set-workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting workspaces: %s", err), "(Data) ibm_pha_powervs_workspace", "read", "set-workspaces").GetDiag()
 	}
 
 	return nil
 }
 
-// dataSourceIBMPhaGetPowervsWorkspaceID returns a reasonable ID for the list.
-func dataSourceIBMPhaGetPowervsWorkspaceID(d *schema.ResourceData) string {
-	parts := strings.Split(d.Get("instance_id").(string), ":")
-	if len(parts) > 7 {
-		return parts[7]
-	}
-	return d.Get("instance_id").(string)
-}
-
-func DataSourceIBMPhaGetPowervsWorkspacePhaWorkspaceSummaryToMap(model *powerhaautomationservicev1.PhaWorkspaceSummary) (map[string]interface{}, error) {
+func DataSourceIBMPhaPowervsWorkspacePhaWorkspaceSummaryToMap(model *powerhaautomationservicev1.PhaWorkspaceSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID

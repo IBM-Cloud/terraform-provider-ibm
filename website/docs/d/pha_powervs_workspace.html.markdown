@@ -1,44 +1,51 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pha_powervs_workspaces"
+page_title: "IBM : ibm_pha_powervs_workspace"
 description: |-
-  Get information about pha_powervs_workspaces
-subcategory: "PowerhaAutomation Service"
+  Get information about pha_powervs_workspace
+subcategory: "HA and DR Automation for IBM® Power® Virtual Server API reference"
 ---
 
-# ibm_pha_powervs_workspaces
+# ibm_pha_powervs_workspace
 
-Retrieve the workspace details for the specified region of a given PowerHA instance.
+Retrieves the power virtual server workspaces for primary and standby vms based on location id.
 
 ## Example Usage
 
 ```hcl
-data "ibm_pha_powervs_workspaces" "pha_powervs_workspace" {
+data "ibm_pha_powervs_workspace" "pha_powervs_workspace" {
 	accept_language = "en-US"
-	location_id = "us-south"
+	if_none_match = "abcdef"
 	instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+	location_id = "us-south"
 }
 ```
+### Path Parameters
 
-## Argument Reference
+* `pha_instance_id` - (Required, Forces new resource, String) The unique identifier of the powerha service instance.
+  * Constraints: The maximum length is `1048` characters. The minimum length is `36` characters. The value must match regular expression `/^.*$/`.
 
-You can specify the following arguments for this data source.
+### Query Parameters
 
-* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
+* `accept_language` - (Optional, Forces new resource, String) The language in which the response should be returned.
+* `accepts_incomplete` - (Optional, Forces new resource, Boolean) Indicates whether the request can be accepted before the operation is complete.length is `2` characters. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
+  * Constraints: The maximum length is `50` characters. The minimum length is `6` characters. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
 * `location_id` - (Required, String) Location ID value.
-  * Constraints: The maximum length is `16` characters. The minimum length is `5` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+(-[0-9]+)?$/`.
-* `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/^.+$/`.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the pha_powervs_workspace.
+* `href` - (String) Resource reference.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 * `workspaces` - (List) Array of workspace summaries within the region.
+  * Constraints: The maximum length is `100` items. The minimum length is `1` item.
 Nested schema for **workspaces**:
 	* `id` - (String) Unique identifier of the workspace.
-	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 	* `name` - (String) Name of the workspace.
-	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 

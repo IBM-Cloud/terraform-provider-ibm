@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package powerhaautomationservice
@@ -26,10 +26,10 @@ func DataSourceIBMPhaLastOperation() *schema.Resource {
 		ReadContext: dataSourceIBMPhaLastOperationRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
+			"pha_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"accept_language": &schema.Schema{
 				Type:        schema.TypeString,
@@ -40,6 +40,11 @@ func DataSourceIBMPhaLastOperation() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "ETag for conditional requests (optional).",
+			},
+			"status": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Current operational status of the service instance.",
 			},
 			"deployment_name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -56,11 +61,6 @@ func DataSourceIBMPhaLastOperation() *schema.Resource {
 				Computed:    true,
 				Description: "Resource Group.",
 			},
-			"status": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Current operational status of the service instance.",
-			},
 		},
 	}
 }
@@ -75,7 +75,7 @@ func dataSourceIBMPhaLastOperationRead(context context.Context, d *schema.Resour
 
 	getPhaLastOperationOptions := &powerhaautomationservicev1.GetPhaLastOperationOptions{}
 
-	getPhaLastOperationOptions.SetPhaInstanceID(d.Get("instance_id").(string))
+	getPhaLastOperationOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		getPhaLastOperationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
@@ -98,7 +98,11 @@ func dataSourceIBMPhaLastOperationRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIBMPhaGetLastOperationID(d))
+	d.SetId(dataSourceIBMPhaLastOperationID(d))
+
+	if err = d.Set("status", serviceInstancePhaStatus.Status); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pha_last_operation", "read", "set-status").GetDiag()
+	}
 
 	if err = d.Set("deployment_name", serviceInstancePhaStatus.DeploymentName); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment_name: %s", err), "(Data) ibm_pha_last_operation", "read", "set-deployment_name").GetDiag()
@@ -112,18 +116,14 @@ func dataSourceIBMPhaLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_pha_last_operation", "read", "set-resource_group").GetDiag()
 	}
 
-	if err = d.Set("status", serviceInstancePhaStatus.Status); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pha_last_operation", "read", "set-status").GetDiag()
-	}
-
 	return nil
 }
 
-// dataSourceIBMPhaGetLastOperationID returns a reasonable ID for the list.
-func dataSourceIBMPhaGetLastOperationID(d *schema.ResourceData) string {
-	parts := strings.Split(d.Get("instance_id").(string), ":")
+// dataSourceIBMPhaLastOperationID returns a reasonable ID for the list.
+func dataSourceIBMPhaLastOperationID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("pha_instance_id").(string), ":")
 	if len(parts) > 7 {
 		return parts[7]
 	}
-	return d.Get("instance_id").(string)
+	return d.Get("pha_instance_id").(string)
 }

@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package powerhaautomationservice
@@ -25,7 +25,7 @@ func DataSourceIBMPhaClusterNodes() *schema.Resource {
 		ReadContext: dataSourceIBMPhaClusterNodesRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
+			"pha_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of the provisioned instance.",
@@ -41,39 +41,6 @@ func DataSourceIBMPhaClusterNodes() *schema.Resource {
 				Description: "Details of the primary cluster nodes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"agent_status": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the PHA agent running on the node.",
-						},
-						"cores": &schema.Schema{
-							Type:        schema.TypeFloat,
-							Computed:    true,
-							Description: "Number of CPU cores allocated to the VM.",
-						},
-						"ip_addresses": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of IP addresses assigned to the VM.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"memory": &schema.Schema{
-							Type:        schema.TypeFloat,
-							Computed:    true,
-							Description: "Amount of memory allocated to the VM (in GB).",
-						},
-						"pha_level": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "PowerHA version level installed on the node.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Region where the VM is deployed.",
-						},
 						"vm_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -84,15 +51,53 @@ func DataSourceIBMPhaClusterNodes() *schema.Resource {
 							Computed:    true,
 							Description: "Name of the VM.",
 						},
-						"vm_status": &schema.Schema{
+						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the VM.",
+							Description: "Region where the VM is deployed.",
 						},
 						"workspace_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "ID of the workspace associated with the VM.",
+						},
+						"cores": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "Number of CPU cores allocated to the VM.",
+						},
+						"memory": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "Amount of memory allocated to the VM (in GB).",
+						},
+						"ip_addresses": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of IP addresses assigned to the VM.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"vm_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Current status of the VM.",
+						},
+						"agent_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the PHA agent running on the node.",
+						},
+						"pha_level": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "PowerHA version level installed on the node.",
+						},
+						"powerha_version_supported": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the installed PowerHA version is supported.",
 						},
 					},
 				},
@@ -103,39 +108,6 @@ func DataSourceIBMPhaClusterNodes() *schema.Resource {
 				Description: "Details of the secondary cluster nodes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"agent_status": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the PHA agent running on the node.",
-						},
-						"cores": &schema.Schema{
-							Type:        schema.TypeFloat,
-							Computed:    true,
-							Description: "Number of CPU cores allocated to the VM.",
-						},
-						"ip_addresses": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of IP addresses assigned to the VM.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"memory": &schema.Schema{
-							Type:        schema.TypeFloat,
-							Computed:    true,
-							Description: "Amount of memory allocated to the VM (in GB).",
-						},
-						"pha_level": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "PowerHA version level installed on the node.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Region where the VM is deployed.",
-						},
 						"vm_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -146,15 +118,53 @@ func DataSourceIBMPhaClusterNodes() *schema.Resource {
 							Computed:    true,
 							Description: "Name of the VM.",
 						},
-						"vm_status": &schema.Schema{
+						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the VM.",
+							Description: "Region where the VM is deployed.",
 						},
 						"workspace_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "ID of the workspace associated with the VM.",
+						},
+						"cores": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "Number of CPU cores allocated to the VM.",
+						},
+						"memory": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "Amount of memory allocated to the VM (in GB).",
+						},
+						"ip_addresses": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of IP addresses assigned to the VM.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"vm_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Current status of the VM.",
+						},
+						"agent_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the PHA agent running on the node.",
+						},
+						"pha_level": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "PowerHA version level installed on the node.",
+						},
+						"powerha_version_supported": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the installed PowerHA version is supported.",
 						},
 					},
 				},
@@ -173,7 +183,7 @@ func dataSourceIBMPhaClusterNodesRead(context context.Context, d *schema.Resourc
 
 	getClusterNodeOptions := &powerhaautomationservicev1.GetClusterNodeOptions{}
 
-	getClusterNodeOptions.SetPhaInstanceID(d.Get("instance_id").(string))
+	getClusterNodeOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
 	if _, ok := d.GetOk("if_none_match"); ok {
 		getClusterNodeOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
@@ -225,33 +235,36 @@ func dataSourceIBMPhaClusterNodesRead(context context.Context, d *schema.Resourc
 
 func DataSourceIBMPhaClusterNodesNodeDetailToMap(model *powerhaautomationservicev1.NodeDetail) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.AgentStatus != nil {
-		modelMap["agent_status"] = *model.AgentStatus
-	}
-	if model.Cores != nil {
-		modelMap["cores"] = flex.Float64Value(model.Cores)
-	}
-	modelMap["ip_addresses"] = model.IPAddresses
-	if model.Memory != nil {
-		modelMap["memory"] = flex.Float64Value(model.Memory)
-	}
-	if model.PhaLevel != nil {
-		modelMap["pha_level"] = *model.PhaLevel
-	}
-	if model.Region != nil {
-		modelMap["region"] = *model.Region
-	}
 	if model.VMID != nil {
 		modelMap["vm_id"] = *model.VMID
 	}
 	if model.VMName != nil {
 		modelMap["vm_name"] = *model.VMName
 	}
-	if model.VMStatus != nil {
-		modelMap["vm_status"] = *model.VMStatus
+	if model.Region != nil {
+		modelMap["region"] = *model.Region
 	}
 	if model.WorkspaceID != nil {
 		modelMap["workspace_id"] = *model.WorkspaceID
+	}
+	if model.Cores != nil {
+		modelMap["cores"] = flex.Float64Value(model.Cores)
+	}
+	if model.Memory != nil {
+		modelMap["memory"] = flex.Float64Value(model.Memory)
+	}
+	modelMap["ip_addresses"] = model.IPAddresses
+	if model.VMStatus != nil {
+		modelMap["vm_status"] = *model.VMStatus
+	}
+	if model.AgentStatus != nil {
+		modelMap["agent_status"] = *model.AgentStatus
+	}
+	if model.PhaLevel != nil {
+		modelMap["pha_level"] = *model.PhaLevel
+	}
+	if model.PowerhaVersionSupported != nil {
+		modelMap["powerha_version_supported"] = *model.PowerhaVersionSupported
 	}
 	return modelMap, nil
 }
