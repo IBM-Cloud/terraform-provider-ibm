@@ -22,67 +22,46 @@ import (
 )
 
 func TestAccIBMIsDynamicRouteServerMembersDataSourceBasic(t *testing.T) {
-	dynamicRouteServerMemberDynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
-	dynamicRouteServerMemberName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	vpcName := fmt.Sprintf("tf-drs-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-drs-subnet-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-drs-vni-%d", acctest.RandIntRange(10, 100))
+	memberVniName := fmt.Sprintf("tf-drs-member-vni-%d", acctest.RandIntRange(10, 100))
+	memberName := fmt.Sprintf("tf-drs-member-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-drs-member2-%d", acctest.RandIntRange(10, 100))
+	localAsn := fmt.Sprintf("%d", acctest.RandIntRange(64512, 65000))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerMembersDataSourceConfigBasic(dynamicRouteServerMemberDynamicRouteServerID, dynamicRouteServerMemberName),
+				Config: testAccCheckIBMIsDynamicRouteServerMembersDataSourceConfigBasic(vpcName, subnetName, vniName, memberVniName, memberName, localAsn, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "dynamic_route_server_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.#"),
-					resource.TestCheckResourceAttr("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.name", dynamicRouteServerMemberName),
+					resource.TestCheckResourceAttrPair("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "dynamic_route_server_id", "ibm_is_dynamic_route_server.is_dynamic_route_server_instance", "id"),
+					// the initial member plus the one added with ibm_is_dynamic_route_server_member
+					resource.TestCheckResourceAttr("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.health_state"),
+					resource.TestCheckResourceAttr("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.resource_type", "dynamic_route_server_member"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.0.virtual_network_interfaces.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_members.is_dynamic_route_server_members_instance", "members.1.virtual_network_interfaces.0.id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsDynamicRouteServerMembersDataSourceConfigBasic(dynamicRouteServerMemberDynamicRouteServerID string, dynamicRouteServerMemberName string) string {
-	return fmt.Sprintf(`
-		resource "ibm_is_dynamic_route_server_member" "is_dynamic_route_server_member_instance" {
-			dynamic_route_server_id = "%s"
-			name = "%s"
-			virtual_network_interfaces {
-				crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				deleted {
-					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-				}
-				href = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				id = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				name = "my-virtual-network-interface"
-				primary_ip {
-					address = "192.168.3.4"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-					id = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-					name = "my-reserved-ip"
-					resource_type = "subnet_reserved_ip"
-				}
-				resource_type = "virtual_network_interface"
-				subnet {
-					crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					id = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					name = "my-subnet"
-					resource_type = "subnet"
-				}
-			}
-		}
-
+func testAccCheckIBMIsDynamicRouteServerMembersDataSourceConfigBasic(vpcName string, subnetName string, vniName string, memberVniName string, memberName string, localAsn string, name string) string {
+	return testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(vpcName, subnetName, vniName, memberVniName, memberName, localAsn, name) + `
 		data "ibm_is_dynamic_route_server_members" "is_dynamic_route_server_members_instance" {
-			dynamic_route_server_id = ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance.dynamic_route_server_id
+			dynamic_route_server_id = ibm_is_dynamic_route_server.is_dynamic_route_server_instance.id
+			depends_on              = [ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance]
 		}
-	`, dynamicRouteServerMemberDynamicRouteServerID, dynamicRouteServerMemberName)
+	`
 }
 
 func TestDataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerMemberToMap(t *testing.T) {
@@ -381,4 +360,55 @@ func TestDataSourceIBMIsDynamicRouteServerMembersSubnetReferenceToMap(t *testing
 	result, err := vpc.DataSourceIBMIsDynamicRouteServerMembersSubnetReferenceToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMembersToMapNilAndEmpty(t *testing.T) {
+	empty := map[string]interface{}{}
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerMemberToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerMemberToMap(new(vpcv1.DynamicRouteServerMember))
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{
+		"health_reasons":             []map[string]interface{}{},
+		"lifecycle_reasons":          []map[string]interface{}{},
+		"virtual_network_interfaces": []map[string]interface{}{},
+	}, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerHealthReasonToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerLifecycleReasonToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersVirtualNetworkInterfaceReferenceToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersDeletedToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersReservedIPReferenceToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+
+	result, err = vpc.DataSourceIBMIsDynamicRouteServerMembersSubnetReferenceToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, empty, result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerMemberToMapMultiple(t *testing.T) {
+	model := new(vpcv1.DynamicRouteServerMember)
+	model.ID = core.StringPtr("member-id")
+	model.HealthReasons = []vpcv1.DynamicRouteServerHealthReason{{Code: core.StringPtr("c1"), Message: core.StringPtr("m1")}, {Code: core.StringPtr("c2"), Message: core.StringPtr("m2")}}
+	model.VirtualNetworkInterfaces = []vpcv1.VirtualNetworkInterfaceReference{{ID: core.StringPtr("vni-1")}, {ID: core.StringPtr("vni-2")}}
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMembersDynamicRouteServerMemberToMap(model)
+	assert.Nil(t, err)
+	assert.Len(t, result["health_reasons"], 2)
+	assert.Equal(t, []map[string]interface{}{{"id": "vni-1"}, {"id": "vni-2"}}, result["virtual_network_interfaces"])
 }

@@ -1,10 +1,6 @@
 // Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-/*
- * IBM OpenAPI Terraform Generator Version: 3.114.0-a902401e-20260427-192904
- */
-
 package vpc
 
 import (
@@ -139,7 +135,7 @@ func DataSourceIBMIsDynamicRouteServers() *schema.Resource {
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"more_info": &schema.Schema{
@@ -184,7 +180,7 @@ func DataSourceIBMIsDynamicRouteServers() *schema.Resource {
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"more_info": &schema.Schema{
@@ -224,7 +220,7 @@ func DataSourceIBMIsDynamicRouteServers() *schema.Resource {
 															"deleted": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
-																Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+																Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"more_info": &schema.Schema{
@@ -277,7 +273,7 @@ func DataSourceIBMIsDynamicRouteServers() *schema.Resource {
 															"deleted": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
-																Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+																Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"more_info": &schema.Schema{
@@ -365,7 +361,7 @@ func DataSourceIBMIsDynamicRouteServers() *schema.Resource {
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"more_info": &schema.Schema{
@@ -466,8 +462,15 @@ func dataSourceIBMIsDynamicRouteServersID(d *schema.ResourceData) string {
 
 func DataSourceIBMIsDynamicRouteServersDynamicRouteServerToMap(model *vpcv1.DynamicRouteServer) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["created_at"] = model.CreatedAt.String()
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = flex.DateTimeToString(model.CreatedAt)
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	healthReasons := []map[string]interface{}{}
 	for _, healthReasonsItem := range model.HealthReasons {
 		healthReasonsItemMap, err := DataSourceIBMIsDynamicRouteServersDynamicRouteServerHealthReasonToMap(&healthReasonsItem) // #nosec G601
@@ -477,9 +480,15 @@ func DataSourceIBMIsDynamicRouteServersDynamicRouteServerToMap(model *vpcv1.Dyna
 		healthReasons = append(healthReasons, healthReasonsItemMap)
 	}
 	modelMap["health_reasons"] = healthReasons
-	modelMap["health_state"] = *model.HealthState
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
+	if model.HealthState != nil {
+		modelMap["health_state"] = *model.HealthState
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
 	lifecycleReasons := []map[string]interface{}{}
 	for _, lifecycleReasonsItem := range model.LifecycleReasons {
 		lifecycleReasonsItemMap, err := DataSourceIBMIsDynamicRouteServersDynamicRouteServerLifecycleReasonToMap(&lifecycleReasonsItem) // #nosec G601
@@ -489,7 +498,9 @@ func DataSourceIBMIsDynamicRouteServersDynamicRouteServerToMap(model *vpcv1.Dyna
 		lifecycleReasons = append(lifecycleReasons, lifecycleReasonsItemMap)
 	}
 	modelMap["lifecycle_reasons"] = lifecycleReasons
-	modelMap["lifecycle_state"] = *model.LifecycleState
+	if model.LifecycleState != nil {
+		modelMap["lifecycle_state"] = *model.LifecycleState
+	}
 	modelMap["local_asn"] = flex.IntValue(model.LocalAsn)
 	members := []map[string]interface{}{}
 	for _, membersItem := range model.Members {
@@ -500,43 +511,72 @@ func DataSourceIBMIsDynamicRouteServersDynamicRouteServerToMap(model *vpcv1.Dyna
 		members = append(members, membersItemMap)
 	}
 	modelMap["members"] = members
-	modelMap["name"] = *model.Name
-	resourceGroupMap, err := DataSourceIBMIsDynamicRouteServersResourceGroupReferenceToMap(model.ResourceGroup)
-	if err != nil {
-		return modelMap, err
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	modelMap["resource_group"] = []map[string]interface{}{resourceGroupMap}
-	modelMap["resource_type"] = *model.ResourceType
-	vpcMap, err := DataSourceIBMIsDynamicRouteServersVPCReferenceToMap(model.VPC)
-	if err != nil {
-		return modelMap, err
+	if model.ResourceGroup != nil {
+		resourceGroupMap, err := DataSourceIBMIsDynamicRouteServersResourceGroupReferenceToMap(model.ResourceGroup)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["resource_group"] = []map[string]interface{}{resourceGroupMap}
 	}
-	modelMap["vpc"] = []map[string]interface{}{vpcMap}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
+	if model.VPC != nil {
+		vpcMap, err := DataSourceIBMIsDynamicRouteServersVPCReferenceToMap(model.VPC)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vpc"] = []map[string]interface{}{vpcMap}
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersDynamicRouteServerHealthReasonToMap(model *vpcv1.DynamicRouteServerHealthReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
+		if model.MoreInfo != nil {
+			modelMap["more_info"] = *model.MoreInfo
+		}
 	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersDynamicRouteServerLifecycleReasonToMap(model *vpcv1.DynamicRouteServerLifecycleReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
+		if model.MoreInfo != nil {
+			modelMap["more_info"] = *model.MoreInfo
+		}
 	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersDynamicRouteServerMemberReferenceToMap(model *vpcv1.DynamicRouteServerMemberReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model == nil {
+		return modelMap, nil
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServersDeletedToMap(model.Deleted)
 		if err != nil {
@@ -544,10 +584,18 @@ func DataSourceIBMIsDynamicRouteServersDynamicRouteServerMemberReferenceToMap(mo
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	virtualNetworkInterfaces := []map[string]interface{}{}
 	for _, virtualNetworkInterfacesItem := range model.VirtualNetworkInterfaces {
 		virtualNetworkInterfacesItemMap, err := DataSourceIBMIsDynamicRouteServersVirtualNetworkInterfaceReferenceToMap(&virtualNetworkInterfacesItem) // #nosec G601
@@ -562,13 +610,23 @@ func DataSourceIBMIsDynamicRouteServersDynamicRouteServerMemberReferenceToMap(mo
 
 func DataSourceIBMIsDynamicRouteServersDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = *model.MoreInfo
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersVirtualNetworkInterfaceReferenceToMap(model *vpcv1.VirtualNetworkInterfaceReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServersDeletedToMap(model.Deleted)
 		if err != nil {
@@ -576,26 +634,43 @@ func DataSourceIBMIsDynamicRouteServersVirtualNetworkInterfaceReferenceToMap(mod
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	primaryIPMap, err := DataSourceIBMIsDynamicRouteServersReservedIPReferenceToMap(model.PrimaryIP)
-	if err != nil {
-		return modelMap, err
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
-	modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
-	modelMap["resource_type"] = *model.ResourceType
-	subnetMap, err := DataSourceIBMIsDynamicRouteServersSubnetReferenceToMap(model.Subnet)
-	if err != nil {
-		return modelMap, err
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
-	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.PrimaryIP != nil {
+		primaryIPMap, err := DataSourceIBMIsDynamicRouteServersReservedIPReferenceToMap(model.PrimaryIP)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
+	if model.Subnet != nil {
+		subnetMap, err := DataSourceIBMIsDynamicRouteServersSubnetReferenceToMap(model.Subnet)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersReservedIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Address != nil {
+		modelMap["address"] = *model.Address
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServersDeletedToMap(model.Deleted)
 		if err != nil {
@@ -603,16 +678,29 @@ func DataSourceIBMIsDynamicRouteServersReservedIPReferenceToMap(model *vpcv1.Res
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServersDeletedToMap(model.Deleted)
 		if err != nil {
@@ -620,24 +708,46 @@ func DataSourceIBMIsDynamicRouteServersSubnetReferenceToMap(model *vpcv1.SubnetR
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersResourceGroupReferenceToMap(model *vpcv1.ResourceGroupReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServersVPCReferenceToMap(model *vpcv1.VPCReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServersDeletedToMap(model.Deleted)
 		if err != nil {
@@ -645,9 +755,17 @@ func DataSourceIBMIsDynamicRouteServersVPCReferenceToMap(model *vpcv1.VPCReferen
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }

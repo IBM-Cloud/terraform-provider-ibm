@@ -22,8 +22,14 @@ import (
 
 func TestAccIBMIsDynamicRouteServerMemberBasic(t *testing.T) {
 	var conf vpcv1.DynamicRouteServerMember
-	dynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	vpcName := fmt.Sprintf("tf-drs-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-drs-subnet-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-drs-vni-%d", acctest.RandIntRange(10, 100))
+	memberVniName := fmt.Sprintf("tf-drs-member-vni-%d", acctest.RandIntRange(10, 100))
+	memberName := fmt.Sprintf("tf-drs-member-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-drs-member2-%d", acctest.RandIntRange(10, 100))
+	nameReplace := fmt.Sprintf("tf-drs-member3-%d", acctest.RandIntRange(10, 100))
+	localAsn := fmt.Sprintf("%d", acctest.RandIntRange(64512, 65000))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,11 +37,25 @@ func TestAccIBMIsDynamicRouteServerMemberBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsDynamicRouteServerMemberDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(dynamicRouteServerID, name),
+				Config: testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(vpcName, subnetName, vniName, memberVniName, memberName, localAsn, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsDynamicRouteServerMemberExists("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "dynamic_route_server_id", dynamicRouteServerID),
+					resource.TestCheckResourceAttrPair("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "dynamic_route_server_id", "ibm_is_dynamic_route_server.is_dynamic_route_server_instance", "id"),
 					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.#", "1"),
+					resource.TestCheckResourceAttrPair("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.id", "ibm_is_virtual_network_interface.testacc_member_vni", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "dynamic_route_server_member_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "href"),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "resource_type", "dynamic_route_server_member"),
+				),
+			},
+			resource.TestStep{
+				// name has no patch counterpart, so changing it replaces the member.
+				Config: testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(vpcName, subnetName, vniName, memberVniName, memberName, localAsn, nameReplace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsDynamicRouteServerMemberExists("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", conf),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "name", nameReplace),
 				),
 			},
 			resource.TestStep{
@@ -47,43 +67,74 @@ func TestAccIBMIsDynamicRouteServerMemberBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(dynamicRouteServerID string, name string) string {
-	return fmt.Sprintf(`
+func TestAccIBMIsDynamicRouteServerMemberInlineVirtualNetworkInterface(t *testing.T) {
+	var conf vpcv1.DynamicRouteServerMember
+	vpcName := fmt.Sprintf("tf-drs-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-drs-subnet-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-drs-vni-%d", acctest.RandIntRange(10, 100))
+	inlineVniName := fmt.Sprintf("tf-drs-inline-vni-%d", acctest.RandIntRange(10, 100))
+	memberName := fmt.Sprintf("tf-drs-member-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-drs-member2-%d", acctest.RandIntRange(10, 100))
+	localAsn := fmt.Sprintf("%d", acctest.RandIntRange(64512, 65000))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsDynamicRouteServerMemberDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsDynamicRouteServerMemberConfigInline(vpcName, subnetName, vniName, inlineVniName, memberName, localAsn, name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsDynamicRouteServerMemberExists("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", conf),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.name", inlineVniName),
+					resource.TestCheckResourceAttrPair("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.subnet.0.id", "ibm_is_subnet.testacc_subnet", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.allow_ip_spoofing", "false"),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.auto_delete", "true"),
+					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "lifecycle_state", "stable"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsDynamicRouteServerMemberConfigBasic(vpcName string, subnetName string, vniName string, memberVniName string, memberName string, localAsn string, name string) string {
+	return testAccCheckIBMIsDynamicRouteServerConfigBasic(vpcName, subnetName, vniName, memberName, localAsn) + fmt.Sprintf(`
+		resource "ibm_is_virtual_network_interface" "testacc_member_vni" {
+			name   = "%s"
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+
 		resource "ibm_is_dynamic_route_server_member" "is_dynamic_route_server_member_instance" {
-			dynamic_route_server_id = "%s"
-			name = "%s"
+			dynamic_route_server_id = ibm_is_dynamic_route_server.is_dynamic_route_server_instance.id
+			name                    = "%s"
 			virtual_network_interfaces {
-				crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				deleted {
-					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-				}
-				href = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				id = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-				name = "my-virtual-network-interface"
-				primary_ip {
-					address = "192.168.3.4"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-					id = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-					name = "my-reserved-ip"
-					resource_type = "subnet_reserved_ip"
-				}
-				resource_type = "virtual_network_interface"
+				id = ibm_is_virtual_network_interface.testacc_member_vni.id
+			}
+		}
+	`, memberVniName, name)
+}
+
+func testAccCheckIBMIsDynamicRouteServerMemberConfigInline(vpcName string, subnetName string, vniName string, inlineVniName string, memberName string, localAsn string, name string) string {
+	return testAccCheckIBMIsDynamicRouteServerConfigBasic(vpcName, subnetName, vniName, memberName, localAsn) + fmt.Sprintf(`
+		resource "ibm_is_dynamic_route_server_member" "is_dynamic_route_server_member_instance" {
+			dynamic_route_server_id = ibm_is_dynamic_route_server.is_dynamic_route_server_instance.id
+			name                    = "%s"
+			virtual_network_interfaces {
+				name = "%s"
 				subnet {
-					crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					id = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-					name = "my-subnet"
-					resource_type = "subnet"
+					id = ibm_is_subnet.testacc_subnet.id
 				}
 			}
 		}
-	`, dynamicRouteServerID, name)
+	`, name, inlineVniName)
 }
 
 func testAccCheckIBMIsDynamicRouteServerMemberExists(n string, obj vpcv1.DynamicRouteServerMember) resource.TestCheckFunc {
@@ -139,12 +190,11 @@ func testAccCheckIBMIsDynamicRouteServerMemberDestroy(s *terraform.State) error 
 		getDynamicRouteServerMemberOptions.SetDynamicRouteServerID(parts[0])
 		getDynamicRouteServerMemberOptions.SetID(parts[1])
 
-		// Try to find the key
 		_, response, err := vpcClient.GetDynamicRouteServerMember(getDynamicRouteServerMemberOptions)
 
 		if err == nil {
 			return fmt.Errorf("DynamicRouteServerMember still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
+		} else if response == nil || response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for DynamicRouteServerMember (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -153,755 +203,599 @@ func testAccCheckIBMIsDynamicRouteServerMemberDestroy(s *terraform.State) error 
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		reservedIPReferenceModel := make(map[string]interface{})
-		reservedIPReferenceModel["address"] = "192.168.3.4"
-		reservedIPReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
-		reservedIPReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		reservedIPReferenceModel["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		reservedIPReferenceModel["name"] = "my-reserved-ip"
-		reservedIPReferenceModel["resource_type"] = "subnet_reserved_ip"
-
-		subnetReferenceModel := make(map[string]interface{})
-		subnetReferenceModel["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
-		subnetReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["name"] = "my-subnet"
-		subnetReferenceModel["resource_type"] = "subnet"
-
-		model := make(map[string]interface{})
-		model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-		model["id"] = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-		model["name"] = "my-virtual-network-interface"
-		model["primary_ip"] = []map[string]interface{}{reservedIPReferenceModel}
-		model["resource_type"] = "virtual_network_interface"
-		model["subnet"] = []map[string]interface{}{subnetReferenceModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	reservedIPReferenceModel := new(vpcv1.ReservedIPReference)
-	reservedIPReferenceModel.Address = core.StringPtr("192.168.3.4")
-	reservedIPReferenceModel.Deleted = deletedModel
-	reservedIPReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	reservedIPReferenceModel.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	reservedIPReferenceModel.Name = core.StringPtr("my-reserved-ip")
-	reservedIPReferenceModel.ResourceType = core.StringPtr("subnet_reserved_ip")
-
-	subnetReferenceModel := new(vpcv1.SubnetReference)
-	subnetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.Deleted = deletedModel
-	subnetReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.Name = core.StringPtr("my-subnet")
-	subnetReferenceModel.ResourceType = core.StringPtr("subnet")
-
-	model := new(vpcv1.VirtualNetworkInterfaceReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-	model.ID = core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-	model.Name = core.StringPtr("my-virtual-network-interface")
-	model.PrimaryIP = reservedIPReferenceModel
-	model.ResourceType = core.StringPtr("virtual_network_interface")
-	model.Subnet = subnetReferenceModel
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(nil)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(new(vpcv1.VirtualNetworkInterfaceReference))
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{}, result)
+
+	// only an id: primary_ip and subnet are not emitted
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(&vpcv1.VirtualNetworkInterfaceReference{ID: core.StringPtr("vni-id")})
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{"id": "vni-id"}, result)
+
+	model := testDynamicRouteServerVirtualNetworkInterfaceReference()
+	model.Deleted = &vpcv1.Deleted{MoreInfo: core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")}
+	expected := testDynamicRouteServerVirtualNetworkInterfaceReferenceMap()
+	expected["deleted"] = []map[string]interface{}{{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}}
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberDeletedToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		assert.Equal(t, result, model)
-	}
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDeletedToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{}, result)
 
 	model := new(vpcv1.Deleted)
 	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDeletedToMap(model)
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberDeletedToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["address"] = "192.168.3.4"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		model["name"] = "my-reserved-ip"
-		model["resource_type"] = "subnet_reserved_ip"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.ReservedIPReference)
-	model.Address = core.StringPtr("192.168.3.4")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	model.Name = core.StringPtr("my-reserved-ip")
-	model.ResourceType = core.StringPtr("subnet_reserved_ip")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(nil)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{}, result)
+
+	model := testDynamicRouteServerReservedIPReference()
+	model.Deleted = &vpcv1.Deleted{MoreInfo: core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")}
+	expected := testDynamicRouteServerReservedIPReferenceMap()
+	expected["deleted"] = []map[string]interface{}{{"more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"}}
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		model["name"] = "my-subnet"
-		model["resource_type"] = "subnet"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.SubnetReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	model.Name = core.StringPtr("my-subnet")
-	model.ResourceType = core.StringPtr("subnet")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(nil)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(testDynamicRouteServerSubnetReference())
+	assert.Nil(t, err)
+	assert.Equal(t, testDynamicRouteServerSubnetReferenceMap(), result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "cannot_start_capacity"
-		model["message"] = "Cannot start one or more members because resource capacity is unavailable."
-		model["more_info"] = "https://cloud.ibm.com/docs/__TBD__"
-
-		assert.Equal(t, result, model)
-	}
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{}, result)
 
 	model := new(vpcv1.DynamicRouteServerHealthReason)
-	model.Code = core.StringPtr("cannot_start_capacity")
-	model.Message = core.StringPtr("Cannot start one or more members because resource capacity is unavailable.")
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/docs/__TBD__")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(model)
+	model.Code = core.StringPtr("cannot_reserve_ip_address")
+	model.Message = core.StringPtr("The IP address could not be reserved")
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"code": "cannot_reserve_ip_address", "message": "The IP address could not be reserved"}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "resource_suspended_by_provider"
-		model["message"] = "The resource has been suspended. Contact IBM support with the CRN for next steps."
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#resource-suspension"
-
-		assert.Equal(t, result, model)
-	}
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]interface{}{}, result)
 
 	model := new(vpcv1.DynamicRouteServerLifecycleReason)
 	model.Code = core.StringPtr("resource_suspended_by_provider")
 	model.Message = core.StringPtr("The resource has been suspended. Contact IBM support with the CRN for next steps.")
 	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#resource-suspension")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(model)
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{
+		"code":      "resource_suspended_by_provider",
+		"message":   "The resource has been suspended. Contact IBM support with the CRN for next steps.",
+		"more_info": "https://cloud.ibm.com/apidocs/vpc#resource-suspension",
+	}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(t *testing.T) {
-	checkResult := func(result vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceIntf) {
-		virtualNetworkInterfaceIPPrototypeModel := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext)
-		virtualNetworkInterfaceIPPrototypeModel.Address = core.StringPtr("10.0.0.5")
-		virtualNetworkInterfaceIPPrototypeModel.AutoDelete = core.BoolPtr(false)
-		virtualNetworkInterfaceIPPrototypeModel.Name = core.StringPtr("my-reserved-ip")
+	t.Run("nil map", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(nil)
+		assert.NotNil(t, err)
+	})
 
-		virtualNetworkInterfacePrimaryIPPrototypeModel := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID)
-		virtualNetworkInterfacePrimaryIPPrototypeModel.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	t.Run("empty map requires subnet", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{})
+		assert.NotNil(t, err)
+	})
 
-		resourceGroupIdentityModel := new(vpcv1.ResourceGroupIdentityByID)
-		resourceGroupIdentityModel.ID = core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")
+	t.Run("identity by id", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{"id": "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef", "href": "", "crn": ""})
+		assert.Nil(t, err)
+		assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID{ID: core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")}, result)
+	})
 
-		securityGroupIdentityModel := new(vpcv1.SecurityGroupIdentityByID)
-		securityGroupIdentityModel.ID = core.StringPtr("r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
+	t.Run("identity by href", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{"href": "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"})
+		assert.Nil(t, err)
+		assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref{Href: core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")}, result)
+	})
 
-		subnetIdentityModel := new(vpcv1.SubnetIdentityByID)
-		subnetIdentityModel.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	t.Run("identity by crn", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{"crn": "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"})
+		assert.Nil(t, err)
+		assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN{CRN: core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")}, result)
+	})
 
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterface)
-		model.AllowIPSpoofing = core.BoolPtr(true)
-		model.AutoDelete = core.BoolPtr(false)
-		model.EnableInfrastructureNat = core.BoolPtr(true)
-		model.Ips = []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{virtualNetworkInterfaceIPPrototypeModel}
-		model.Name = core.StringPtr("my-virtual-network-interface")
-		model.PrimaryIP = virtualNetworkInterfacePrimaryIPPrototypeModel
-		model.ProtocolStateFilteringMode = core.StringPtr("auto")
-		model.ResourceGroup = resourceGroupIdentityModel
-		model.SecurityGroups = []vpcv1.SecurityGroupIdentityIntf{securityGroupIdentityModel}
-		model.Subnet = subnetIdentityModel
-		model.ID = core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
+	t.Run("identity with prototype fields ignores them", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{"id": "vni-id", "name": "ignored", "auto_delete": false})
+		assert.Nil(t, err)
+		assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID{ID: core.StringPtr("vni-id")}, result)
+	})
 
-		assert.Equal(t, result, model)
-	}
+	t.Run("more than one identity key", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(map[string]interface{}{"id": "a", "crn": "b"})
+		assert.NotNil(t, err)
+	})
 
-	virtualNetworkInterfaceIPPrototypeModel := make(map[string]interface{})
-	virtualNetworkInterfaceIPPrototypeModel["address"] = "10.0.0.5"
-	virtualNetworkInterfaceIPPrototypeModel["auto_delete"] = false
-	virtualNetworkInterfaceIPPrototypeModel["name"] = "my-reserved-ip"
+	t.Run("prototype with all arguments", func(t *testing.T) {
+		model := make(map[string]interface{})
+		model["allow_ip_spoofing"] = true
+		model["auto_delete"] = false
+		model["enable_infrastructure_nat"] = true
+		model["ips"] = []interface{}{map[string]interface{}{"address": "10.0.0.5", "auto_delete": false, "name": "my-reserved-ip"}}
+		model["name"] = "my-virtual-network-interface"
+		model["primary_ip"] = []interface{}{map[string]interface{}{"id": "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"}}
+		model["protocol_state_filtering_mode"] = "auto"
+		model["resource_group"] = []interface{}{map[string]interface{}{"id": "fee82deba12e4c0fb69c3b09d1f12345"}}
+		model["security_groups"] = []interface{}{map[string]interface{}{"id": "r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"}}
+		model["subnet"] = []interface{}{map[string]interface{}{"id": "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"}}
 
-	virtualNetworkInterfacePrimaryIPPrototypeModel := make(map[string]interface{})
-	virtualNetworkInterfacePrimaryIPPrototypeModel["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(model)
+		assert.Nil(t, err)
 
-	resourceGroupIdentityModel := make(map[string]interface{})
-	resourceGroupIdentityModel["id"] = "fee82deba12e4c0fb69c3b09d1f12345"
+		expected := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext)
+		expected.AllowIPSpoofing = core.BoolPtr(true)
+		expected.AutoDelete = core.BoolPtr(false)
+		expected.EnableInfrastructureNat = core.BoolPtr(true)
+		expected.Ips = []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{&vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(false), Name: core.StringPtr("my-reserved-ip")}}
+		expected.Name = core.StringPtr("my-virtual-network-interface")
+		expected.PrimaryIP = &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID{ID: core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")}
+		expected.ProtocolStateFilteringMode = core.StringPtr("auto")
+		expected.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{ID: core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")}
+		expected.SecurityGroups = []vpcv1.SecurityGroupIdentityIntf{&vpcv1.SecurityGroupIdentityByID{ID: core.StringPtr("r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")}}
+		expected.Subnet = &vpcv1.SubnetIdentityByID{ID: core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")}
+		assert.Equal(t, expected, result)
+	})
 
-	securityGroupIdentityModel := make(map[string]interface{})
-	securityGroupIdentityModel["id"] = "r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
+	t.Run("prototype with subnet only and empty lists", func(t *testing.T) {
+		model := map[string]interface{}{
+			"id": "", "href": "", "crn": "", "name": "", "protocol_state_filtering_mode": "",
+			"ips": []interface{}{}, "security_groups": []interface{}{}, "resource_group": []interface{}{}, "primary_ip": []interface{}{},
+			"subnet": []interface{}{map[string]interface{}{"crn": "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"}},
+		}
+		result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(model)
+		assert.Nil(t, err)
+		expected := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext)
+		expected.Subnet = &vpcv1.SubnetIdentityByCRN{CRN: core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")}
+		assert.Equal(t, expected, result)
+	})
 
-	subnetIdentityModel := make(map[string]interface{})
-	subnetIdentityModel["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+	t.Run("prototype with invalid nested entries", func(t *testing.T) {
+		base := func() map[string]interface{} {
+			return map[string]interface{}{"subnet": []interface{}{map[string]interface{}{"id": "subnet-id"}}}
+		}
+		m := base()
+		m["ips"] = []interface{}{map[string]interface{}{"id": "a", "href": "b"}}
+		_, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(m)
+		assert.NotNil(t, err)
 
-	model := make(map[string]interface{})
-	model["allow_ip_spoofing"] = true
-	model["auto_delete"] = false
-	model["enable_infrastructure_nat"] = true
-	model["ips"] = []interface{}{virtualNetworkInterfaceIPPrototypeModel}
-	model["name"] = "my-virtual-network-interface"
-	model["primary_ip"] = []interface{}{virtualNetworkInterfacePrimaryIPPrototypeModel}
-	model["protocol_state_filtering_mode"] = "auto"
-	model["resource_group"] = []interface{}{resourceGroupIdentityModel}
-	model["security_groups"] = []interface{}{securityGroupIdentityModel}
-	model["subnet"] = []interface{}{subnetIdentityModel}
-	model["id"] = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-	model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+		m = base()
+		m["security_groups"] = []interface{}{map[string]interface{}{}}
+		_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(m)
+		assert.NotNil(t, err)
 
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(model)
-	assert.Nil(t, err)
-	checkResult(result)
+		m = base()
+		m["resource_group"] = []interface{}{map[string]interface{}{"id": ""}}
+		_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(m)
+		assert.NotNil(t, err)
+
+		m = base()
+		m["primary_ip"] = []interface{}{map[string]interface{}{"id": "a", "href": "b"}}
+		_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(m)
+		assert.NotNil(t, err)
+
+		m = map[string]interface{}{"subnet": []interface{}{map[string]interface{}{"id": "a", "crn": "b"}}}
+		_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterface(m)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(t *testing.T) {
-	checkResult := func(result vpcv1.VirtualNetworkInterfaceIPPrototypeIntf) {
-		model := new(vpcv1.VirtualNetworkInterfaceIPPrototype)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Address = core.StringPtr("192.168.3.4")
-		model.AutoDelete = core.BoolPtr(false)
-		model.Name = core.StringPtr("my-reserved-ip")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["address"] = "192.168.3.4"
-	model["auto_delete"] = false
-	model["name"] = "my-reserved-ip"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(map[string]interface{}{"id": "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID{ID: core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(map[string]interface{}{"href": "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref{Href: core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")}, result)
+
+	// no identity: a reserved IP prototype, even when empty
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(map[string]interface{}{})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(map[string]interface{}{"address": "10.0.0.5", "auto_delete": false, "name": "my-reserved-ip"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(false), Name: core.StringPtr("my-reserved-ip")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototype(map[string]interface{}{"id": "a", "href": "b"})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(t *testing.T) {
-	checkResult := func(result vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextIntf) {
-		model := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(map[string]interface{}{"id": "rip-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID{ID: core.StringPtr("rip-id")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(map[string]interface{}{"href": "rip-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref{Href: core.StringPtr("rip-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID) {
-		model := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID(map[string]interface{}{"id": "rip-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID{ID: core.StringPtr("rip-id")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref) {
-		model := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref(map[string]interface{}{"href": "rip-href"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref{Href: core.StringPtr("rip-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByHref(map[string]interface{}{"href": ""})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext) {
-		model := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext)
-		model.Address = core.StringPtr("192.168.3.4")
-		model.AutoDelete = core.BoolPtr(false)
-		model.Name = core.StringPtr("my-reserved-ip")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["address"] = "192.168.3.4"
-	model["auto_delete"] = false
-	model["name"] = "my-reserved-ip"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext(map[string]interface{}{})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{}, result)
+
+	// auto_delete false is kept, it is not the same as unset
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext(map[string]interface{}{"address": "10.0.0.5", "auto_delete": false, "name": ""})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(false)}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(t *testing.T) {
-	checkResult := func(result vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf) {
-		model := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototype)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Address = core.StringPtr("192.168.3.4")
-		model.AutoDelete = core.BoolPtr(false)
-		model.Name = core.StringPtr("my-reserved-ip")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["address"] = "192.168.3.4"
-	model["auto_delete"] = false
-	model["name"] = "my-reserved-ip"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(map[string]interface{}{"id": "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID{ID: core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(map[string]interface{}{"href": "rip-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref{Href: core.StringPtr("rip-href")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(map[string]interface{}{"address": "10.0.0.5", "auto_delete": true, "name": "my-reserved-ip"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(true), Name: core.StringPtr("my-reserved-ip")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(map[string]interface{}{})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototype(map[string]interface{}{"id": "a", "href": "b"})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(t *testing.T) {
-	checkResult := func(result vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextIntf) {
-		model := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(map[string]interface{}{"id": "rip-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID{ID: core.StringPtr("rip-id")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(map[string]interface{}{"href": "rip-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref{Href: core.StringPtr("rip-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(map[string]interface{}{"id": "", "href": ""})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID) {
-		model := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID)
-		model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID(map[string]interface{}{"id": "rip-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID{ID: core.StringPtr("rip-id")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref) {
-		model := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref(map[string]interface{}{"href": "rip-href"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref{Href: core.StringPtr("rip-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByHref(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext(t *testing.T) {
-	checkResult := func(result *vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext) {
-		model := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext)
-		model.Address = core.StringPtr("192.168.3.4")
-		model.AutoDelete = core.BoolPtr(false)
-		model.Name = core.StringPtr("my-reserved-ip")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["address"] = "192.168.3.4"
-	model["auto_delete"] = false
-	model["name"] = "my-reserved-ip"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext(map[string]interface{}{})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToVirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext(map[string]interface{}{"address": "10.0.0.5", "auto_delete": false, "name": "my-reserved-ip"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(false), Name: core.StringPtr("my-reserved-ip")}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.ResourceGroupIdentityIntf) {
-		model := new(vpcv1.ResourceGroupIdentity)
-		model.ID = core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "fee82deba12e4c0fb69c3b09d1f12345"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentity(map[string]interface{}{"id": "fee82deba12e4c0fb69c3b09d1f12345"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.ResourceGroupIdentityByID{ID: core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentity(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.ResourceGroupIdentityByID) {
-		model := new(vpcv1.ResourceGroupIdentityByID)
-		model.ID = core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "fee82deba12e4c0fb69c3b09d1f12345"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentityByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentityByID(map[string]interface{}{"id": "fee82deba12e4c0fb69c3b09d1f12345"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.ResourceGroupIdentityByID{ID: core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToResourceGroupIdentityByID(map[string]interface{}{"id": ""})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.SecurityGroupIdentityIntf) {
-		model := new(vpcv1.SecurityGroupIdentity)
-		model.ID = core.StringPtr("r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::security-group:r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/security_groups/r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-	model["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::security-group:r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/security_groups/r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(map[string]interface{}{"id": "sg-id", "crn": "", "href": ""})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByID{ID: core.StringPtr("sg-id")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(map[string]interface{}{"crn": "sg-crn"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByCRN{CRN: core.StringPtr("sg-crn")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(map[string]interface{}{"href": "sg-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByHref{Href: core.StringPtr("sg-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(map[string]interface{}{})
+	assert.NotNil(t, err)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentity(map[string]interface{}{"id": "a", "href": "b"})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.SecurityGroupIdentityByID) {
-		model := new(vpcv1.SecurityGroupIdentityByID)
-		model.ID = core.StringPtr("r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByID(map[string]interface{}{"id": "sg-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByID{ID: core.StringPtr("sg-id")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByID(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByCRN(t *testing.T) {
-	checkResult := func(result *vpcv1.SecurityGroupIdentityByCRN) {
-		model := new(vpcv1.SecurityGroupIdentityByCRN)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::security-group:r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::security-group:r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByCRN(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByCRN(map[string]interface{}{"crn": "sg-crn"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByCRN{CRN: core.StringPtr("sg-crn")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByCRN(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.SecurityGroupIdentityByHref) {
-		model := new(vpcv1.SecurityGroupIdentityByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/security_groups/r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/security_groups/r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByHref(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByHref(map[string]interface{}{"href": "sg-href"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SecurityGroupIdentityByHref{Href: core.StringPtr("sg-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSecurityGroupIdentityByHref(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.SubnetIdentityIntf) {
-		model := new(vpcv1.SubnetIdentity)
-		model.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-	model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(map[string]interface{}{"id": "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SubnetIdentityByID{ID: core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(map[string]interface{}{"crn": "subnet-crn"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.SubnetIdentityByCRN{CRN: core.StringPtr("subnet-crn")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(map[string]interface{}{"href": "subnet-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.SubnetIdentityByHref{Href: core.StringPtr("subnet-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(map[string]interface{}{"id": "", "crn": "", "href": ""})
+	assert.NotNil(t, err)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentity(map[string]interface{}{"id": "a", "crn": "b", "href": "c"})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.SubnetIdentityByID) {
-		model := new(vpcv1.SubnetIdentityByID)
-		model.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByID(map[string]interface{}{"id": "subnet-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SubnetIdentityByID{ID: core.StringPtr("subnet-id")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByID(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByCRN(t *testing.T) {
-	checkResult := func(result *vpcv1.SubnetIdentityByCRN) {
-		model := new(vpcv1.SubnetIdentityByCRN)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByCRN(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByCRN(map[string]interface{}{"crn": "subnet-crn"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SubnetIdentityByCRN{CRN: core.StringPtr("subnet-crn")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByCRN(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.SubnetIdentityByHref) {
-		model := new(vpcv1.SubnetIdentityByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByHref(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByHref(map[string]interface{}{"href": "subnet-href"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.SubnetIdentityByHref{Href: core.StringPtr("subnet-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToSubnetIdentityByHref(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext) {
-		virtualNetworkInterfaceIPPrototypeModel := new(vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext)
-		virtualNetworkInterfaceIPPrototypeModel.Address = core.StringPtr("10.0.0.5")
-		virtualNetworkInterfaceIPPrototypeModel.AutoDelete = core.BoolPtr(false)
-		virtualNetworkInterfaceIPPrototypeModel.Name = core.StringPtr("my-reserved-ip")
+	_, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext(map[string]interface{}{})
+	assert.NotNil(t, err)
 
-		virtualNetworkInterfacePrimaryIPPrototypeModel := new(vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextByID)
-		virtualNetworkInterfacePrimaryIPPrototypeModel.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext(map[string]interface{}{"subnet": []interface{}{}})
+	assert.NotNil(t, err)
 
-		resourceGroupIdentityModel := new(vpcv1.ResourceGroupIdentityByID)
-		resourceGroupIdentityModel.ID = core.StringPtr("fee82deba12e4c0fb69c3b09d1f12345")
-
-		securityGroupIdentityModel := new(vpcv1.SecurityGroupIdentityByID)
-		securityGroupIdentityModel.ID = core.StringPtr("r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271")
-
-		subnetIdentityModel := new(vpcv1.SubnetIdentityByID)
-		subnetIdentityModel.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext)
-		model.AllowIPSpoofing = core.BoolPtr(true)
-		model.AutoDelete = core.BoolPtr(false)
-		model.EnableInfrastructureNat = core.BoolPtr(true)
-		model.Ips = []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{virtualNetworkInterfaceIPPrototypeModel}
-		model.Name = core.StringPtr("my-virtual-network-interface")
-		model.PrimaryIP = virtualNetworkInterfacePrimaryIPPrototypeModel
-		model.ProtocolStateFilteringMode = core.StringPtr("auto")
-		model.ResourceGroup = resourceGroupIdentityModel
-		model.SecurityGroups = []vpcv1.SecurityGroupIdentityIntf{securityGroupIdentityModel}
-		model.Subnet = subnetIdentityModel
-
-		assert.Equal(t, result, model)
+	model := map[string]interface{}{
+		"subnet":                    []interface{}{map[string]interface{}{"href": "subnet-href"}},
+		"allow_ip_spoofing":         false,
+		"auto_delete":               true,
+		"enable_infrastructure_nat": false,
+		"ips": []interface{}{
+			map[string]interface{}{"id": "rip-1"},
+			map[string]interface{}{"address": "10.0.0.6"},
+		},
+		"primary_ip": []interface{}{map[string]interface{}{"address": "10.0.0.5", "auto_delete": true}},
+		"security_groups": []interface{}{
+			map[string]interface{}{"id": "sg-1"},
+			map[string]interface{}{"crn": "sg-2-crn"},
+		},
 	}
-
-	virtualNetworkInterfaceIPPrototypeModel := make(map[string]interface{})
-	virtualNetworkInterfaceIPPrototypeModel["address"] = "10.0.0.5"
-	virtualNetworkInterfaceIPPrototypeModel["auto_delete"] = false
-	virtualNetworkInterfaceIPPrototypeModel["name"] = "my-reserved-ip"
-
-	virtualNetworkInterfacePrimaryIPPrototypeModel := make(map[string]interface{})
-	virtualNetworkInterfacePrimaryIPPrototypeModel["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-
-	resourceGroupIdentityModel := make(map[string]interface{})
-	resourceGroupIdentityModel["id"] = "fee82deba12e4c0fb69c3b09d1f12345"
-
-	securityGroupIdentityModel := make(map[string]interface{})
-	securityGroupIdentityModel["id"] = "r006-be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-
-	subnetIdentityModel := make(map[string]interface{})
-	subnetIdentityModel["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-
-	model := make(map[string]interface{})
-	model["allow_ip_spoofing"] = true
-	model["auto_delete"] = false
-	model["enable_infrastructure_nat"] = true
-	model["ips"] = []interface{}{virtualNetworkInterfaceIPPrototypeModel}
-	model["name"] = "my-virtual-network-interface"
-	model["primary_ip"] = []interface{}{virtualNetworkInterfacePrimaryIPPrototypeModel}
-	model["protocol_state_filtering_mode"] = "auto"
-	model["resource_group"] = []interface{}{resourceGroupIdentityModel}
-	model["security_groups"] = []interface{}{securityGroupIdentityModel}
-	model["subnet"] = []interface{}{subnetIdentityModel}
-
 	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	expected := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfacePrototypeDynamicRouteServerContext)
+	expected.Subnet = &vpcv1.SubnetIdentityByHref{Href: core.StringPtr("subnet-href")}
+	expected.AllowIPSpoofing = core.BoolPtr(false)
+	expected.AutoDelete = core.BoolPtr(true)
+	expected.EnableInfrastructureNat = core.BoolPtr(false)
+	expected.Ips = []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{
+		&vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextByID{ID: core.StringPtr("rip-1")},
+		&vpcv1.VirtualNetworkInterfaceIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{Address: core.StringPtr("10.0.0.6")},
+	}
+	expected.PrimaryIP = &vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{Address: core.StringPtr("10.0.0.5"), AutoDelete: core.BoolPtr(true)}
+	expected.SecurityGroups = []vpcv1.SecurityGroupIdentityIntf{
+		&vpcv1.SecurityGroupIdentityByID{ID: core.StringPtr("sg-1")},
+		&vpcv1.SecurityGroupIdentityByCRN{CRN: core.StringPtr("sg-2-crn")},
+	}
+	assert.Equal(t, expected, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityIntf) {
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity)
-		model.ID = core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-	model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(map[string]interface{}{"id": "vni-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID{ID: core.StringPtr("vni-id")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(map[string]interface{}{"href": "vni-href"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref{Href: core.StringPtr("vni-href")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(map[string]interface{}{"crn": "vni-crn"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN{CRN: core.StringPtr("vni-crn")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(map[string]interface{}{})
+	assert.NotNil(t, err)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentity(map[string]interface{}{"id": "a", "href": "b", "crn": "c"})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID) {
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID)
-		model.ID = core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID(map[string]interface{}{"id": "vni-id"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID{ID: core.StringPtr("vni-id")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByID(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref) {
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref(map[string]interface{}{"href": "vni-href"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref{Href: core.StringPtr("vni-href")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByHref(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN) {
-		model := new(vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN(map[string]interface{}{"crn": "vni-crn"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.DynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN{CRN: core.StringPtr("vni-crn")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerMemberMapToDynamicRouteServerMemberPrototypeVirtualNetworkInterfaceVirtualNetworkInterfaceIdentityVirtualNetworkInterfaceIdentityByCRN(map[string]interface{}{})
+	assert.NotNil(t, err)
+}
+
+func TestResourceIBMIsDynamicRouteServerMemberMergeVirtualNetworkInterfaces(t *testing.T) {
+	t.Run("nil prior and nil current", func(t *testing.T) {
+		assert.Equal(t, []map[string]interface{}{}, vpc.ResourceIBMIsDynamicRouteServerMemberMergeVirtualNetworkInterfaces(nil, nil))
+	})
+
+	t.Run("nil prior applies defaults", func(t *testing.T) {
+		current := []map[string]interface{}{{"id": "vni-1", "primary_ip": []map[string]interface{}{{"id": "rip-1", "address": "10.0.0.5"}}}}
+		result := vpc.ResourceIBMIsDynamicRouteServerMemberMergeVirtualNetworkInterfaces(nil, current)
+		assert.Len(t, result, 1)
+		assert.Equal(t, "vni-1", result[0]["id"])
+		assert.Equal(t, false, result[0]["allow_ip_spoofing"])
+		assert.Equal(t, true, result[0]["auto_delete"])
+		assert.Equal(t, true, result[0]["enable_infrastructure_nat"])
+		_, hasMode := result[0]["protocol_state_filtering_mode"]
+		assert.False(t, hasMode)
+		primaryIP := result[0]["primary_ip"].([]map[string]interface{})
+		assert.Equal(t, true, primaryIP[0]["auto_delete"])
+		assert.Equal(t, "10.0.0.5", primaryIP[0]["address"])
+		// the input is not mutated
+		_, mutated := current[0]["auto_delete"]
+		assert.False(t, mutated)
+	})
+
+	t.Run("prior matched by id carries prototype fields", func(t *testing.T) {
+		prior := []interface{}{
+			map[string]interface{}{
+				"id": "vni-2", "auto_delete": false, "allow_ip_spoofing": true, "enable_infrastructure_nat": false,
+				"protocol_state_filtering_mode": "disabled",
+				"ips":                           []interface{}{map[string]interface{}{"id": "rip-2"}},
+				"security_groups":               []interface{}{map[string]interface{}{"id": "sg-1"}},
+				"resource_group":                []interface{}{map[string]interface{}{"id": "rg-1"}},
+				"primary_ip":                    []interface{}{map[string]interface{}{"auto_delete": false}},
+			},
+			map[string]interface{}{"id": "vni-1"},
+		}
+		current := []map[string]interface{}{
+			{"id": "vni-1"},
+			{"id": "vni-2", "primary_ip": []map[string]interface{}{{"id": "rip-9"}}},
+		}
+		result := vpc.ResourceIBMIsDynamicRouteServerMemberMergeVirtualNetworkInterfaces(prior, current)
+		assert.Equal(t, true, result[0]["auto_delete"])
+		assert.Equal(t, false, result[1]["auto_delete"])
+		assert.Equal(t, true, result[1]["allow_ip_spoofing"])
+		assert.Equal(t, false, result[1]["enable_infrastructure_nat"])
+		assert.Equal(t, "disabled", result[1]["protocol_state_filtering_mode"])
+		assert.Equal(t, []interface{}{map[string]interface{}{"id": "rip-2"}}, result[1]["ips"])
+		assert.Equal(t, []interface{}{map[string]interface{}{"id": "sg-1"}}, result[1]["security_groups"])
+		assert.Equal(t, []interface{}{map[string]interface{}{"id": "rg-1"}}, result[1]["resource_group"])
+		primaryIP := result[1]["primary_ip"].([]map[string]interface{})
+		assert.Equal(t, false, primaryIP[0]["auto_delete"])
+		assert.Equal(t, "rip-9", primaryIP[0]["id"])
+	})
+
+	t.Run("prior inline prototype matched by name then by position", func(t *testing.T) {
+		prior := []interface{}{
+			map[string]interface{}{"id": "", "name": "inline-vni", "auto_delete": false},
+			map[string]interface{}{"id": "", "name": "", "allow_ip_spoofing": true},
+		}
+		current := []map[string]interface{}{
+			{"id": "vni-new-2", "name": "generated-name"},
+			{"id": "vni-new-1", "name": "inline-vni"},
+		}
+		result := vpc.ResourceIBMIsDynamicRouteServerMemberMergeVirtualNetworkInterfaces(prior, current)
+		assert.Equal(t, false, result[1]["auto_delete"])
+		assert.Equal(t, false, result[0]["allow_ip_spoofing"])
+		assert.Equal(t, true, result[0]["auto_delete"])
+	})
 }

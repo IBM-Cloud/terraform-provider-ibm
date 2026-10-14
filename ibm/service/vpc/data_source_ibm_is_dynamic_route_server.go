@@ -1,10 +1,6 @@
 // Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-/*
- * IBM OpenAPI Terraform Generator Version: 3.114.0-a902401e-20260427-192904
- */
-
 package vpc
 
 import (
@@ -25,10 +21,11 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 		ReadContext: dataSourceIBMIsDynamicRouteServerRead,
 
 		Schema: map[string]*schema.Schema{
-			"is_dynamic_route_server_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The dynamic route server identifier.",
+			"identifier": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+				Description:  "The dynamic route server identifier.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -116,7 +113,7 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
@@ -161,7 +158,7 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"more_info": &schema.Schema{
@@ -201,7 +198,7 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"more_info": &schema.Schema{
@@ -254,7 +251,7 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"more_info": &schema.Schema{
@@ -295,9 +292,11 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 				},
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name for this dynamic route server. The name is unique across all dynamic route servers in the region.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+				Description:  "The name for this dynamic route server. The name is unique across all dynamic route servers in the region.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeList,
@@ -342,7 +341,7 @@ func DataSourceIBMIsDynamicRouteServer() *schema.Resource {
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
@@ -388,18 +387,54 @@ func dataSourceIBMIsDynamicRouteServerRead(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
-	getDynamicRouteServerOptions := &vpcv1.GetDynamicRouteServerOptions{}
+	var dynamicRouteServer *vpcv1.DynamicRouteServer
+	if identifier, ok := d.GetOk("identifier"); ok {
+		getDynamicRouteServerOptions := &vpcv1.GetDynamicRouteServerOptions{}
+		getDynamicRouteServerOptions.SetID(identifier.(string))
 
-	getDynamicRouteServerOptions.SetID(d.Get("is_dynamic_route_server_id").(string))
+		result, _, err := vpcClient.GetDynamicRouteServerWithContext(context, getDynamicRouteServerOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDynamicRouteServerWithContext failed: %s", err.Error()), "(Data) ibm_is_dynamic_route_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		dynamicRouteServer = result
+	} else {
+		name := d.Get("name").(string)
+		listDynamicRouteServersOptions := &vpcv1.ListDynamicRouteServersOptions{}
+		listDynamicRouteServersOptions.SetName(name)
 
-	dynamicRouteServer, _, err := vpcClient.GetDynamicRouteServerWithContext(context, getDynamicRouteServerOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDynamicRouteServerWithContext failed: %s", err.Error()), "(Data) ibm_is_dynamic_route_server", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		pager, err := vpcClient.NewDynamicRouteServersPager(listDynamicRouteServersOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_dynamic_route_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		allItems, err := pager.GetAllWithContext(context)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DynamicRouteServersPager.GetAll() failed: %s", err.Error()), "(Data) ibm_is_dynamic_route_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		for i := range allItems {
+			if allItems[i].Name != nil && *allItems[i].Name == name {
+				dynamicRouteServer = &allItems[i]
+				break
+			}
+		}
+		if dynamicRouteServer == nil {
+			err = fmt.Errorf("[ERROR] No dynamic route server found with name %s", name)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_dynamic_route_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
-	d.SetId(*getDynamicRouteServerOptions.ID)
+	d.SetId(*dynamicRouteServer.ID)
+
+	if err = d.Set("identifier", dynamicRouteServer.ID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_is_dynamic_route_server", "read", "set-identifier").GetDiag()
+	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(dynamicRouteServer.CreatedAt)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_dynamic_route_server", "read", "set-created_at").GetDiag()
@@ -494,26 +529,47 @@ func dataSourceIBMIsDynamicRouteServerRead(context context.Context, d *schema.Re
 
 func DataSourceIBMIsDynamicRouteServerDynamicRouteServerHealthReasonToMap(model *vpcv1.DynamicRouteServerHealthReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
+		if model.MoreInfo != nil {
+			modelMap["more_info"] = *model.MoreInfo
+		}
 	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerDynamicRouteServerLifecycleReasonToMap(model *vpcv1.DynamicRouteServerLifecycleReason) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["code"] = *model.Code
-	modelMap["message"] = *model.Message
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Code != nil {
+		modelMap["code"] = *model.Code
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
+		if model.MoreInfo != nil {
+			modelMap["more_info"] = *model.MoreInfo
+		}
 	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerDynamicRouteServerMemberReferenceToMap(model *vpcv1.DynamicRouteServerMemberReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model == nil {
+		return modelMap, nil
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServerDeletedToMap(model.Deleted)
 		if err != nil {
@@ -521,10 +577,18 @@ func DataSourceIBMIsDynamicRouteServerDynamicRouteServerMemberReferenceToMap(mod
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	virtualNetworkInterfaces := []map[string]interface{}{}
 	for _, virtualNetworkInterfacesItem := range model.VirtualNetworkInterfaces {
 		virtualNetworkInterfacesItemMap, err := DataSourceIBMIsDynamicRouteServerVirtualNetworkInterfaceReferenceToMap(&virtualNetworkInterfacesItem) // #nosec G601
@@ -539,13 +603,23 @@ func DataSourceIBMIsDynamicRouteServerDynamicRouteServerMemberReferenceToMap(mod
 
 func DataSourceIBMIsDynamicRouteServerDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = *model.MoreInfo
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerVirtualNetworkInterfaceReferenceToMap(model *vpcv1.VirtualNetworkInterfaceReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServerDeletedToMap(model.Deleted)
 		if err != nil {
@@ -553,26 +627,43 @@ func DataSourceIBMIsDynamicRouteServerVirtualNetworkInterfaceReferenceToMap(mode
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	primaryIPMap, err := DataSourceIBMIsDynamicRouteServerReservedIPReferenceToMap(model.PrimaryIP)
-	if err != nil {
-		return modelMap, err
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
-	modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
-	modelMap["resource_type"] = *model.ResourceType
-	subnetMap, err := DataSourceIBMIsDynamicRouteServerSubnetReferenceToMap(model.Subnet)
-	if err != nil {
-		return modelMap, err
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
-	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.PrimaryIP != nil {
+		primaryIPMap, err := DataSourceIBMIsDynamicRouteServerReservedIPReferenceToMap(model.PrimaryIP)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
+	if model.Subnet != nil {
+		subnetMap, err := DataSourceIBMIsDynamicRouteServerSubnetReferenceToMap(model.Subnet)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerReservedIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["address"] = *model.Address
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Address != nil {
+		modelMap["address"] = *model.Address
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServerDeletedToMap(model.Deleted)
 		if err != nil {
@@ -580,16 +671,29 @@ func DataSourceIBMIsDynamicRouteServerReservedIPReferenceToMap(model *vpcv1.Rese
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServerDeletedToMap(model.Deleted)
 		if err != nil {
@@ -597,24 +701,46 @@ func DataSourceIBMIsDynamicRouteServerSubnetReferenceToMap(model *vpcv1.SubnetRe
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerResourceGroupReferenceToMap(model *vpcv1.ResourceGroupReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMIsDynamicRouteServerVPCReferenceToMap(model *vpcv1.VPCReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsDynamicRouteServerDeletedToMap(model.Deleted)
 		if err != nil {
@@ -622,9 +748,17 @@ func DataSourceIBMIsDynamicRouteServerVPCReferenceToMap(model *vpcv1.VPCReferenc
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }

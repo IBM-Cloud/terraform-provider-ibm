@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -20,9 +21,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const isDynamicRouteServerRouteReportJobResource = "ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance"
+
 func TestAccIBMIsDynamicRouteServerRouteReportJobBasic(t *testing.T) {
 	var conf vpcv1.DynamicRouteServerRouteReportJob
-	dynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
+	suffix := acctest.RandIntRange(10, 100)
+	vpcname := fmt.Sprintf("tf-vpc-drs-rrj-%d", suffix)
+	subnetname := fmt.Sprintf("tf-subnet-drs-rrj-%d", suffix)
+	vniname := fmt.Sprintf("tf-vni-drs-rrj-%d", suffix)
+	drsname := fmt.Sprintf("tf-drs-rrj-%d", suffix)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,10 +37,19 @@ func TestAccIBMIsDynamicRouteServerRouteReportJobBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsDynamicRouteServerRouteReportJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfigBasic(dynamicRouteServerID),
+				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfigBasic(vpcname, subnetname, vniname, drsname),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsDynamicRouteServerRouteReportJobExists("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "dynamic_route_server_id", dynamicRouteServerID),
+					testAccCheckIBMIsDynamicRouteServerRouteReportJobExists(isDynamicRouteServerRouteReportJobResource, conf),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "dynamic_route_server_id"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "dynamic_route_server_route_report_job_id"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "name"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "created_at"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "href"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "format", "json"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "schema_version", "v1"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "resource_type", "dynamic_route_server_route_report_job"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "status", "succeeded"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "status_reasons.#"),
 				),
 			},
 		},
@@ -42,11 +58,13 @@ func TestAccIBMIsDynamicRouteServerRouteReportJobBasic(t *testing.T) {
 
 func TestAccIBMIsDynamicRouteServerRouteReportJobAllArgs(t *testing.T) {
 	var conf vpcv1.DynamicRouteServerRouteReportJob
-	dynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
-	format := "json"
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	formatUpdate := "json"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	suffix := acctest.RandIntRange(10, 100)
+	vpcname := fmt.Sprintf("tf-vpc-drs-rrj-%d", suffix)
+	subnetname := fmt.Sprintf("tf-subnet-drs-rrj-%d", suffix)
+	vniname := fmt.Sprintf("tf-vni-drs-rrj-%d", suffix)
+	drsname := fmt.Sprintf("tf-drs-rrj-%d", suffix)
+	name := fmt.Sprintf("tf-rrj-%d", suffix)
+	nameUpdate := fmt.Sprintf("tf-rrj-upd-%d", suffix)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -54,24 +72,28 @@ func TestAccIBMIsDynamicRouteServerRouteReportJobAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsDynamicRouteServerRouteReportJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(dynamicRouteServerID, format, name),
+				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(vpcname, subnetname, vniname, drsname, name, "v1"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsDynamicRouteServerRouteReportJobExists("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "format", format),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "name", name),
+					testAccCheckIBMIsDynamicRouteServerRouteReportJobExists(isDynamicRouteServerRouteReportJobResource, conf),
+					resource.TestCheckResourceAttrPair(isDynamicRouteServerRouteReportJobResource, "dynamic_route_server_id", "ibm_is_dynamic_route_server.is_dynamic_route_server_instance", "id"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "name", name),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "schema_version", "v1"),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "status", "succeeded"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "completed_at"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "started_at"),
+					resource.TestCheckResourceAttrSet(isDynamicRouteServerRouteReportJobResource, "content"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(dynamicRouteServerID, formatUpdate, nameUpdate),
+				// name is the only patchable field
+				Config: testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(vpcname, subnetname, vniname, drsname, nameUpdate, "v1"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "format", formatUpdate),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance", "name", nameUpdate),
+					testAccCheckIBMIsDynamicRouteServerRouteReportJobExists(isDynamicRouteServerRouteReportJobResource, conf),
+					resource.TestCheckResourceAttr(isDynamicRouteServerRouteReportJobResource, "name", nameUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance",
+				ResourceName:      isDynamicRouteServerRouteReportJobResource,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -79,31 +101,53 @@ func TestAccIBMIsDynamicRouteServerRouteReportJobAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsDynamicRouteServerRouteReportJobConfigBasic(dynamicRouteServerID string) string {
+func testAccCheckIBMIsDynamicRouteServerRouteReportJobDependencies(vpcname, subnetname, vniname, drsname string) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_dynamic_route_server_route_report_job" "is_dynamic_route_server_route_report_job_instance" {
-			dynamic_route_server_id = "%s"
-			storage_bucket {
-				crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue"
-				name = "bucket-27200-lwx4cfvcue"
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name            = "%s"
+			vpc             = ibm_is_vpc.testacc_vpc.id
+			zone            = "%s"
+			ipv4_cidr_block = "%s"
+		}
+
+		resource "ibm_is_virtual_network_interface" "testacc_vni" {
+			name   = "%s"
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+
+		resource "ibm_is_dynamic_route_server" "is_dynamic_route_server_instance" {
+			name      = "%s"
+			local_asn = 64512
+			members {
+				name = "%s-member"
+				virtual_network_interfaces {
+					id = ibm_is_virtual_network_interface.testacc_vni.id
+				}
 			}
 		}
-	`, dynamicRouteServerID)
+	`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, vniname, drsname, drsname)
 }
 
-func testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(dynamicRouteServerID string, format string, name string) string {
-	return fmt.Sprintf(`
-
+func testAccCheckIBMIsDynamicRouteServerRouteReportJobConfigBasic(vpcname, subnetname, vniname, drsname string) string {
+	return testAccCheckIBMIsDynamicRouteServerRouteReportJobDependencies(vpcname, subnetname, vniname, drsname) + `
 		resource "ibm_is_dynamic_route_server_route_report_job" "is_dynamic_route_server_route_report_job_instance" {
-			dynamic_route_server_id = "%s"
-			format = "%s"
-			name = "%s"
-			storage_bucket {
-				crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue"
-				name = "bucket-27200-lwx4cfvcue"
-			}
+			dynamic_route_server_id = ibm_is_dynamic_route_server.is_dynamic_route_server_instance.id
 		}
-	`, dynamicRouteServerID, format, name)
+	`
+}
+
+func testAccCheckIBMIsDynamicRouteServerRouteReportJobConfig(vpcname, subnetname, vniname, drsname, name, schemaVersion string) string {
+	return testAccCheckIBMIsDynamicRouteServerRouteReportJobDependencies(vpcname, subnetname, vniname, drsname) + fmt.Sprintf(`
+		resource "ibm_is_dynamic_route_server_route_report_job" "is_dynamic_route_server_route_report_job_instance" {
+			dynamic_route_server_id = ibm_is_dynamic_route_server.is_dynamic_route_server_instance.id
+			name                    = "%s"
+			schema_version          = "%s"
+		}
+	`, name, schemaVersion)
 }
 
 func testAccCheckIBMIsDynamicRouteServerRouteReportJobExists(n string, obj vpcv1.DynamicRouteServerRouteReportJob) resource.TestCheckFunc {
@@ -172,152 +216,80 @@ func testAccCheckIBMIsDynamicRouteServerRouteReportJobDestroy(s *terraform.State
 	return nil
 }
 
-func TestResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerCloudObjectStorageBucketReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["crn"] = "crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["name"] = "bucket-27200-lwx4cfvcue"
-		model["resource_type"] = "cos_bucket"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.DynamicRouteServerCloudObjectStorageBucketReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue")
-	model.Deleted = deletedModel
-	model.Name = core.StringPtr("bucket-27200-lwx4cfvcue")
-	model.ResourceType = core.StringPtr("cos_bucket")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerCloudObjectStorageBucketReferenceToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+func TestResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportStatusReasonToMap(t *testing.T) {
+	t.Run("nil model", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportStatusReasonToMap(nil)
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{}, result)
+	})
+	t.Run("empty model", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportStatusReasonToMap(&vpcv1.DynamicRouteServerRouteReportStatusReason{})
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{}, result)
+	})
+	t.Run("without more_info", func(t *testing.T) {
+		model := &vpcv1.DynamicRouteServerRouteReportStatusReason{
+			Code:    core.StringPtr("degraded"),
+			Message: core.StringPtr("Route information unavailable for one or more members"),
+		}
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportStatusReasonToMap(model)
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{
+			"code":    "degraded",
+			"message": "Route information unavailable for one or more members",
+		}, result)
+	})
+	t.Run("with more_info", func(t *testing.T) {
+		model := &vpcv1.DynamicRouteServerRouteReportStatusReason{
+			Code:     core.StringPtr("cannot_generate_route_report"),
+			Message:  core.StringPtr("The route report could not be generated"),
+			MoreInfo: core.StringPtr("https://cloud.ibm.com/docs/vpc"),
+		}
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportStatusReasonToMap(model)
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{
+			"code":      "cannot_generate_route_report",
+			"message":   "The route report could not be generated",
+			"more_info": "https://cloud.ibm.com/docs/vpc",
+		}, result)
+	})
 }
 
-func TestResourceIBMIsDynamicRouteServerRouteReportJobDeletedToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.Deleted)
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDeletedToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportSchemaToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["href"] = "https://github.ibm.com/cloud-content/downloads/blob/publish/drs/schema/v1/drs-route-report.json"
-		model["type"] = "json"
-		model["version"] = "v1"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.DynamicRouteServerRouteReportSchema)
-	model.Href = core.StringPtr("https://github.ibm.com/cloud-content/downloads/blob/publish/drs/schema/v1/drs-route-report.json")
-	model.Type = core.StringPtr("json")
-	model.Version = core.StringPtr("v1")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportSchemaToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportJobStatusReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "cannot_access_storage_bucket"
-		model["message"] = "A failure occurred"
-		model["more_info"] = "https://cloud.ibm.com/docs/vpc?topic=vpc-object-storage-prereq"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.DynamicRouteServerRouteReportJobStatusReason)
-	model.Code = core.StringPtr("cannot_access_storage_bucket")
-	model.Message = core.StringPtr("A failure occurred")
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/docs/vpc?topic=vpc-object-storage-prereq")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobDynamicRouteServerRouteReportJobStatusReasonToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobCloudObjectStorageObjectReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["name"] = "my-object"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.CloudObjectStorageObjectReference)
-	model.Name = core.StringPtr("my-object")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobCloudObjectStorageObjectReferenceToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentityIntf) {
-		model := new(vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentity)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue")
-		model.Name = core.StringPtr("bucket-27200-lwx4cfvcue")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue"
-	model["name"] = "bucket-27200-lwx4cfvcue"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentity(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByCRN(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByCRN) {
-		model := new(vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByCRN)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:cloud-object-storage:global:a/aa2432b1fa4d4ace891e9b80fc104e34:1a0ec336-f391-4091-a6fb-5e084a4c56f4:bucket:bucket-27200-lwx4cfvcue"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByCRN(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName) {
-		model := new(vpcv1.DynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName)
-		model.Name = core.StringPtr("bucket-27200-lwx4cfvcue")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["name"] = "bucket-27200-lwx4cfvcue"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobMapToDynamicRouteServerCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName(model)
-	assert.Nil(t, err)
-	checkResult(result)
+func TestResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(t *testing.T) {
+	t.Run("nil content", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(nil)
+		assert.Nil(t, err)
+		assert.Equal(t, "", result)
+	})
+	t.Run("nil typed pointer", func(t *testing.T) {
+		var content *vpcv1.DynamicRouteServerRouteReportContent
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(content)
+		assert.Nil(t, err)
+		assert.Equal(t, "", result)
+	})
+	t.Run("empty content", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(&vpcv1.DynamicRouteServerRouteReportContent{})
+		assert.Nil(t, err)
+		assert.Equal(t, `{"schema_version":null}`, result)
+	})
+	t.Run("content with schema version and members", func(t *testing.T) {
+		content := &vpcv1.DynamicRouteServerRouteReportContent{
+			SchemaVersion: core.StringPtr("v1"),
+			Members:       []vpcv1.DynamicRouteServerRouteReportContentMember{},
+		}
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(content)
+		assert.Nil(t, err)
+		assert.True(t, strings.Contains(result, `"schema_version":"v1"`))
+	})
+	t.Run("v1 content subtype with vpc", func(t *testing.T) {
+		content := &vpcv1.DynamicRouteServerRouteReportContentV1{
+			SchemaVersion: core.StringPtr("v1"),
+			VPC: &vpcv1.DynamicRouteServerRouteReportContentVPC{
+				Routes: []vpcv1.DynamicRouteServerRouteReportContentVPCRouteIntf{},
+			},
+		}
+		result, err := vpc.ResourceIBMIsDynamicRouteServerRouteReportJobContentToJSON(content)
+		assert.Nil(t, err)
+		assert.True(t, strings.HasPrefix(result, "{"))
+	})
 }

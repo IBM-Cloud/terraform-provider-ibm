@@ -20,11 +20,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const drsStaticRouteResourceName = "ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance"
+
 func TestAccIBMIsDynamicRouteServerStaticRouteBasic(t *testing.T) {
 	var conf vpcv1.DynamicRouteServerStaticRoute
-	dynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
-	destination := fmt.Sprintf("tf_destination_%d", acctest.RandIntRange(10, 100))
-	destinationUpdate := fmt.Sprintf("tf_destination_%d", acctest.RandIntRange(10, 100))
+	var firstID string
+	suffix := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -32,18 +33,31 @@ func TestAccIBMIsDynamicRouteServerStaticRouteBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsDynamicRouteServerStaticRouteDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(dynamicRouteServerID, destination),
+				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(suffix, "192.168.3.0/24"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsDynamicRouteServerStaticRouteExists("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "destination", destination),
+					testAccCheckIBMIsDynamicRouteServerStaticRouteExists(drsStaticRouteResourceName, conf),
+					testAccCheckIBMIsDynamicRouteServerPeerGroupPolicyRecordID(drsStaticRouteResourceName, &firstID),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "destination", "192.168.3.0/24"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "route_delete_delay", "0"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "next_hops.#", "1"),
+					resource.TestCheckResourceAttrPair(drsStaticRouteResourceName, "next_hops.0.id", "ibm_is_dynamic_route_server_peer_group.testacc_pg", "dynamic_route_server_peer_group_id"),
+					resource.TestCheckResourceAttrSet(drsStaticRouteResourceName, "next_hops.0.name"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "routing_tables.#", "1"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "routing_tables.0.advertise", "false"),
+					resource.TestCheckResourceAttrPair(drsStaticRouteResourceName, "routing_tables.0.vpc_routing_table.0.id", "ibm_is_vpc_routing_table.testacc_rt", "routing_table"),
+					resource.TestCheckResourceAttrSet(drsStaticRouteResourceName, "name"),
+					resource.TestCheckResourceAttrSet(drsStaticRouteResourceName, "href"),
+					resource.TestCheckResourceAttrSet(drsStaticRouteResourceName, "dynamic_route_server_static_route_id"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(dynamicRouteServerID, destinationUpdate),
+				// destination is ForceNew: changing it must re-create the static route.
+				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(suffix, "192.168.4.0/24"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "destination", destinationUpdate),
+					testAccCheckIBMIsDynamicRouteServerStaticRouteExists(drsStaticRouteResourceName, conf),
+					testAccCheckIBMIsDynamicRouteServerPeerGroupPolicyIDChanged(drsStaticRouteResourceName, &firstID),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "destination", "192.168.4.0/24"),
 				),
 			},
 		},
@@ -52,13 +66,9 @@ func TestAccIBMIsDynamicRouteServerStaticRouteBasic(t *testing.T) {
 
 func TestAccIBMIsDynamicRouteServerStaticRouteAllArgs(t *testing.T) {
 	var conf vpcv1.DynamicRouteServerStaticRoute
-	dynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
-	destination := fmt.Sprintf("tf_destination_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	routeDeleteDelay := fmt.Sprintf("%d", acctest.RandIntRange(0, 60))
-	destinationUpdate := fmt.Sprintf("tf_destination_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	routeDeleteDelayUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 60))
+	suffix := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-drs-static-route-%s", suffix)
+	nameUpdate := fmt.Sprintf("tf-drs-static-route-upd-%s", suffix)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -66,100 +76,75 @@ func TestAccIBMIsDynamicRouteServerStaticRouteAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsDynamicRouteServerStaticRouteDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(dynamicRouteServerID, destination, name, routeDeleteDelay),
+				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(suffix, name, 0, true, "testacc_pg"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsDynamicRouteServerStaticRouteExists("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "destination", destination),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "route_delete_delay", routeDeleteDelay),
+					testAccCheckIBMIsDynamicRouteServerStaticRouteExists(drsStaticRouteResourceName, conf),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "name", name),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "route_delete_delay", "0"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "routing_tables.0.advertise", "true"),
+					resource.TestCheckResourceAttrPair(drsStaticRouteResourceName, "next_hops.0.id", "ibm_is_dynamic_route_server_peer_group.testacc_pg", "dynamic_route_server_peer_group_id"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(dynamicRouteServerID, destinationUpdate, nameUpdate, routeDeleteDelayUpdate),
+				// Update every patchable field: name, route_delete_delay, next_hops and routing_tables.
+				Config: testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(suffix, nameUpdate, 45, false, "testacc_pg2"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "dynamic_route_server_id", dynamicRouteServerID),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "destination", destinationUpdate),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance", "route_delete_delay", routeDeleteDelayUpdate),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "name", nameUpdate),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "route_delete_delay", "45"),
+					resource.TestCheckResourceAttr(drsStaticRouteResourceName, "routing_tables.0.advertise", "false"),
+					resource.TestCheckResourceAttrPair(drsStaticRouteResourceName, "next_hops.0.id", "ibm_is_dynamic_route_server_peer_group.testacc_pg2", "dynamic_route_server_peer_group_id"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_is_dynamic_route_server_static_route.is_dynamic_route_server_static_route_instance",
+				ResourceName:      drsStaticRouteResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// etag is a response header and is not part of the imported state.
+				ImportStateVerifyIgnore: []string{"etag"},
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(dynamicRouteServerID string, destination string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsDynamicRouteServerStaticRouteConfigBasic(suffix string, destination string) string {
+	return testAccCheckIBMIsDynamicRouteServerPolicyDependencies(suffix) + fmt.Sprintf(`
 		resource "ibm_is_dynamic_route_server_static_route" "is_dynamic_route_server_static_route_instance" {
-			dynamic_route_server_id = "%s"
-			destination = "%s"
+			dynamic_route_server_id = ibm_is_dynamic_route_server.testacc_drs.id
+			destination             = "%s"
 			next_hops {
-				deleted {
-					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-				}
-				href = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-				id = "r006-8228af60-189d-11ed-861d-0242ac120004"
-				name = "my-dynamic-route-server-peer-group"
-				resource_type = "dynamic_route_server_peer_group"
+				id = ibm_is_dynamic_route_server_peer_group.testacc_pg.dynamic_route_server_peer_group_id
 			}
 			routing_tables {
-				advertise = true
+				advertise = false
 				vpc_routing_table {
-					crn = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					id = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					name = "my-routing-table-1"
-					resource_type = "routing_table"
+					id = ibm_is_vpc_routing_table.testacc_rt.routing_table
 				}
 			}
 		}
-	`, dynamicRouteServerID, destination)
+	`, destination)
 }
 
-func testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(dynamicRouteServerID string, destination string, name string, routeDeleteDelay string) string {
-	return fmt.Sprintf(`
-
+func testAccCheckIBMIsDynamicRouteServerStaticRouteConfig(suffix string, name string, routeDeleteDelay int, advertise bool, nextHopPeerGroup string) string {
+	return testAccCheckIBMIsDynamicRouteServerPolicyDependencies(suffix) + fmt.Sprintf(`
 		resource "ibm_is_dynamic_route_server_static_route" "is_dynamic_route_server_static_route_instance" {
-			dynamic_route_server_id = "%s"
-			destination = "%s"
-			name = "%s"
+			dynamic_route_server_id = ibm_is_dynamic_route_server.testacc_drs.id
+			destination             = "192.168.3.0/24"
+			name                    = "%s"
+			route_delete_delay      = %d
 			next_hops {
-				deleted {
-					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-				}
-				href = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-				id = "r006-8228af60-189d-11ed-861d-0242ac120004"
-				name = "my-dynamic-route-server-peer-group"
-				resource_type = "dynamic_route_server_peer_group"
+				id = ibm_is_dynamic_route_server_peer_group.%s.dynamic_route_server_peer_group_id
 			}
-			route_delete_delay = %s
 			routing_tables {
-				advertise = true
+				advertise = %t
 				vpc_routing_table {
-					crn = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					deleted {
-						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-					}
-					href = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					id = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-					name = "my-routing-table-1"
-					resource_type = "routing_table"
+					id = ibm_is_vpc_routing_table.testacc_rt.routing_table
 				}
 			}
 		}
-	`, dynamicRouteServerID, destination, name, routeDeleteDelay)
+	`, name, routeDeleteDelay, nextHopPeerGroup, advertise)
 }
 
 func testAccCheckIBMIsDynamicRouteServerStaticRouteExists(n string, obj vpcv1.DynamicRouteServerStaticRoute) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -171,22 +156,23 @@ func testAccCheckIBMIsDynamicRouteServerStaticRouteExists(n string, obj vpcv1.Dy
 			return err
 		}
 
-		getDynamicRouteServerStaticRouteOptions := &vpcv1.GetDynamicRouteServerStaticRouteOptions{}
-
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
+		if len(parts) != 2 {
+			return fmt.Errorf("unexpected ID format %q", rs.Primary.ID)
+		}
 
-		getDynamicRouteServerStaticRouteOptions.SetDynamicRouteServerID(parts[0])
-		getDynamicRouteServerStaticRouteOptions.SetID(parts[1])
+		getOptions := &vpcv1.GetDynamicRouteServerStaticRouteOptions{}
+		getOptions.SetDynamicRouteServerID(parts[0])
+		getOptions.SetID(parts[1])
 
-		dynamicRouteServerStaticRoute, _, err := vpcClient.GetDynamicRouteServerStaticRoute(getDynamicRouteServerStaticRouteOptions)
+		staticRoute, _, err := vpcClient.GetDynamicRouteServerStaticRoute(getOptions)
 		if err != nil {
 			return err
 		}
-
-		obj = *dynamicRouteServerStaticRoute
+		obj = *staticRoute
 		return nil
 	}
 }
@@ -201,415 +187,321 @@ func testAccCheckIBMIsDynamicRouteServerStaticRouteDestroy(s *terraform.State) e
 			continue
 		}
 
-		getDynamicRouteServerStaticRouteOptions := &vpcv1.GetDynamicRouteServerStaticRouteOptions{}
-
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
+		if len(parts) != 2 {
+			return fmt.Errorf("unexpected ID format %q", rs.Primary.ID)
+		}
 
-		getDynamicRouteServerStaticRouteOptions.SetDynamicRouteServerID(parts[0])
-		getDynamicRouteServerStaticRouteOptions.SetID(parts[1])
+		getOptions := &vpcv1.GetDynamicRouteServerStaticRouteOptions{}
+		getOptions.SetDynamicRouteServerID(parts[0])
+		getOptions.SetID(parts[1])
 
-		// Try to find the key
-		_, response, err := vpcClient.GetDynamicRouteServerStaticRoute(getDynamicRouteServerStaticRouteOptions)
-
+		_, response, err := vpcClient.GetDynamicRouteServerStaticRoute(getOptions)
 		if err == nil {
-			return fmt.Errorf("DynamicRouteServerStaticRoute still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("ibm_is_dynamic_route_server_static_route still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for DynamicRouteServerStaticRoute (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for ibm_is_dynamic_route_server_static_route (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
 }
 
-func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+// ---- unit tests ----
 
-		model := make(map[string]interface{})
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-		model["id"] = "r006-8228af60-189d-11ed-861d-0242ac120004"
-		model["name"] = "my-dynamic-route-server-peer-group"
-		model["resource_type"] = "dynamic_route_server_peer_group"
-
-		assert.Equal(t, result, model)
+func drsStaticRouteTestRoutingTableReference() *vpcv1.RoutingTableReference {
+	return &vpcv1.RoutingTableReference{
+		CRN:          core.StringPtr("crn:v1:bluemix:public:is:us-south:a/123456::vpc-routing-table:r006-4727/r006-6885"),
+		Href:         core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727/routing_tables/r006-6885"),
+		ID:           core.StringPtr("r006-6885"),
+		Name:         core.StringPtr("my-routing-table-1"),
+		ResourceType: core.StringPtr("routing_table"),
 	}
+}
 
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteToMap(t *testing.T) {
+	t.Run("nil", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteToMap(nil)
+		assert.NotNil(t, err)
+	})
+	t.Run("minimal", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteToMap(&vpcv1.DynamicRouteServerStaticRoute{
+			ID:          core.StringPtr("sr1"),
+			Destination: core.StringPtr("192.168.3.0/24"),
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, "sr1", result["id"])
+		assert.Equal(t, "192.168.3.0/24", result["destination"])
+		assert.Equal(t, 0, result["route_delete_delay"])
+		assert.Equal(t, []map[string]interface{}{}, result["added_routes"])
+		assert.Equal(t, []map[string]interface{}{}, result["next_hops"])
+		assert.Equal(t, []map[string]interface{}{}, result["routing_tables"])
+		assert.Equal(t, []map[string]interface{}{}, result["lifecycle_reasons"])
+		_, hasState := result["lifecycle_state"]
+		assert.False(t, hasState)
+	})
+	t.Run("full", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteToMap(&vpcv1.DynamicRouteServerStaticRoute{
+			ID:               core.StringPtr("sr1"),
+			Href:             core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006/static_routes/sr1"),
+			Name:             core.StringPtr("my-static-route"),
+			Destination:      core.StringPtr("192.168.3.0/24"),
+			LifecycleState:   core.StringPtr("stable"),
+			LifecycleReasons: []vpcv1.LifecycleReason{{Code: core.StringPtr("internal_error"), Message: core.StringPtr("internal error")}},
+			ResourceType:     core.StringPtr("dynamic_route_server_static_route"),
+			RouteDeleteDelay: core.Int64Ptr(0),
+			AddedRoutes: []vpcv1.DynamicRouteServerStaticRouteAddedRoute{
+				{VPCRoutingTableRoute: &vpcv1.RouteReference{ID: core.StringPtr("route1"), Name: core.StringPtr("route1")}},
+				{},
+			},
+			NextHops: []vpcv1.DynamicRouteServerStaticRouteNextHopIntf{
+				&vpcv1.DynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReference{ID: core.StringPtr("pg1")},
+				&vpcv1.DynamicRouteServerStaticRouteNextHop{ID: core.StringPtr("pg2")},
+			},
+			RoutingTables: []vpcv1.DynamicRouteServerStaticRouteRoutingTable{
+				{Advertise: core.BoolPtr(true), VPCRoutingTable: drsStaticRouteTestRoutingTableReference()},
+				{Advertise: core.BoolPtr(false), VPCRoutingTable: drsStaticRouteTestRoutingTableReference()},
+			},
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, 0, result["route_delete_delay"])
+		assert.Equal(t, "stable", result["lifecycle_state"])
+		assert.Len(t, result["lifecycle_reasons"], 1)
+		addedRoutes := result["added_routes"].([]map[string]interface{})
+		assert.Len(t, addedRoutes, 2)
+		assert.Equal(t, "route1", addedRoutes[0]["vpc_routing_table_route"].([]map[string]interface{})[0]["id"])
+		assert.Equal(t, map[string]interface{}{}, addedRoutes[1])
+		nextHops := result["next_hops"].([]map[string]interface{})
+		assert.Equal(t, "pg1", nextHops[0]["id"])
+		assert.Equal(t, "pg2", nextHops[1]["id"])
+		routingTables := result["routing_tables"].([]map[string]interface{})
+		assert.Equal(t, true, routingTables[0]["advertise"])
+		assert.Equal(t, false, routingTables[1]["advertise"])
+	})
+	t.Run("unrecognized next hop subtype propagates error", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteToMap(&vpcv1.DynamicRouteServerStaticRoute{
+			NextHops: []vpcv1.DynamicRouteServerStaticRouteNextHopIntf{nil},
+		})
+		assert.NotNil(t, err)
+	})
+}
 
-	model := new(vpcv1.DynamicRouteServerStaticRouteNextHop)
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002")
-	model.ID = core.StringPtr("r006-8228af60-189d-11ed-861d-0242ac120004")
-	model.Name = core.StringPtr("my-dynamic-route-server-peer-group")
-	model.ResourceType = core.StringPtr("dynamic_route_server_peer_group")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(t *testing.T) {
+	t.Run("peer group reference subtype", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(&vpcv1.DynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReference{
+			Href:         core.StringPtr("href"),
+			ID:           core.StringPtr("pg1"),
+			Name:         core.StringPtr("name"),
+			ResourceType: core.StringPtr("dynamic_route_server_peer_group"),
+			Deleted:      &vpcv1.Deleted{MoreInfo: core.StringPtr("info")},
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{"href": "href", "id": "pg1", "name": "name", "resource_type": "dynamic_route_server_peer_group", "deleted": []map[string]interface{}{{"more_info": "info"}}}, result)
+	})
+	t.Run("base struct", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(&vpcv1.DynamicRouteServerStaticRouteNextHop{ID: core.StringPtr("pg1")})
+		assert.Nil(t, err)
+		assert.Equal(t, map[string]interface{}{"id": "pg1"}, result)
+	})
+	t.Run("nil pointers and unrecognized", func(t *testing.T) {
+		var reference *vpcv1.DynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReference
+		_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(reference)
+		assert.NotNil(t, err)
+		var base *vpcv1.DynamicRouteServerStaticRouteNextHop
+		_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(base)
+		assert.NotNil(t, err)
+		_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopToMap(nil)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteDeletedToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.Deleted)
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDeletedToMap(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDeletedToMap(nil)
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDeletedToMap(&vpcv1.Deleted{MoreInfo: core.StringPtr("info")})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"more_info": "info"}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-		model["id"] = "r006-8228af60-189d-11ed-861d-0242ac120004"
-		model["name"] = "my-dynamic-route-server-peer-group"
-		model["resource_type"] = "dynamic_route_server_peer_group"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.DynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReference)
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002")
-	model.ID = core.StringPtr("r006-8228af60-189d-11ed-861d-0242ac120004")
-	model.Name = core.StringPtr("my-dynamic-route-server-peer-group")
-	model.ResourceType = core.StringPtr("dynamic_route_server_peer_group")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReferenceToMap(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReferenceToMap(nil)
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReferenceToMap(&vpcv1.DynamicRouteServerStaticRouteNextHopDynamicRouteServerPeerGroupReference{})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteRoutingTableToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteRoutingTableToMap(nil)
+	assert.NotNil(t, err)
 
-		routingTableReferenceModel := make(map[string]interface{})
-		routingTableReferenceModel["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		routingTableReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
-		routingTableReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		routingTableReferenceModel["id"] = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		routingTableReferenceModel["name"] = "my-routing-table-1"
-		routingTableReferenceModel["resource_type"] = "routing_table"
-
-		model := make(map[string]interface{})
-		model["advertise"] = true
-		model["vpc_routing_table"] = []map[string]interface{}{routingTableReferenceModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	routingTableReferenceModel := new(vpcv1.RoutingTableReference)
-	routingTableReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	routingTableReferenceModel.Deleted = deletedModel
-	routingTableReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	routingTableReferenceModel.ID = core.StringPtr("r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	routingTableReferenceModel.Name = core.StringPtr("my-routing-table-1")
-	routingTableReferenceModel.ResourceType = core.StringPtr("routing_table")
-
-	model := new(vpcv1.DynamicRouteServerStaticRouteRoutingTable)
-	model.Advertise = core.BoolPtr(true)
-	model.VPCRoutingTable = routingTableReferenceModel
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteRoutingTableToMap(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteRoutingTableToMap(&vpcv1.DynamicRouteServerStaticRouteRoutingTable{})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"advertise": false}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteRoutingTableToMap(&vpcv1.DynamicRouteServerStaticRouteRoutingTable{Advertise: core.BoolPtr(true), VPCRoutingTable: drsStaticRouteTestRoutingTableReference()})
+	assert.Nil(t, err)
+	assert.Equal(t, true, result["advertise"])
+	assert.Equal(t, "r006-6885", result["vpc_routing_table"].([]map[string]interface{})[0]["id"])
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteRoutingTableReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		model["id"] = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-		model["name"] = "my-routing-table-1"
-		model["resource_type"] = "routing_table"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.RoutingTableReference)
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	model.ID = core.StringPtr("r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-	model.Name = core.StringPtr("my-routing-table-1")
-	model.ResourceType = core.StringPtr("routing_table")
-
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteRoutingTableReferenceToMap(nil)
+	assert.NotNil(t, err)
+	model := drsStaticRouteTestRoutingTableReference()
+	model.Deleted = &vpcv1.Deleted{MoreInfo: core.StringPtr("info")}
 	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteRoutingTableReferenceToMap(model)
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "my-routing-table-1", result["name"])
+	assert.Equal(t, "routing_table", result["resource_type"])
+	assert.Equal(t, []map[string]interface{}{{"more_info": "info"}}, result["deleted"])
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteAddedRouteToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteAddedRouteToMap(nil)
+	assert.NotNil(t, err)
 
-		routeReferenceModel := make(map[string]interface{})
-		routeReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
-		routeReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840/routes/r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1"
-		routeReferenceModel["id"] = "r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1"
-		routeReferenceModel["name"] = "my-vpc-routing-table-route"
-
-		model := make(map[string]interface{})
-		model["vpc_routing_table_route"] = []map[string]interface{}{routeReferenceModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	routeReferenceModel := new(vpcv1.RouteReference)
-	routeReferenceModel.Deleted = deletedModel
-	routeReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840/routes/r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1")
-	routeReferenceModel.ID = core.StringPtr("r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1")
-	routeReferenceModel.Name = core.StringPtr("my-vpc-routing-table-route")
-
-	model := new(vpcv1.DynamicRouteServerStaticRouteAddedRoute)
-	model.VPCRoutingTableRoute = routeReferenceModel
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteAddedRouteToMap(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteAddedRouteToMap(&vpcv1.DynamicRouteServerStaticRouteAddedRoute{})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteDynamicRouteServerStaticRouteAddedRouteToMap(&vpcv1.DynamicRouteServerStaticRouteAddedRoute{
+		VPCRoutingTableRoute: &vpcv1.RouteReference{Href: core.StringPtr("href"), ID: core.StringPtr("route1"), Name: core.StringPtr("route1"), Deleted: &vpcv1.Deleted{MoreInfo: core.StringPtr("info")}},
+	})
+	assert.Nil(t, err)
+	route := result["vpc_routing_table_route"].([]map[string]interface{})[0]
+	assert.Equal(t, "route1", route["id"])
+	assert.Equal(t, []map[string]interface{}{{"more_info": "info"}}, route["deleted"])
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteRouteReferenceToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		model := make(map[string]interface{})
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840/routes/r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1"
-		model["id"] = "r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1"
-		model["name"] = "my-vpc-routing-table-route"
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	model := new(vpcv1.RouteReference)
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840/routes/r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1")
-	model.ID = core.StringPtr("r006-67b7b783-9a0f-41c1-a7f7-eccff87fb8f1")
-	model.Name = core.StringPtr("my-vpc-routing-table-route")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteRouteReferenceToMap(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteRouteReferenceToMap(nil)
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteRouteReferenceToMap(&vpcv1.RouteReference{ID: core.StringPtr("route1")})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"id": "route1"}, result)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteLifecycleReasonToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["code"] = "resource_suspended_by_provider"
-		model["message"] = "The resource has been suspended. Contact IBM support with the CRN for next steps."
-		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#resource-suspension"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(vpcv1.LifecycleReason)
-	model.Code = core.StringPtr("resource_suspended_by_provider")
-	model.Message = core.StringPtr("The resource has been suspended. Contact IBM support with the CRN for next steps.")
-	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#resource-suspension")
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteLifecycleReasonToMap(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteLifecycleReasonToMap(nil)
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteLifecycleReasonToMap(&vpcv1.LifecycleReason{Code: core.StringPtr("internal_error"), Message: core.StringPtr("msg")})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, map[string]interface{}{"code": "internal_error", "message": "msg"}, result)
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteLifecycleReasonToMap(&vpcv1.LifecycleReason{Code: core.StringPtr("internal_error"), Message: core.StringPtr("msg"), MoreInfo: core.StringPtr("info")})
+	assert.Nil(t, err)
+	assert.Equal(t, "info", result["more_info"])
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(t *testing.T) {
-	checkResult := func(result vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeIntf) {
-		model := new(vpcv1.DynamicRouteServerStaticRouteNextHopPrototype)
-		model.ID = core.StringPtr("r006-8228af60-189d-11ed-861d-0242ac120002")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-8228af60-189d-11ed-861d-0242ac120002"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(map[string]interface{}{"id": "pg1"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID{ID: core.StringPtr("pg1")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(map[string]interface{}{"id": "", "href": "https://pg"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref{Href: core.StringPtr("https://pg")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(map[string]interface{}{"name": "x"})
+	assert.NotNil(t, err)
+	_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototype(nil)
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityIntf) {
-		model := new(vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentity)
-		model.ID = core.StringPtr("r006-8228af60-189d-11ed-861d-0242ac120002")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-8228af60-189d-11ed-861d-0242ac120002"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentity(map[string]interface{}{"id": "pg1", "href": "https://pg"})
 	assert.Nil(t, err)
-	checkResult(result)
+	_, isByID := result.(*vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID)
+	assert.True(t, isByID)
+	_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentity(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID) {
-		model := new(vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID)
-		model.ID = core.StringPtr("r006-8228af60-189d-11ed-861d-0242ac120002")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-8228af60-189d-11ed-861d-0242ac120002"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID(map[string]interface{}{})
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByID(map[string]interface{}{"id": "pg1"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "pg1", *result.ID)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref) {
-		model := new(vpcv1.DynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/dynamic_route_servers/r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5/peer_groups/r006-8228af60-189d-11ed-861d-0242ac120002"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref(map[string]interface{}{"href": ""})
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteNextHopPrototypeDynamicRouteServerPeerGroupIdentityDynamicRouteServerPeerGroupIdentityByHref(map[string]interface{}{"href": "https://pg"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "https://pg", *result.Href)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(t *testing.T) {
-	checkResult := func(result *vpcv1.DynamicRouteServerStaticRouteRoutingTablePrototype) {
-		routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByID)
-		routingTableIdentityModel.ID = core.StringPtr("r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-
-		model := new(vpcv1.DynamicRouteServerStaticRouteRoutingTablePrototype)
-		model.Advertise = core.BoolPtr(false)
-		model.VPCRoutingTable = routingTableIdentityModel
-
-		assert.Equal(t, result, model)
-	}
-
-	routingTableIdentityModel := make(map[string]interface{})
-	routingTableIdentityModel["id"] = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-
-	model := make(map[string]interface{})
-	model["advertise"] = false
-	model["vpc_routing_table"] = []interface{}{routingTableIdentityModel}
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(model)
-	assert.Nil(t, err)
-	checkResult(result)
+	t.Run("advertise false with id", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(map[string]interface{}{
+			"advertise":         false,
+			"vpc_routing_table": []interface{}{map[string]interface{}{"id": "rt1"}},
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, false, *result.Advertise)
+		assert.Equal(t, &vpcv1.RoutingTableIdentityByID{ID: core.StringPtr("rt1")}, result.VPCRoutingTable)
+	})
+	t.Run("advertise true with href", func(t *testing.T) {
+		result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(map[string]interface{}{
+			"advertise":         true,
+			"vpc_routing_table": []interface{}{map[string]interface{}{"href": "https://rt"}},
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, true, *result.Advertise)
+		assert.Equal(t, &vpcv1.RoutingTableIdentityByHref{Href: core.StringPtr("https://rt")}, result.VPCRoutingTable)
+	})
+	t.Run("missing or empty vpc_routing_table", func(t *testing.T) {
+		_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(map[string]interface{}{"advertise": true})
+		assert.NotNil(t, err)
+		_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(map[string]interface{}{"advertise": true, "vpc_routing_table": []interface{}{}})
+		assert.NotNil(t, err)
+		_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToDynamicRouteServerStaticRouteRoutingTablePrototype(map[string]interface{}{"advertise": true, "vpc_routing_table": []interface{}{map[string]interface{}{}}})
+		assert.NotNil(t, err)
+	})
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(t *testing.T) {
-	checkResult := func(result vpcv1.RoutingTableIdentityIntf) {
-		model := new(vpcv1.RoutingTableIdentity)
-		model.ID = core.StringPtr("r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-	model["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(model)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(map[string]interface{}{"id": "rt1"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, &vpcv1.RoutingTableIdentityByID{ID: core.StringPtr("rt1")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(map[string]interface{}{"crn": "crn:rt"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.RoutingTableIdentityByCRN{CRN: core.StringPtr("crn:rt")}, result)
+
+	result, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(map[string]interface{}{"href": "https://rt"})
+	assert.Nil(t, err)
+	assert.Equal(t, &vpcv1.RoutingTableIdentityByHref{Href: core.StringPtr("https://rt")}, result)
+
+	_, err = vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentity(map[string]interface{}{})
+	assert.NotNil(t, err)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByID(t *testing.T) {
-	checkResult := func(result *vpcv1.RoutingTableIdentityByID) {
-		model := new(vpcv1.RoutingTableIdentityByID)
-		model.ID = core.StringPtr("r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByID(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByID(map[string]interface{}{})
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByID(map[string]interface{}{"id": "rt1"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "rt1", *result.ID)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByCRN(t *testing.T) {
-	checkResult := func(result *vpcv1.RoutingTableIdentityByCRN) {
-		model := new(vpcv1.RoutingTableIdentityByCRN)
-		model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["crn"] = "crn:v1:bluemix:public:is:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34::vpc-routing-table:r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByCRN(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByCRN(map[string]interface{}{})
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByCRN(map[string]interface{}{"crn": "crn:rt"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "crn:rt", *result.CRN)
 }
 
 func TestResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByHref(t *testing.T) {
-	checkResult := func(result *vpcv1.RoutingTableIdentityByHref) {
-		model := new(vpcv1.RoutingTableIdentityByHref)
-		model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/vpcs/r006-4727d842-f94f-4a2d-824a-9bc9b02c523b/routing_tables/r006-6885e83f-03b2-4603-8a86-db2a0f55c840"
-
-	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByHref(model)
+	_, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByHref(map[string]interface{}{})
+	assert.NotNil(t, err)
+	result, err := vpc.ResourceIBMIsDynamicRouteServerStaticRouteMapToRoutingTableIdentityByHref(map[string]interface{}{"href": "https://rt"})
 	assert.Nil(t, err)
-	checkResult(result)
+	assert.Equal(t, "https://rt", *result.Href)
 }
