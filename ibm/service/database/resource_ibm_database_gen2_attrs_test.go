@@ -515,7 +515,7 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults shards to 1 when not explicitly set", func(t *testing.T) {
+	t.Run("omits shards from payload when not explicitly set (API defaults it)", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -533,8 +533,8 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if config["shards"] != 1 {
-			t.Fatalf("expected shards defaulted to 1, got %v", config["shards"])
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent from payload when not set (API defaults it), got %v", config["shards"])
 		}
 	})
 
