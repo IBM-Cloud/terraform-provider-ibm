@@ -80,6 +80,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Schema(ctx context.Context, re
 				Description: "If true, the action returns immediately after creating the reload request without waiting for completion. Default: false",
 			},
 		},
+		DeprecationMessage: "ibm_container_vpc_bare_metal_worker_reload is deprecated and will be removed in a future release. Use ibm_container_vpc_worker_reload instead.",
 	}
 }
 
@@ -218,36 +219,4 @@ func bareMetalWorkerReloadRefreshFunc(vpcWorkerClient containerv2.Workers, bareM
 
 		return worker, worker.LifeCycle.ActualState, nil
 	}
-}
-
-// Duration Validator
-var _ validator.String = durationValidator{}
-
-type durationValidator struct{}
-
-func (v durationValidator) Description(ctx context.Context) string {
-	return "string must be a valid duration format (e.g., '30m', '1h')"
-}
-
-func (v durationValidator) MarkdownDescription(ctx context.Context) string {
-	return "string must be a valid duration format (e.g., `30m`, `1h`)"
-}
-
-func (v durationValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
-	if req.ConfigValue.IsNull() {
-		return
-	}
-
-	val := req.ConfigValue.ValueString()
-	if _, err := time.ParseDuration(val); err != nil {
-		resp.Diagnostics.AddAttributeError(
-			req.Path,
-			"Invalid Timeout Format",
-			fmt.Sprintf("Failed to parse timeout '%s': %s. Expected format like '30m' or '1h'.", val, err.Error()),
-		)
-	}
-}
-
-func ValidDuration() validator.String {
-	return durationValidator{}
 }
