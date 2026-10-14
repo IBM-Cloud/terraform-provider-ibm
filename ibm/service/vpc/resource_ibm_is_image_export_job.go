@@ -446,41 +446,9 @@ func ResourceIBMIsImageExportMapToCloudObjectStorageBucketIdentityCloudObjectSto
 	return model, nil
 }
 
-func ResourceIBMIsImageExportMapToCloudObjectStorageBucketIdentityByCRN(modelMap map[string]interface{}) (*vpcv1.CloudObjectStorageBucketIdentityByCRN, error) {
-	model := &vpcv1.CloudObjectStorageBucketIdentityByCRN{}
-	model.CRN = core.StringPtr(modelMap["crn"].(string))
-	return model, nil
-}
-
-func ResourceIBMIsImageExportCloudObjectStorageBucketIdentityToMap(model vpcv1.CloudObjectStorageBucketIdentityIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*vpcv1.CloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName); ok {
-		return ResourceIBMIsImageExportCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByNameToMap(model.(*vpcv1.CloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName))
-	} else if _, ok := model.(*vpcv1.CloudObjectStorageBucketIdentityByCRN); ok {
-		return ResourceIBMIsImageExportCloudObjectStorageBucketIdentityByCRNToMap(model.(*vpcv1.CloudObjectStorageBucketIdentityByCRN))
-	} else if _, ok := model.(*vpcv1.CloudObjectStorageBucketIdentity); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*vpcv1.CloudObjectStorageBucketIdentity)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.CRN != nil {
-			modelMap["crn"] = model.CRN
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.CloudObjectStorageBucketIdentityIntf subtype encountered")
-	}
-}
-
 func ResourceIBMIsImageExportCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByNameToMap(model *vpcv1.CloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
-	return modelMap, nil
-}
-
-func ResourceIBMIsImageExportCloudObjectStorageBucketIdentityByCRNToMap(model *vpcv1.CloudObjectStorageBucketIdentityByCRN) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["crn"] = model.CRN
 	return modelMap, nil
 }
 
