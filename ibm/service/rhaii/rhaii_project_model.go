@@ -253,7 +253,7 @@ func rhaiiReadTags(ctx context.Context, meta conns.ClientSession, crn string) (t
 		return s
 	}
 
-	userTags, err := flex.GetTagsUsingCRN(meta, crn)
+	userTags, err := flex.GetGlobalTagsUsingCRN(meta, crn, "", rhaiiUserTagType)
 	if err != nil {
 		diags.AddWarning("Error reading the tags of the Red Hat AI Inference project", err.Error())
 	}
@@ -275,15 +275,14 @@ func rhaiiSetToStrings(ctx context.Context, s types.Set) ([]string, diag.Diagnos
 }
 
 // rhaiiUpdateTags attaches and detaches tags of a type ("user" or "access") so
-// that the CRN ends up with newTags. The flex helpers work on SDK sets, which
-// are only used here as containers for the difference of the two lists.
+// that the CRN ends up with newTags. It uses the Global Tagging attach and
+// detach calls only, as the VPC resources do. flex.UpdateTagsUsingCRN is not
+// used: after a detach it also deletes the tag from the account. The flex
+// helper works on SDK sets, which are only containers for the two lists here.
 func rhaiiUpdateTags(meta conns.ClientSession, crn, tagType string, oldTags, newTags []string) error {
 	oldSet := flex.NewStringSet(flex.ResourceIBMVPCHash, oldTags)
 	newSet := flex.NewStringSet(flex.ResourceIBMVPCHash, newTags)
-	if tagType == rhaiiAccessTagType {
-		return flex.UpdateGlobalTagsUsingCRN(oldSet, newSet, meta, crn, "", rhaiiAccessTagType)
-	}
-	return flex.UpdateTagsUsingCRN(oldSet, newSet, meta, crn)
+	return flex.UpdateGlobalTagsUsingCRN(oldSet, newSet, meta, crn, "", tagType)
 }
 
 // rhaiiEnvTags returns the tags that Schematics adds through IC_ENV_TAGS. The

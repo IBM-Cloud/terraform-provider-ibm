@@ -336,3 +336,41 @@ func TestRhaiiProjectValidateConfig(t *testing.T) {
 		}
 	}
 }
+
+// TestRhaiiInferenceModelValidateConfig runs the validators of the model data source through the mux server.
+func TestRhaiiInferenceModelValidateConfig(t *testing.T) {
+	ctx := context.Background()
+	server := muxServer(t)
+	schemaResp, _ := server.GetProviderSchema(ctx, &tfprotov6.GetProviderSchemaRequest{})
+	typ := schemaResp.DataSourceSchemas["ibm_rhaii_inference_model"].ValueType().(tftypes.Object)
+
+	cases := map[string]struct {
+		model string
+		valid bool
+	}{
+		"spec example":   {"llama-3-3-70b-instruct", true},
+		"upper case":     {"Llama", false},
+		"underscore":     {"llama_3", false},
+		"101 characters": {strings.Repeat("a", 101), false},
+		"100 characters": {strings.Repeat("a", 100), true},
+		"empty":          {"", false},
+	}
+	for name, c := range cases {
+		resp, err := server.ValidateDataResourceConfig(ctx, &tfprotov6.ValidateDataResourceConfigRequest{
+			TypeName: "ibm_rhaii_inference_model",
+			Config:   dynamic(t, typ, objectValue(t, typ, map[string]interface{}{"project_id": "p", "model": c.model})),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		hasError := false
+		for _, d := range resp.Diagnostics {
+			if d.Severity == tfprotov6.DiagnosticSeverityError {
+				hasError = true
+			}
+		}
+		if hasError == c.valid {
+			t.Errorf("%s: valid = %v, want %v (%v)", name, !hasError, c.valid, resp.Diagnostics)
+		}
+	}
+}

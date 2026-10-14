@@ -33,6 +33,7 @@ const (
 	rhaiiEndpointEnv = "IBMCLOUD_RHAII_API_ENDPOINT"
 
 	// Tag types of the Global Tagging API.
+	rhaiiUserTagType   = "user"
 	rhaiiAccessTagType = "access"
 
 	// Resource controller instance states.

@@ -276,7 +276,7 @@ func (r *rhaiiProjectResource) Create(ctx context.Context, req resource.CreateRe
 	tags, d := rhaiiSetToStrings(ctx, plan.Tags)
 	resp.Diagnostics.Append(d...)
 	if len(tags) > 0 || len(rhaiiEnvTags()) > 0 {
-		if err := rhaiiUpdateTags(r.meta, crn, "user", nil, tags); err != nil {
+		if err := rhaiiUpdateTags(r.meta, crn, rhaiiUserTagType, nil, tags); err != nil {
 			resp.Diagnostics.AddWarning("Error attaching tags to the Red Hat AI Inference project", err.Error())
 		}
 	}
@@ -340,7 +340,7 @@ func (r *rhaiiProjectResource) Update(ctx context.Context, req resource.UpdateRe
 		resp.Diagnostics.Append(d...)
 		newTags, d := rhaiiSetToStrings(ctx, plan.Tags)
 		resp.Diagnostics.Append(d...)
-		if err := rhaiiUpdateTags(r.meta, crn, "user", oldTags, newTags); err != nil {
+		if err := rhaiiUpdateTags(r.meta, crn, rhaiiUserTagType, oldTags, newTags); err != nil {
 			resp.Diagnostics.AddError("Error updating the tags of the Red Hat AI Inference project", err.Error())
 			return
 		}
