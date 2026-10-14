@@ -91,7 +91,7 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: suppressVPNGatewaySubnetDiffWhenRegional,
-				Description: "The subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set for a regional VPN gateway.",
+				Description:      "The subnet for a zonal VPN gateway. Required when `availability_mode` is `zonal` or not set. Must not be set for a regional VPN gateway.",
 			},
 
 			isVPNGatewayResourceGroup: {
