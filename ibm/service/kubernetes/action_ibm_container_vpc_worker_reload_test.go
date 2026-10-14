@@ -23,10 +23,11 @@ func TestAccIBMContainerVPCWorkerReloadEnvvar(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		ExternalProviders: map[string]resource.ExternalProvider{
-        "null": {
-            Source:            "hashicorp/null",
-            VersionConstraint: ">= 3.0.0",
-        },
+			"null": {
+				Source:            "hashicorp/null",
+				VersionConstraint: ">= 3.0.0",
+			},
+		},
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMContainerVpcWorkerReloadEnvvar(acc.IksClusterID, acc.IksClusterResourceGroupID, "1h", false),
