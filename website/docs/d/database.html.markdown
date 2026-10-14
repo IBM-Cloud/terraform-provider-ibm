@@ -97,7 +97,6 @@ In addition to all argument references list, you can access the following attrib
   - Nested scheme for `backup_configuration`:
     - `preserve` - (Boolean) Whether independent backups survive hard deletion of the database instance. On-demand backup copies are not affected by this setting.
     - `retention` - (Integer) The retention duration in days for automatic and on-demand backups, as reported by the service.
-    - `copy_enabled` - (Boolean) Whether automatic backups are copied to other regions.
     - `target_regions` - (Set of Strings) The target regions where automatic backups are copied.
 
 

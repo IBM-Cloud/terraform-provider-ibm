@@ -1306,7 +1306,6 @@ func TestFlattenBackupConfiguration(t *testing.T) {
 		require.Equal(t, true, result[0]["preserve"])
 		require.Equal(t, 45, result[0]["retention"])
 		require.Equal(t, []string{"ca-mon", "us-south"}, result[0]["target_regions"])
-		require.Equal(t, true, result[0]["copy_enabled"])
 	})
 
 	t.Run("flattens values returned by the API", func(t *testing.T) {
@@ -1338,18 +1337,11 @@ func TestFlattenBackupConfiguration(t *testing.T) {
 		require.Equal(t, true, result[0]["preserve"])
 	})
 
-	t.Run("omits preserve and copy_enabled that cannot be parsed", func(t *testing.T) {
-		result := flattenBackupConfiguration(map[string]interface{}{
-			"preserve": "maybe",
-			"automatic_backups": map[string]interface{}{
-				"copy": map[string]interface{}{"enabled": 5},
-			},
-		})
+	t.Run("omits preserve that cannot be parsed", func(t *testing.T) {
+		result := flattenBackupConfiguration(map[string]interface{}{"preserve": "maybe"})
 		require.Len(t, result, 1)
 		_, hasPreserve := result[0]["preserve"]
 		require.False(t, hasPreserve)
-		_, hasCopy := result[0]["copy_enabled"]
-		require.False(t, hasCopy)
 	})
 
 	t.Run("flattens preserve returned as string", func(t *testing.T) {
@@ -1359,33 +1351,25 @@ func TestFlattenBackupConfiguration(t *testing.T) {
 		require.Equal(t, true, result[0]["preserve"])
 	})
 
-	t.Run("flattens copy disabled", func(t *testing.T) {
-		backups := map[string]interface{}{
-			"automatic_backups": map[string]interface{}{
-				"copy": map[string]interface{}{"enabled": false},
-			},
-		}
-
-		result := flattenBackupConfiguration(backups)
-		require.Len(t, result, 1)
-		require.Equal(t, false, result[0]["copy_enabled"])
-	})
-
-	t.Run("flattens copy enabled returned as string", func(t *testing.T) {
-		// The ADR example metadata returns copy.enabled as the string "true".
+	t.Run("flattens target regions and ignores other copy fields", func(t *testing.T) {
+		// The ADR metadata also carries copy.enabled and per-target account_id/resource_group_id;
+		// only the region is surfaced.
 		backups := map[string]interface{}{
 			"automatic_backups": map[string]interface{}{
 				"copy": map[string]interface{}{
-					"enabled": "false",
-					"target":  []interface{}{map[string]interface{}{"region": "ca-tor"}},
+					"enabled": "true",
+					"target": []interface{}{map[string]interface{}{
+						"region":            "ca-tor",
+						"account_id":        "23b09aee04da4545b6e32805fa93249d",
+						"resource_group_id": "c21a4e8564c14d1aab2a9a8b441904eb",
+					}},
 				},
 			},
 		}
 
 		result := flattenBackupConfiguration(backups)
 		require.Len(t, result, 1)
-		require.Equal(t, false, result[0]["copy_enabled"])
-		require.Equal(t, []string{"ca-tor"}, result[0]["target_regions"])
+		require.Equal(t, map[string]interface{}{"target_regions": []string{"ca-tor"}}, result[0])
 	})
 }
 
@@ -1451,7 +1435,6 @@ func TestSetGen2BackupConfiguration(t *testing.T) {
 				map[string]interface{}{
 					"preserve":       true,
 					"retention":      45,
-					"copy_enabled":   true,
 					"target_regions": []interface{}{"ca-mon"},
 				},
 			},
@@ -1472,14 +1455,12 @@ func TestSetGen2BackupConfiguration(t *testing.T) {
 			"retention": "60d",
 			"automatic_backups": map[string]interface{}{
 				"copy": map[string]interface{}{
-					"enabled": "false",
-					"target":  []interface{}{map[string]interface{}{"region": "us-south"}},
+					"target": []interface{}{map[string]interface{}{"region": "us-south"}},
 				},
 			},
 		})))
 
 		require.Equal(t, 60, d.Get("backup_configuration.0.retention"))
-		require.Equal(t, false, d.Get("backup_configuration.0.copy_enabled"))
 		require.Equal(t, []string{"us-south"}, targetRegionsOf(d))
 	})
 
@@ -1492,7 +1473,6 @@ func TestSetGen2BackupConfiguration(t *testing.T) {
 
 		require.Equal(t, 45, d.Get("backup_configuration.0.retention"))
 		require.Equal(t, true, d.Get("backup_configuration.0.preserve"))
-		require.Equal(t, true, d.Get("backup_configuration.0.copy_enabled"))
 		require.Equal(t, []string{"ca-mon"}, targetRegionsOf(d))
 	})
 
@@ -1562,7 +1542,6 @@ func TestExpandBackupConfiguration(t *testing.T) {
 	t.Run("accepts a schema.Set and sorts targets deterministically", func(t *testing.T) {
 		cfg := []interface{}{
 			map[string]interface{}{
-				"copy_enabled":   true,
 				"target_regions": schema.NewSet(schema.HashString, []interface{}{"us-south", "ca-mon", "eu-de"}),
 			},
 		}
@@ -1580,7 +1559,6 @@ func TestExpandBackupConfiguration(t *testing.T) {
 			map[string]interface{}{
 				"preserve":       true,
 				"retention":      45,
-				"copy_enabled":   true,
 				"target_regions": []interface{}{"ca-mon", "us-south"},
 			},
 		}
@@ -1594,7 +1572,6 @@ func TestExpandBackupConfiguration(t *testing.T) {
 		require.True(t, ok)
 		copyObj, ok := autoBackups["copy"].(map[string]interface{})
 		require.True(t, ok)
-		require.Equal(t, true, copyObj["enabled"])
 		targets, ok := copyObj["target"].([]map[string]interface{})
 		require.True(t, ok)
 		require.Len(t, targets, 2)
@@ -1602,43 +1579,16 @@ func TestExpandBackupConfiguration(t *testing.T) {
 		require.Equal(t, "us-south", targets[1]["region"])
 	})
 
-	t.Run("copy_enabled false sends copy.enabled=false and no targets", func(t *testing.T) {
+	t.Run("no target regions sends no automatic_backups", func(t *testing.T) {
 		cfg := []interface{}{
 			map[string]interface{}{
 				"preserve":       false,
 				"retention":      30,
-				"copy_enabled":   false,
-				"target_regions": []interface{}{"ca-mon"},
-			},
-		}
-
-		result := expandBackupConfiguration(cfg)
-		require.NotNil(t, result)
-
-		autoBackups, ok := result["automatic_backups"].(map[string]interface{})
-		require.True(t, ok)
-		copyObj, ok := autoBackups["copy"].(map[string]interface{})
-		require.True(t, ok)
-		require.Equal(t, false, copyObj["enabled"])
-		_, hasTarget := copyObj["target"]
-		require.False(t, hasTarget)
-	})
-
-	t.Run("copy_enabled true without targets sends only enabled=true", func(t *testing.T) {
-		cfg := []interface{}{
-			map[string]interface{}{
-				"copy_enabled":   true,
 				"target_regions": []interface{}{},
 			},
 		}
 
 		result := expandBackupConfiguration(cfg)
-		autoBackups, ok := result["automatic_backups"].(map[string]interface{})
-		require.True(t, ok)
-		copyObj, ok := autoBackups["copy"].(map[string]interface{})
-		require.True(t, ok)
-		require.Equal(t, true, copyObj["enabled"])
-		_, hasTarget := copyObj["target"]
-		require.False(t, hasTarget)
+		require.Equal(t, map[string]interface{}{"preserve": false, "retention": "30d"}, result)
 	})
 }

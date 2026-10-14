@@ -1054,13 +1054,6 @@ func flattenBackupConfiguration(backupsRaw interface{}) []map[string]interface{}
 
 	if autoBackups, ok := backups["automatic_backups"].(map[string]interface{}); ok {
 		if copyObj, ok := autoBackups["copy"].(map[string]interface{}); ok {
-			if raw, exists := copyObj["enabled"]; exists {
-				if enabled, ok := parseBoolValue(raw); ok {
-					config["copy_enabled"] = enabled
-				} else {
-					log.Printf("[WARN] unable to parse backups.automatic_backups.copy.enabled value %v (%T); leaving it unchanged", raw, raw)
-				}
-			}
 			if targets, ok := copyObj["target"].([]interface{}); ok {
 				var regions []string
 				for _, t := range targets {
@@ -1151,8 +1144,7 @@ func expandBackupConfiguration(cfg []interface{}) map[string]interface{} {
 // the user actually changed are sent; this avoids re-sending (and so overwriting) settings that were
 // changed outside Terraform, such as cross-account copy targets that target_regions cannot express.
 //
-// Field names are the backup_configuration attribute names: preserve, retention, copy_enabled,
-// target_regions.
+// Field names are the backup_configuration attribute names: preserve, retention, target_regions.
 func expandBackupConfigurationFields(cfg []interface{}, include func(field string) bool) map[string]interface{} {
 	if len(cfg) == 0 || cfg[0] == nil {
 		return nil
@@ -1173,19 +1165,14 @@ func expandBackupConfigurationFields(cfg []interface{}, include func(field strin
 		backups["retention"] = fmt.Sprintf("%dd", retention)
 	}
 
-	// Per the decoupled backups ADR, automatic_backups.copy.enabled controls cross-region
-	// copies of automatic backups (default true). Setting it to false is how a user turns
-	// copies off; existing copies are kept by the platform until retention expires.
-	if copyEnabled, ok := m["copy_enabled"].(bool); ok && (want("copy_enabled") || want("target_regions")) {
-		copyObj := map[string]interface{}{"enabled": copyEnabled}
-
-		if copyEnabled && want("target_regions") {
-			if targets := expandBackupTargetRegions(m["target_regions"]); len(targets) > 0 {
-				copyObj["target"] = targets
+	// Per the decoupled backups ADR, the regions to copy automatic backups to are
+	// backups.automatic_backups.copy.target[].region.
+	if want("target_regions") {
+		if targets := expandBackupTargetRegions(m["target_regions"]); len(targets) > 0 {
+			backups["automatic_backups"] = map[string]interface{}{
+				"copy": map[string]interface{}{"target": targets},
 			}
 		}
-
-		backups["automatic_backups"] = map[string]interface{}{"copy": copyObj}
 	}
 
 	return backups

@@ -150,11 +150,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Retention period in days for automatic backups.",
 						},
-						"copy_enabled": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Whether automatic backups are copied to other regions.",
-						},
 						"target_regions": {
 							Type:     schema.TypeSet,
 							Computed: true,

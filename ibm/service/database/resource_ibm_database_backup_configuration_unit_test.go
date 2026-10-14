@@ -5,6 +5,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,7 +28,7 @@ func baseBackupTestAttrs(service, plan string) map[string]interface{} {
 	}
 }
 
-func backupBlock(preserve bool, retention int, copyEnabled bool, regions ...string) []interface{} {
+func backupBlock(preserve bool, retention int, regions ...string) []interface{} {
 	rs := make([]interface{}, 0, len(regions))
 	for _, r := range regions {
 		rs = append(rs, r)
@@ -35,23 +36,21 @@ func backupBlock(preserve bool, retention int, copyEnabled bool, regions ...stri
 	return []interface{}{map[string]interface{}{
 		"preserve":       preserve,
 		"retention":      retention,
-		"copy_enabled":   copyEnabled,
 		"target_regions": rs,
 	}}
 }
 
 // backupInstanceState returns a prior state for an existing instance with the given backup_configuration.
-func backupInstanceState(service, plan string, preserve bool, retention int, copyEnabled bool, regions ...string) *terraform.InstanceState {
+func backupInstanceState(service, plan string, preserve bool, retention int, regions ...string) *terraform.InstanceState {
 	attrs := map[string]string{
-		"id":                                  "crn:v1:test:instance",
-		"name":                                "test-db",
-		"location":                            "ca-mon",
-		"service":                             service,
-		"plan":                                plan,
-		"backup_configuration.#":              "1",
-		"backup_configuration.0.preserve":     fmt.Sprint(preserve),
-		"backup_configuration.0.retention":    fmt.Sprint(retention),
-		"backup_configuration.0.copy_enabled": fmt.Sprint(copyEnabled),
+		"id":                               "crn:v1:test:instance",
+		"name":                             "test-db",
+		"location":                         "ca-mon",
+		"service":                          service,
+		"plan":                             plan,
+		"backup_configuration.#":           "1",
+		"backup_configuration.0.preserve":  fmt.Sprint(preserve),
+		"backup_configuration.0.retention": fmt.Sprint(retention),
 		"backup_configuration.0.target_regions.#": fmt.Sprint(len(regions)),
 	}
 	for _, r := range regions {
@@ -103,64 +102,64 @@ func TestValidateBackupConfigurationDiff(t *testing.T) {
 
 	t.Run("retention out of range is rejected", func(t *testing.T) {
 		for _, r := range []int{1, 29, 61, 90} {
-			_, err := diffWith(withBackup(pg, backupBlock(false, r, true)), nil, validateBackupConfigurationDiff)
+			_, err := diffWith(withBackup(pg, backupBlock(false, r)), nil, validateBackupConfigurationDiff)
 			requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
 		}
 	})
 
 	t.Run("retention within range is accepted", func(t *testing.T) {
 		for _, r := range []int{30, 45, 60} {
-			_, err := diffWith(withBackup(pg, backupBlock(false, r, true)), nil, validateBackupConfigurationDiff)
+			_, err := diffWith(withBackup(pg, backupBlock(false, r)), nil, validateBackupConfigurationDiff)
 			require.NoError(t, err, "retention %d", r)
 		}
 	})
 
 	t.Run("preserve is rejected for MySQL", func(t *testing.T) {
 		my := baseBackupTestAttrs("databases-for-mysql", "standard-gen2")
-		_, err := diffWith(withBackup(my, backupBlock(true, 30, true)), nil, validateBackupConfigurationDiff)
+		_, err := diffWith(withBackup(my, backupBlock(true, 30)), nil, validateBackupConfigurationDiff)
 		requireErrContains(t, err, "preserve backups is not supported for Databases for MySQL")
 	})
 
 	t.Run("preserve=false is accepted for MySQL", func(t *testing.T) {
 		my := baseBackupTestAttrs("databases-for-mysql", "standard-gen2")
-		_, err := diffWith(withBackup(my, backupBlock(false, 30, true)), nil, validateBackupConfigurationDiff)
+		_, err := diffWith(withBackup(my, backupBlock(false, 30)), nil, validateBackupConfigurationDiff)
 		require.NoError(t, err)
 	})
 
 	t.Run("preserve is accepted for PostgreSQL and Valkey", func(t *testing.T) {
 		for _, svc := range []string{"databases-for-postgresql", "databases-for-valkey"} {
-			_, err := diffWith(withBackup(baseBackupTestAttrs(svc, "standard-gen2"), backupBlock(true, 30, true)), nil, validateBackupConfigurationDiff)
+			_, err := diffWith(withBackup(baseBackupTestAttrs(svc, "standard-gen2"), backupBlock(true, 30)), nil, validateBackupConfigurationDiff)
 			require.NoError(t, err, svc)
 		}
 	})
 
 	t.Run("preserve true -> false is rejected on update", func(t *testing.T) {
-		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30, true)
-		_, err := diffWith(withBackup(pg, backupBlock(false, 30, true)), state, validateBackupConfigurationDiff)
+		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30)
+		_, err := diffWith(withBackup(pg, backupBlock(false, 30)), state, validateBackupConfigurationDiff)
 		requireErrContains(t, err, "preserve backups cannot be disabled once enabled")
 	})
 
 	t.Run("preserve false -> true is accepted on update", func(t *testing.T) {
-		state := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30, true)
-		_, err := diffWith(withBackup(pg, backupBlock(true, 30, true)), state, validateBackupConfigurationDiff)
+		state := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30)
+		_, err := diffWith(withBackup(pg, backupBlock(true, 30)), state, validateBackupConfigurationDiff)
 		require.NoError(t, err)
 	})
 
 	t.Run("preserve true -> true with another field changed is accepted", func(t *testing.T) {
-		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30, true)
-		_, err := diffWith(withBackup(pg, backupBlock(true, 50, true)), state, validateBackupConfigurationDiff)
+		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30)
+		_, err := diffWith(withBackup(pg, backupBlock(true, 50)), state, validateBackupConfigurationDiff)
 		require.NoError(t, err)
 	})
 
 	t.Run("omitting the block on an instance with preserve=true is not a disable", func(t *testing.T) {
-		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30, true)
+		state := backupInstanceState("databases-for-postgresql", "standard-gen2", true, 30)
 		_, err := diffWith(pg, state, validateBackupConfigurationDiff)
 		require.NoError(t, err)
 	})
 
 	t.Run("Classic backend accepts anything here (rejection is in the unsupported-attrs validator)", func(t *testing.T) {
 		classic := baseBackupTestAttrs("databases-for-postgresql", "standard")
-		_, err := diffWith(withBackup(classic, backupBlock(true, 99, true)), nil, validateBackupConfigurationDiff)
+		_, err := diffWith(withBackup(classic, backupBlock(true, 99)), nil, validateBackupConfigurationDiff)
 		require.NoError(t, err)
 	})
 }
@@ -170,7 +169,7 @@ func TestBackupConfigurationClassicRejected(t *testing.T) {
 	classic := baseBackupTestAttrs("databases-for-postgresql", "standard")
 
 	t.Run("rejected when set on a Classic plan", func(t *testing.T) {
-		_, err := diffWith(withBackup(classic, backupBlock(false, 30, true)), nil, validateUnsupportedAttrsDiff)
+		_, err := diffWith(withBackup(classic, backupBlock(false, 30)), nil, validateUnsupportedAttrsDiff)
 		requireErrContains(t, err, "not supported for Classic databases")
 		requireErrContains(t, err, `"backup_configuration"`)
 	})
@@ -182,7 +181,7 @@ func TestBackupConfigurationClassicRejected(t *testing.T) {
 
 	t.Run("not treated as unsupported on a Gen2 plan", func(t *testing.T) {
 		gen2 := baseBackupTestAttrs("databases-for-postgresql", "standard-gen2")
-		_, err := diffWith(withBackup(gen2, backupBlock(false, 30, true)), nil, validateUnsupportedAttrsDiff)
+		_, err := diffWith(withBackup(gen2, backupBlock(false, 30)), nil, validateUnsupportedAttrsDiff)
 		if err != nil {
 			requireErrNotContains(t, err, "backup_configuration")
 		}
@@ -197,7 +196,7 @@ func TestBackupConfigurationValidatorRegistered(t *testing.T) {
 
 	r := ResourceIBMDatabaseInstance()
 	_, err := r.Diff(context.Background(), nil,
-		terraform.NewResourceConfigRaw(withBackup(gen2, backupBlock(false, 90, true))), nil)
+		terraform.NewResourceConfigRaw(withBackup(gen2, backupBlock(false, 90))), nil)
 	requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
 }
 
@@ -226,7 +225,7 @@ func TestBuildGen2ParametersBackupPayload(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
 	t.Run("create places backups under dataservices, as a sibling of the db-type key", func(t *testing.T) {
-		d := gen2ParamsData(t, "", backupBlock(true, 45, true, "us-south", "ca-tor"))
+		d := gen2ParamsData(t, "", backupBlock(true, 45, "us-south", "ca-tor"))
 
 		params, err := g.buildGen2Parameters(d, "databases-for-postgresql", nil, "crn:catalog")
 		require.NoError(t, err)
@@ -244,7 +243,6 @@ func TestBuildGen2ParametersBackupPayload(t *testing.T) {
 			"retention": "45d",
 			"automatic_backups": map[string]interface{}{
 				"copy": map[string]interface{}{
-					"enabled": true,
 					"target": []map[string]interface{}{
 						{"region": "ca-tor"}, {"region": "us-south"}, // sorted: deterministic
 					},
@@ -262,7 +260,7 @@ func TestBuildGen2ParametersBackupPayload(t *testing.T) {
 
 	t.Run("update never re-sends backups on group/config PATCHes", func(t *testing.T) {
 		// An existing instance (ID set) that has backup_configuration in its planned data.
-		d := gen2ParamsData(t, "crn:v1:test:instance", backupBlock(true, 45, true, "ca-tor"))
+		d := gen2ParamsData(t, "crn:v1:test:instance", backupBlock(true, 45, "ca-tor"))
 		params, err := g.buildGen2Parameters(d, "databases-for-postgresql", nil, "crn:catalog")
 		require.NoError(t, err)
 		require.NotContains(t, params["dataservices"], "backups",
@@ -280,61 +278,119 @@ func TestBackupsParametersEnvelope(t *testing.T) {
 	}, got)
 }
 
+// TestBackupConfigurationTerraformToAPIAndBack pins the documented flow end to end:
+//
+//	backup_configuration { preserve = true  retention = 45  target_regions = ["ca-mon"] }
+//
+// is sent as dataservices.backups, and the Resource Controller "extensions" structure from the ADR
+// (which carries many more fields) is read back into the same three attributes.
+func TestBackupConfigurationTerraformToAPIAndBack(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	block := []interface{}{map[string]interface{}{
+		"preserve":       true,
+		"retention":      45,
+		"target_regions": []interface{}{"ca-mon"},
+	}}
+
+	t.Run("Terraform input -> API request body", func(t *testing.T) {
+		d := gen2ParamsData(t, "", block)
+		params, err := g.buildGen2Parameters(d, "databases-for-postgresql", nil, "crn:catalog")
+		require.NoError(t, err)
+
+		ds := params["dataservices"].(map[string]interface{})
+		got, err := json.Marshal(ds["backups"])
+		require.NoError(t, err)
+		require.JSONEq(t, `{
+			"preserve": true,
+			"retention": "45d",
+			"automatic_backups": {"copy": {"target": [{"region": "ca-mon"}]}}
+		}`, string(got))
+	})
+
+	t.Run("API extensions (ADR structure) -> Terraform state", func(t *testing.T) {
+		var extensions map[string]interface{}
+		require.NoError(t, json.Unmarshal([]byte(`{
+			"dataservices": {
+				"$schema": {"version": "1.0.0"},
+				"backups": {
+					"captured_at": "2026-02-23T06:46:06Z",
+					"can_be_deleted_after": "2026-03-25T06:46:06Z",
+					"source_data_service_crn": "crn::",
+					"type": "on_demand",
+					"size_gb": "1",
+					"version": "18",
+					"preserve": true,
+					"retention": "45d",
+					"automatic_backups": {
+						"enabled": true,
+						"window": {"start_time": "16:37Z"},
+						"copy": {
+							"enabled": "true",
+							"target": [{
+								"region": "ca-mon",
+								"account_id": "23b09aee04da4545b6e32805fa93249d",
+								"resource_group_id": "c21a4e8564c14d1aab2a9a8b441904eb"
+							}]
+						}
+					}
+				}
+			}
+		}`), &extensions))
+
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, baseBackupTestAttrs("databases-for-postgresql", "standard-gen2"))
+		require.NoError(t, setGen2BackupConfiguration(d, &rc.ResourceInstance{Extensions: extensions}))
+
+		require.Equal(t, true, d.Get("backup_configuration.0.preserve"))
+		require.Equal(t, 45, d.Get("backup_configuration.0.retention"))
+		require.Equal(t, []string{"ca-mon"}, targetRegionsOf(d))
+	})
+}
+
 // ---------------------------------------------------------------------------
 // Update payload: only changed fields are sent
 // ---------------------------------------------------------------------------
 
 func TestBuildBackupsPayloadUpdate(t *testing.T) {
 	pg := baseBackupTestAttrs("databases-for-postgresql", "standard-gen2")
-	state := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30, true, "ca-tor")
+	state := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30, "ca-tor")
 
 	t.Run("only retention changed -> only retention is sent", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(false, 50, true, "ca-tor")), state)
+		d := plannedData(t, withBackup(pg, backupBlock(false, 50, "ca-tor")), state)
 		require.True(t, d.HasChange("backup_configuration"))
 		require.Equal(t, map[string]interface{}{"retention": "50d"}, buildBackupsPayload(d, false))
 	})
 
 	t.Run("only preserve changed -> only preserve is sent", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(true, 30, true, "ca-tor")), state)
+		d := plannedData(t, withBackup(pg, backupBlock(true, 30, "ca-tor")), state)
 		require.Equal(t, map[string]interface{}{"preserve": true}, buildBackupsPayload(d, false))
 	})
 
-	t.Run("copy disabled -> copy.enabled=false and no targets", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(false, 30, false, "ca-tor")), state)
-		require.Equal(t, map[string]interface{}{
-			"automatic_backups": map[string]interface{}{
-				"copy": map[string]interface{}{"enabled": false},
-			},
-		}, buildBackupsPayload(d, false))
-	})
-
-	t.Run("target regions changed -> copy.enabled and targets are sent", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(false, 30, true, "ca-tor", "us-south")), state)
+	t.Run("target regions changed -> only targets are sent", func(t *testing.T) {
+		d := plannedData(t, withBackup(pg, backupBlock(false, 30, "ca-tor", "us-south")), state)
 		require.Equal(t, map[string]interface{}{
 			"automatic_backups": map[string]interface{}{
 				"copy": map[string]interface{}{
-					"enabled": true,
-					"target":  []map[string]interface{}{{"region": "ca-tor"}, {"region": "us-south"}},
+					"target": []map[string]interface{}{{"region": "ca-tor"}, {"region": "us-south"}},
 				},
 			},
 		}, buildBackupsPayload(d, false))
 	})
 
 	t.Run("reordering target regions is not a change", func(t *testing.T) {
-		two := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30, true, "ca-tor", "us-south")
-		d := plannedData(t, withBackup(pg, backupBlock(false, 30, true, "us-south", "ca-tor")), two)
+		two := backupInstanceState("databases-for-postgresql", "standard-gen2", false, 30, "ca-tor", "us-south")
+		d := plannedData(t, withBackup(pg, backupBlock(false, 30, "us-south", "ca-tor")), two)
 		require.False(t, d.HasChange("backup_configuration"), "set ordering must not produce a diff")
 		require.Nil(t, buildBackupsPayload(d, false))
 	})
 
 	t.Run("no change -> nothing to send", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(false, 30, true, "ca-tor")), state)
+		d := plannedData(t, withBackup(pg, backupBlock(false, 30, "ca-tor")), state)
 		require.False(t, d.HasChange("backup_configuration"))
 		require.Nil(t, buildBackupsPayload(d, false))
 	})
 
 	t.Run("create sends every configured field", func(t *testing.T) {
-		d := plannedData(t, withBackup(pg, backupBlock(true, 45, true, "ca-tor")), nil)
+		d := plannedData(t, withBackup(pg, backupBlock(true, 45, "ca-tor")), nil)
 		got := buildBackupsPayload(d, true)
 		require.Equal(t, true, got["preserve"])
 		require.Equal(t, "45d", got["retention"])
@@ -383,7 +439,6 @@ func TestDataSourcePopulatesBackupConfiguration(t *testing.T) {
 				"retention": "45d",
 				"automatic_backups": map[string]interface{}{
 					"copy": map[string]interface{}{
-						"enabled": "true",
 						"target": []interface{}{
 							map[string]interface{}{"region": "us-south"},
 							map[string]interface{}{"region": "ca-tor"},
@@ -399,7 +454,6 @@ func TestDataSourcePopulatesBackupConfiguration(t *testing.T) {
 	require.Equal(t, 1, d.Get("backup_configuration.#"))
 	require.Equal(t, true, d.Get("backup_configuration.0.preserve"))
 	require.Equal(t, 45, d.Get("backup_configuration.0.retention"))
-	require.Equal(t, true, d.Get("backup_configuration.0.copy_enabled"))
 	require.Equal(t, []string{"ca-tor", "us-south"}, targetRegionsOf(d))
 }
 

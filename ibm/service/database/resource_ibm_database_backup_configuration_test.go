@@ -37,30 +37,28 @@ func TestAccIBMDatabaseGen2BackupConfiguration(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1 - create with retention + a cross-region copy target
 			{
-				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 45, true, `["ca-tor"]`),
+				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 45, `["ca-tor"]`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
 					resource.TestCheckResourceAttr(name, "backup_configuration.#", "1"),
 					resource.TestCheckResourceAttr(name, "backup_configuration.0.retention", "45"),
 					resource.TestCheckResourceAttr(name, "backup_configuration.0.preserve", "false"),
-					resource.TestCheckResourceAttr(name, "backup_configuration.0.copy_enabled", "true"),
 					resource.TestCheckResourceAttr(name, "backup_configuration.0.target_regions.#", "1"),
 					resource.TestCheckTypeSetElemAttr(name, "backup_configuration.0.target_regions.*", "ca-tor"),
 				),
 			},
-			// Step 2 - update in place: change retention and turn automatic cross-region copies off
+			// Step 2 - update in place: change retention
 			{
-				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, false, `["ca-tor"]`),
+				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, `["ca-tor"]`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "backup_configuration.0.retention", "60"),
-					resource.TestCheckResourceAttr(name, "backup_configuration.0.copy_enabled", "false"),
 					resource.TestCheckResourceAttr(name, "backup_configuration.0.preserve", "false"),
 				),
 			},
 			// Step 3 - the data source reads the same configuration back
 			{
-				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, false, `["ca-tor"]`) +
+				Config: testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, `["ca-tor"]`) +
 					fmt.Sprintf(`
 data "ibm_database" "lookup" {
   resource_group_id = data.ibm_resource_group.test_acc.id
@@ -72,13 +70,12 @@ data "ibm_database" "lookup" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(dataName, "backup_configuration.#", "1"),
 					resource.TestCheckResourceAttr(dataName, "backup_configuration.0.retention", "60"),
-					resource.TestCheckResourceAttr(dataName, "backup_configuration.0.copy_enabled", "false"),
 					resource.TestCheckResourceAttr(dataName, "backup_configuration.0.preserve", "false"),
 				),
 			},
 			// Step 4 - re-planning the same config yields no diff (no perpetual diff from the set/defaults)
 			{
-				Config:   testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, false, `["ca-tor"]`),
+				Config:   testAccCheckIBMDatabaseGen2BackupConfiguration(testName, 60, `["ca-tor"]`),
 				PlanOnly: true,
 			},
 		},
@@ -93,11 +90,11 @@ func TestAccIBMDatabaseGen2BackupConfigurationRetentionOutOfRange(t *testing.T) 
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMDatabaseGen2BackupConfiguration("tf-backupcfg-low", 29, true, `[]`),
+				Config:      testAccCheckIBMDatabaseGen2BackupConfiguration("tf-backupcfg-low", 29, `[]`),
 				ExpectError: regexp.MustCompile(`retention in backup_configuration must be between 30 and 60 days`),
 			},
 			{
-				Config:      testAccCheckIBMDatabaseGen2BackupConfiguration("tf-backupcfg-high", 61, true, `[]`),
+				Config:      testAccCheckIBMDatabaseGen2BackupConfiguration("tf-backupcfg-high", 61, `[]`),
 				ExpectError: regexp.MustCompile(`retention in backup_configuration must be between 30 and 60 days`),
 			},
 		},
@@ -134,7 +131,7 @@ func TestAccIBMDatabaseClassicBackupConfigurationRejected(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseGen2BackupConfiguration(name string, retention int, copyEnabled bool, targetRegions string) string {
+func testAccCheckIBMDatabaseGen2BackupConfiguration(name string, retention int, targetRegions string) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "test_acc" {
   is_default = true
@@ -163,8 +160,7 @@ resource "ibm_database" "%[1]s" {
 
   backup_configuration {
     retention      = %[2]d
-    copy_enabled   = %[3]t
-    target_regions = %[4]s
+    target_regions = %[3]s
   }
 
   timeouts {
@@ -173,7 +169,7 @@ resource "ibm_database" "%[1]s" {
     delete = "15m"
   }
 }
-`, name, retention, copyEnabled, targetRegions)
+`, name, retention, targetRegions)
 }
 
 func testAccCheckIBMDatabaseBackupConfigurationMySQLPreserve(name string) string {

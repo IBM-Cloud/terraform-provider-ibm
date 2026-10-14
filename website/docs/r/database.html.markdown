@@ -907,8 +907,7 @@ Review the argument reference that you can specify for your resource.
   - Nested scheme for `backup_configuration`:
     - `preserve` - (Optional, Boolean) When set to `true`, independent backups survive the hard deletion of the database instance. The service default is `false`. Applies to existing and new backups. On-demand backup copies are not affected by this setting. **Note:** Can be transitioned from `false` to `true`, but cannot be disabled (`true` to `false`) once enabled. Setting `preserve = true` is not supported on `databases-for-mysql` instances.
     - `retention` - (Optional, Integer) Retention duration in days for automatic and on-demand backups. Valid values are between `30` and `60`. If omitted, the service applies its default of `30` days. A change applies only to backups created after the change.
-    - `copy_enabled` - (Optional, Boolean) Whether automatic backups are copied to other regions. Default is `true`. Set to `false` to stop creating new cross-region copies; copies that already exist are kept until their retention expires.
-    - `target_regions` - (Optional, Set of Strings) Regions to copy automatic backups to. The order is not significant. Ignored when `copy_enabled` is `false`. If omitted, the service chooses a default target.
+    - `target_regions` - (Optional, Set of Strings) A list of target regions for automatic backup copies. The order is not significant. If omitted, the service chooses a default target.
 
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is loaded after provisioning and the new deployment starts up that uses that data. If omitted, the database is provisioned empty.
 
@@ -1158,15 +1157,14 @@ To resolve the warning, create the required IAM service-to-service authorization
 
 The `backup_configuration` block controls how independent backups are retained, preserved and copied. Gen2 plans only; Classic plans fail at plan time if the block is set.
 
-- **Defaults are applied by the service, not by Terraform.** If you omit `retention` or `preserve`, the service default applies (`30` days and `false`) and Terraform reads the effective value back into state. `copy_enabled` defaults to `true`.
+- **Defaults are applied by the service, not by Terraform.** If you omit `retention` or `preserve`, the service default applies (`30` days and `false`) and Terraform reads the effective value back into state.
 - **`retention` is in days** (`30` to `60`). Terraform sends it to the service as a duration string such as `45d`. A change applies only to backups created after the change; existing backups keep the retention they were created with. Lowering retention below the 30 day default is not possible through Terraform and requires a support ticket.
 - **`preserve`** applies to all existing and future automatic and on-demand backups of the instance. Once `true` it cannot be set back to `false`; Terraform fails the plan if you try. It is not supported for `databases-for-mysql`.
   - With `preserve = false`, automatic and on-demand backups, and the automatic cross-region copies of them, are deleted when the instance is deleted.
   - With `preserve = true`, those backups are kept after the instance is deleted. They are not deleted automatically when retention expires; you delete them yourself.
   - **On-demand backup copies and other manually created copies are not affected by `preserve`.** They are never deleted automatically when the instance is deleted, whatever the setting, and you must delete them yourself.
 - **A backup cannot be deleted before its retention period expires.** Automatic backups and automatic copies are removed by the service after expiry. On-demand backups and manual copies are only removed when you delete them.
-- **`copy_enabled = false`** stops new automatic cross-region copies. Copies that already exist are kept until their retention expires. `target_regions` is ignored while `copy_enabled` is `false`.
-- **`target_regions` is a set**, so the order of regions does not matter and a different order returned by the service never produces a diff. Only the region of each target can be managed with Terraform. Targets that also set an account or resource group (cross-account copies) can be configured outside Terraform; Terraform sends only the fields you change, so an unrelated update does not overwrite them.
+- **`target_regions` is a set**, so the order of regions does not matter and a different order returned by the service never produces a diff.
 - On an existing instance, backup settings are sent to the service in a single update that contains only the fields that changed.
 
 >**Note:** If the service reports no backup configuration for the instance, `backup_configuration` is empty in state, and any block in your configuration shows as a pending change.
@@ -1200,10 +1198,9 @@ resource "ibm_database" "postgres_backups" {
   }
 
   backup_configuration {
-    preserve       = true   # keep backups after the instance is deleted; cannot be set back to false
-    retention      = 45     # days, 30 to 60
-    copy_enabled   = true   # copy automatic backups to other regions (default)
-    target_regions = ["ca-tor"]
+    preserve       = true        # keep backups after the instance is deleted; cannot be set back to false
+    retention      = 45          # days, 30 to 60
+    target_regions = ["ca-tor"]  # automatic backup copy targets
   }
 }
 
@@ -1217,15 +1214,6 @@ data "ibm_database" "postgres_backups" {
 output "backup_configuration" {
   value = data.ibm_database.postgres_backups.backup_configuration
 }
-```
-
-To stop automatic cross-region copies later, set `copy_enabled = false`:
-
-```terraform
-  backup_configuration {
-    retention    = 45
-    copy_enabled = false
-  }
 ```
 
 >**Note:** `preserve = true` leaves independent backups, and their storage cost, behind after `terraform destroy`. Enable it only when you want that.
