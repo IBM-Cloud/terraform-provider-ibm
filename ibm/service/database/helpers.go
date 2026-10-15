@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -982,6 +984,284 @@ func hasIndependentBackups(extensions map[string]interface{}) bool {
 	}
 	backups, exists := dataservices["backups"]
 	return exists && backups != nil
+}
+
+// setGen2BackupConfiguration populates backup_configuration in resource data from instance extensions.
+//
+//   - If the API reports no backup configuration at all (no extensions.dataservices.backups object,
+//     or an empty one), backup_configuration is cleared so stale state never outlives the API.
+//   - Otherwise only values actually returned by the API are written. A field the API omits (or
+//     returns in an unparseable form) keeps its current value in d, so no default is ever invented.
+func setGen2BackupConfiguration(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	if instance == nil {
+		return nil
+	}
+
+	var flattened []map[string]interface{}
+	if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
+		flattened = flattenBackupConfiguration(dataservices["backups"])
+	}
+
+	if len(flattened) == 0 {
+		return d.Set("backup_configuration", nil)
+	}
+
+	merged := map[string]interface{}{}
+	if current, ok := d.Get("backup_configuration").([]interface{}); ok && len(current) > 0 {
+		if cur, ok := current[0].(map[string]interface{}); ok {
+			for k, v := range cur {
+				merged[k] = v
+			}
+		}
+	}
+	for k, v := range flattened[0] {
+		merged[k] = v
+	}
+
+	return d.Set("backup_configuration", []map[string]interface{}{merged})
+}
+
+// flattenBackupConfiguration extracts backup configuration from dataservices["backups"].
+// The returned map contains only the keys present (and parseable) in the API response; callers
+// must not assume any key exists. Values that are present but cannot be parsed are logged and
+// omitted rather than replaced with a guessed default.
+func flattenBackupConfiguration(backupsRaw interface{}) []map[string]interface{} {
+	if backupsRaw == nil {
+		return nil
+	}
+	backups, ok := backupsRaw.(map[string]interface{})
+	if !ok || len(backups) == 0 {
+		return nil
+	}
+
+	config := map[string]interface{}{}
+
+	if raw, exists := backups["preserve"]; exists {
+		if preserve, ok := parseBoolValue(raw); ok {
+			config["preserve"] = preserve
+		} else {
+			log.Printf("[WARN] unable to parse backups.preserve value %v (%T); leaving it unchanged", raw, raw)
+		}
+	}
+
+	if raw, exists := backups["retention"]; exists {
+		if days, err := parseRetentionDays(raw); err == nil {
+			config["retention"] = days
+		} else {
+			log.Printf("[WARN] unable to parse backups.retention: %s; leaving it unchanged", err)
+		}
+	}
+
+	if autoBackups, ok := backups["automatic_backups"].(map[string]interface{}); ok {
+		if copyObj, ok := autoBackups["copy"].(map[string]interface{}); ok {
+			if targets, ok := copyObj["target"].([]interface{}); ok {
+				var regions []string
+				for _, t := range targets {
+					if targetMap, ok := t.(map[string]interface{}); ok {
+						if region, ok := targetMap["region"].(string); ok && region != "" {
+							regions = append(regions, region)
+						}
+					}
+				}
+				config["target_regions"] = regions
+			}
+		}
+	}
+
+	return []map[string]interface{}{config}
+}
+
+// parseBoolValue parses a bool that the API may return either as a JSON bool or as a
+// string (e.g. "true"). The second return value is false when the value is not a bool.
+func parseBoolValue(val interface{}) (bool, bool) {
+	switch v := val.(type) {
+	case bool:
+		return v, true
+	case string:
+		if b, err := strconv.ParseBool(strings.TrimSpace(v)); err == nil {
+			return b, true
+		}
+	}
+	return false, false
+}
+
+// parseRetentionDays parses retention from string (e.g. "30d", "45") or number into integer days.
+// It returns an error when the value is not in a recognised form, so callers never mistake an
+// unexpected API value for a real retention.
+func parseRetentionDays(val interface{}) (int, error) {
+	switch v := val.(type) {
+	case float64:
+		return int(v), nil
+	case int:
+		return v, nil
+	case int64:
+		return int(v), nil
+	case string:
+		trimmed := strings.TrimSuffix(strings.TrimSpace(v), "d")
+		d, err := strconv.Atoi(trimmed)
+		if err != nil {
+			return 0, fmt.Errorf("unrecognised retention value %q", v)
+		}
+		return d, nil
+	}
+	return 0, fmt.Errorf("unrecognised retention value %v (%T)", val, val)
+}
+
+// expandBackupTargetRegions converts the target_regions set (or a plain list) into the API
+// "target" list. Regions are sorted so the payload is deterministic regardless of set ordering.
+func expandBackupTargetRegions(raw interface{}) []map[string]interface{} {
+	var items []interface{}
+	switch v := raw.(type) {
+	case *schema.Set:
+		items = v.List()
+	case []interface{}:
+		items = v
+	}
+
+	var regions []string
+	for _, r := range items {
+		if region, ok := r.(string); ok && region != "" {
+			regions = append(regions, region)
+		}
+	}
+	sort.Strings(regions)
+
+	var targets []map[string]interface{}
+	for _, region := range regions {
+		targets = append(targets, map[string]interface{}{"region": region})
+	}
+	return targets
+}
+
+// expandBackupConfiguration converts Terraform backup_configuration into the API "backups" object,
+// including every field. Used at create time.
+func expandBackupConfiguration(cfg []interface{}) map[string]interface{} {
+	return expandBackupConfigurationFields(cfg, nil)
+}
+
+// expandBackupConfigurationFields is expandBackupConfiguration restricted to the fields for which
+// include returns true (nil includes everything). Update calls pass a change filter so only fields
+// the user actually changed are sent; this avoids re-sending (and so overwriting) settings that were
+// changed outside Terraform, such as cross-account copy targets that target_regions cannot express.
+//
+// Field names are the backup_configuration attribute names: preserve, retention, target_regions.
+func expandBackupConfigurationFields(cfg []interface{}, include func(field string) bool) map[string]interface{} {
+	if len(cfg) == 0 || cfg[0] == nil {
+		return nil
+	}
+	m, ok := cfg[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	want := func(field string) bool { return include == nil || include(field) }
+
+	backups := make(map[string]interface{})
+
+	if preserve, ok := m["preserve"].(bool); ok && want("preserve") {
+		backups["preserve"] = preserve
+	}
+
+	if retention, ok := m["retention"].(int); ok && retention > 0 && want("retention") {
+		backups["retention"] = fmt.Sprintf("%dd", retention)
+	}
+
+	// Per the decoupled backups ADR, the regions to copy automatic backups to are
+	// backups.automatic_backups.copy.target[].region.
+	if want("target_regions") {
+		if targets := expandBackupTargetRegions(m["target_regions"]); len(targets) > 0 {
+			backups["automatic_backups"] = map[string]interface{}{
+				"copy": map[string]interface{}{"target": targets},
+			}
+		}
+	}
+
+	return backups
+}
+
+// backupConfigReader is the subset of *schema.ResourceData / *schema.ResourceDiff needed to build
+// the backups payload, so the same code (and tests) work at apply time and plan time.
+type backupConfigReader interface {
+	Get(key string) interface{}
+	HasChange(key string) bool
+}
+
+// buildBackupsPayload builds the "backups" object for the Resource Controller from the planned
+// backup_configuration. It returns nil when nothing needs to be sent.
+//
+//   - create: every configured field is sent.
+//   - update: only fields that changed are sent, so an unrelated update (or a retention change)
+//     never re-sends target_regions and overwrites targets that Terraform cannot express, such as
+//     cross-account targets (account_id / resource_group_id / encryption in the ADR).
+func buildBackupsPayload(d backupConfigReader, create bool) map[string]interface{} {
+	cfg, _ := d.Get("backup_configuration").([]interface{})
+	if len(cfg) == 0 {
+		return nil
+	}
+
+	var include func(field string) bool
+	if !create {
+		include = func(field string) bool {
+			return d.HasChange("backup_configuration.0." + field)
+		}
+	}
+
+	backups := expandBackupConfigurationFields(cfg, include)
+	if len(backups) == 0 {
+		return nil
+	}
+	return backups
+}
+
+// backupsParameters wraps a "backups" object in the Resource Controller parameter envelope.
+// Per the decoupled backups ADR, "backups" is a direct child of "dataservices", a sibling of the
+// database-type key and "encryption" (it is NOT nested under dataservices[dbType]):
+//
+//	{"dataservices": {"backups": {"retention": "30d", "preserve": false, ...}}}
+func backupsParameters(backups map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			"backups": backups,
+		},
+	}
+}
+
+const (
+	minBackupRetentionDays = 30
+	maxBackupRetentionDays = 60
+)
+
+// backupConfigFromValue extracts the single backup_configuration block as a map, or nil if absent.
+func backupConfigFromValue(v interface{}) map[string]interface{} {
+	configs, ok := v.([]interface{})
+	if !ok || len(configs) == 0 || configs[0] == nil {
+		return nil
+	}
+	cfg, _ := configs[0].(map[string]interface{})
+	return cfg
+}
+
+// validateBackupConfigRules validates a backup_configuration block independent of any prior state.
+func validateBackupConfigRules(service string, cfg map[string]interface{}) error {
+	if retention, ok := cfg["retention"].(int); ok && retention != 0 {
+		if retention < minBackupRetentionDays || retention > maxBackupRetentionDays {
+			return fmt.Errorf("retention in backup_configuration must be between %d and %d days, got %d",
+				minBackupRetentionDays, maxBackupRetentionDays, retention)
+		}
+	}
+
+	if preserve, ok := cfg["preserve"].(bool); ok && preserve && service == "databases-for-mysql" {
+		return fmt.Errorf("preserve backups is not supported for Databases for MySQL")
+	}
+
+	return nil
+}
+
+// validatePreserveImmutability enforces that preserve, once true, can never be set back to false.
+func validatePreserveImmutability(oldPreserve, newPreserve bool) error {
+	if oldPreserve && !newPreserve {
+		return fmt.Errorf("preserve backups cannot be disabled once enabled")
+	}
+	return nil
 }
 
 // checkS2SAuthorization returns true only when both "independent_backups" and

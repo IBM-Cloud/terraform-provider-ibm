@@ -592,3 +592,69 @@ func TestIsShardAttrConfigured(t *testing.T) {
 		}
 	})
 }
+
+// TestValidateBackupConfigurationConstraints exercises the production rule functions
+// (validateBackupConfigRules / validatePreserveImmutability) used by ValidateBackupConfigurationDiff.
+func TestValidateBackupConfigurationConstraints(t *testing.T) {
+	t.Run("rejects retention < 30", func(t *testing.T) {
+		err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
+			"retention": 29,
+		})
+		requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
+	})
+
+	t.Run("rejects retention > 60", func(t *testing.T) {
+		err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
+			"retention": 61,
+		})
+		requireErrContains(t, err, "retention in backup_configuration must be between 30 and 60 days")
+	})
+
+	t.Run("accepts retention between 30 and 60", func(t *testing.T) {
+		for _, r := range []int{30, 45, 60} {
+			err := validateBackupConfigRules("databases-for-postgresql", map[string]interface{}{
+				"retention": r,
+			})
+			if err != nil {
+				t.Fatalf("expected valid retention %d, got %v", r, err)
+			}
+		}
+	})
+
+	t.Run("rejects preserve for MySQL", func(t *testing.T) {
+		err := validateBackupConfigRules("databases-for-mysql", map[string]interface{}{
+			"preserve": true,
+		})
+		requireErrContains(t, err, "preserve backups is not supported for Databases for MySQL")
+	})
+
+	t.Run("accepts preserve for PostgreSQL and Valkey", func(t *testing.T) {
+		for _, svc := range []string{"databases-for-postgresql", "databases-for-valkey"} {
+			err := validateBackupConfigRules(svc, map[string]interface{}{
+				"preserve": true,
+			})
+			if err != nil {
+				t.Fatalf("expected valid preserve for %s, got %v", svc, err)
+			}
+		}
+	})
+
+	t.Run("rejects preserve transition true to false", func(t *testing.T) {
+		err := validatePreserveImmutability(true, false)
+		requireErrContains(t, err, "preserve backups cannot be disabled once enabled")
+	})
+
+	t.Run("allows preserve transition false to true", func(t *testing.T) {
+		err := validatePreserveImmutability(false, true)
+		if err != nil {
+			t.Fatalf("expected transition false -> true to be allowed, got %v", err)
+		}
+	})
+
+	t.Run("allows preserve unchanged true to true", func(t *testing.T) {
+		err := validatePreserveImmutability(true, true)
+		if err != nil {
+			t.Fatalf("expected unchanged true to be allowed, got %v", err)
+		}
+	})
+}

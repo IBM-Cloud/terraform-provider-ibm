@@ -134,6 +134,34 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"backup_configuration": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Decoupled/Independent backup configuration for Gen2 databases.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"preserve": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Preserve independent backups after database instance is deleted.",
+						},
+						"retention": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Retention period in days for automatic backups.",
+						},
+						"target_regions": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Set:         schema.HashString,
+							Description: "Set of target regions for automatic backup copies.",
+						},
+					},
+				},
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,

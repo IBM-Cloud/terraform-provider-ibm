@@ -360,6 +360,17 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Add backup_configuration at create time only. "backups" is a direct child of "dataservices"
+	// (a sibling of the database-type key and "encryption"), per the decoupled backups ADR.
+	// Updates deliberately do not go through here: group scaling and configuration PATCHes reuse
+	// this builder, and re-sending backups on them would overwrite settings the user did not touch.
+	// Backup changes on an existing instance are sent by applyBackupConfigurationWithDiagnostics.
+	if d.Id() == "" {
+		if backups := buildBackupsPayload(d, true); backups != nil {
+			dataservices["backups"] = backups
+		}
+	}
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
@@ -828,6 +839,11 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	// Set backup configuration from instance extensions
+	if err := setGen2BackupConfiguration(d, instance); err != nil {
+		return diag.FromErr(err)
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -1123,6 +1139,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
+	if diags := g.applyBackupConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
 	readDiags := g.Read(ctx, d, meta)
 	return appendGen2DiagnosticsErrorsThenWarnings(readDiags, warnings)
 }
@@ -1341,6 +1361,56 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(_ context.Context, d
 		if oldShards > 0 && newShards < oldShards {
 			return fmt.Errorf("[ERROR] Shard count cannot be decreased. Current: %d, Requested: %d", oldShards, newShards)
 		}
+	}
+
+	return nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateBackupConfigurationDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	cfg := backupConfigFromValue(d.Get("backup_configuration"))
+	if cfg == nil {
+		return nil
+	}
+
+	service, _ := d.Get("service").(string)
+	if err := validateBackupConfigRules(service, cfg); err != nil {
+		return err
+	}
+
+	// Preserve immutability: once enabled (true), cannot be disabled (false)
+	if d.HasChange("backup_configuration") {
+		oldVal, newVal := d.GetChange("backup_configuration")
+		oldCfg := backupConfigFromValue(oldVal)
+		newCfg := backupConfigFromValue(newVal)
+		if oldCfg != nil && newCfg != nil {
+			oldPreserve, _ := oldCfg["preserve"].(bool)
+			newPreserve, _ := newCfg["preserve"].(bool)
+			return validatePreserveImmutability(oldPreserve, newPreserve)
+		}
+	}
+
+	return nil
+}
+
+// applyBackupConfigurationWithDiagnostics sends backup_configuration changes on an existing
+// instance in a single dedicated PATCH containing only the fields that changed.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("backup_configuration") {
+		return nil
+	}
+
+	backups := buildBackupsPayload(d, false)
+	if backups == nil {
+		return nil
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, backupsParameters(backups)); err != nil {
+		return diagError("error updating backup configuration: %s", err)
+	}
+
+	_, err := g.waitForGen2InstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("error waiting for backup configuration update: %s", err)
 	}
 
 	return nil

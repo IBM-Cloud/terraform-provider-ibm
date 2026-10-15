@@ -186,6 +186,30 @@ output "valkey_connection" {
 }
 ```
 
+### Gen2 database instance with backup configuration
+
+Gen2 plans support `backup_configuration` to control backup retention, whether backups are preserved after the instance is deleted, and cross-region copies of automatic backups. See [Gen2 backup configuration behavior](#gen2-backup-configuration-behavior) for the full rules.
+
+```terraform
+data "ibm_resource_group" "group" {
+  is_default = true
+}
+
+resource "ibm_database" "postgres_backups" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "postgres-gen2-backups"
+  service           = "databases-for-postgresql"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  backup_configuration {
+    retention      = 45
+    target_regions = ["ca-tor"]
+  }
+}
+```
+
 ### Sample database instance by using `group` attributes
 An example to configure and deploy database by using `group` attributes.
 
@@ -879,6 +903,12 @@ Review the argument reference that you can specify for your resource.
          - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
          - `rate_units` - (Optional, String) Auto scaling rate in units.
 
+- `backup_configuration` - (Optional, List, Max: 1) Configuration for automatic and decoupled independent backups. Supported for **Gen2 plans only**. Setting this block on Classic plans will fail validation at plan time. For details and an example, see [Gen2 backup configuration behavior](#gen2-backup-configuration-behavior).
+  - Nested scheme for `backup_configuration`:
+    - `preserve` - (Optional, Boolean) When set to `true`, independent backups survive the hard deletion of the database instance. The service default is `false`. Applies to existing and new backups. On-demand backup copies are not affected by this setting. **Note:** Can be transitioned from `false` to `true`, but cannot be disabled (`true` to `false`) once enabled. Setting `preserve = true` is not supported on `databases-for-mysql` instances.
+    - `retention` - (Optional, Integer) Retention duration in days for automatic and on-demand backups. Valid values are between `30` and `60`. If omitted, the service applies its default of `30` days. A change applies only to backups created after the change.
+    - `target_regions` - (Optional, Set of Strings) A list of target regions for automatic backup copies. The order is not significant. If omitted, the service chooses a default target.
+
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is loaded after provisioning and the new deployment starts up that uses that data. If omitted, the database is provisioned empty.
 
   **Classic:** Supports backups from Classic instances. Backup CRN format: `crn:v1:<…>:backup:<backup-id>`.
@@ -1054,6 +1084,7 @@ In addition to all argument references list, you can access the following attrib
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
 - `groups` - (List) A list of scaling groups for the database. This is a computed attribute that shows the current resource allocations.
+- `backup_configuration` - (List) The decoupled and independent backup configuration for the database instance.
 
 ## Gen2 Feature Summary
 
@@ -1067,6 +1098,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
+| Automatic backup configuration (backup_configuration) | ❌ Plan fails if set | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
@@ -1120,6 +1152,73 @@ If this authorization is missing or incomplete, Terraform emits a **non-blocking
 The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
 
 To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
+
+### Gen2 backup configuration behavior
+
+The `backup_configuration` block controls how independent backups are retained, preserved and copied. Gen2 plans only; Classic plans fail at plan time if the block is set.
+
+- **Defaults are applied by the service, not by Terraform.** If you omit `retention` or `preserve`, the service default applies (`30` days and `false`) and Terraform reads the effective value back into state.
+- **`retention` is in days** (`30` to `60`). Terraform sends it to the service as a duration string such as `45d`. A change applies only to backups created after the change; existing backups keep the retention they were created with. Lowering retention below the 30 day default is not possible through Terraform and requires a support ticket.
+- **`preserve`** applies to all existing and future automatic and on-demand backups of the instance. Once `true` it cannot be set back to `false`; Terraform fails the plan if you try. It is not supported for `databases-for-mysql`.
+  - With `preserve = false`, automatic and on-demand backups, and the automatic cross-region copies of them, are deleted when the instance is deleted.
+  - With `preserve = true`, those backups are kept after the instance is deleted. They are not deleted automatically when retention expires; you delete them yourself.
+  - **On-demand backup copies and other manually created copies are not affected by `preserve`.** They are never deleted automatically when the instance is deleted, whatever the setting, and you must delete them yourself.
+- **A backup cannot be deleted before its retention period expires.** Automatic backups and automatic copies are removed by the service after expiry. On-demand backups and manual copies are only removed when you delete them.
+- **`target_regions` is a set**, so the order of regions does not matter and a different order returned by the service never produces a diff.
+- On an existing instance, backup settings are sent to the service in a single update that contains only the fields that changed.
+
+>**Note:** If the service reports no backup configuration for the instance, `backup_configuration` is empty in state, and any block in your configuration shows as a pending change.
+
+#### Example
+
+```terraform
+data "ibm_resource_group" "group" {
+  is_default = true
+}
+
+resource "ibm_database" "postgres_backups" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "postgres-gen2-backups"
+  service           = "databases-for-postgresql"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 2
+    }
+    host_flavor {
+      id = "bx3d.4x20"
+    }
+    disk {
+      allocation_mb = 20480
+    }
+  }
+
+  backup_configuration {
+    preserve       = true        # keep backups after the instance is deleted; cannot be set back to false
+    retention      = 45          # days, 30 to 60
+    target_regions = ["ca-tor"]  # automatic backup copy targets
+  }
+}
+
+# Read the effective configuration back
+data "ibm_database" "postgres_backups" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = ibm_database.postgres_backups.name
+  location          = "ca-mon"
+}
+
+output "backup_configuration" {
+  value = data.ibm_database.postgres_backups.backup_configuration
+}
+```
+
+>**Note:** `preserve = true` leaves independent backups, and their storage cost, behind after `terraform destroy`. Enable it only when you want that.
+
+>**Note:** The service always applies the same rules whether or not you manage them in Terraform. Settings in this block that are not listed here, such as the automatic backup window, are not available in the provider yet.
 
 ## Import
 The database instance can be imported by using the ID, that is formed from the CRN. To import the resource, you must specify the `region` parameter in the `provider` block of your Terraform configuration file. If the region is not specified, `us-south` is used by default. A Terraform refresh or apply fails if the database instance is not in the same region as configured in the provider or its alias.

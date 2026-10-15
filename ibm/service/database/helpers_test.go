@@ -5,6 +5,7 @@ package database
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -1273,5 +1274,321 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		if v := d.Get("shards").(int); v != 0 {
 			t.Fatalf("expected shards unset (0) when key absent, got %d", v)
 		}
+	})
+}
+
+func TestFlattenBackupConfiguration(t *testing.T) {
+	t.Run("returns nil for nil input", func(t *testing.T) {
+		require.Nil(t, flattenBackupConfiguration(nil))
+	})
+
+	t.Run("returns nil for empty map", func(t *testing.T) {
+		require.Nil(t, flattenBackupConfiguration(map[string]interface{}{}))
+	})
+
+	t.Run("flattens full backup configuration", func(t *testing.T) {
+		backups := map[string]interface{}{
+			"preserve":  true,
+			"retention": "45d",
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"enabled": true,
+					"target": []interface{}{
+						map[string]interface{}{"region": "ca-mon"},
+						map[string]interface{}{"region": "us-south"},
+					},
+				},
+			},
+		}
+
+		result := flattenBackupConfiguration(backups)
+		require.Len(t, result, 1)
+		require.Equal(t, true, result[0]["preserve"])
+		require.Equal(t, 45, result[0]["retention"])
+		require.Equal(t, []string{"ca-mon", "us-south"}, result[0]["target_regions"])
+	})
+
+	t.Run("flattens values returned by the API", func(t *testing.T) {
+		backups := map[string]interface{}{
+			"preserve":  false,
+			"retention": "30d",
+		}
+
+		result := flattenBackupConfiguration(backups)
+		require.Len(t, result, 1)
+		require.Equal(t, false, result[0]["preserve"])
+		require.Equal(t, 30, result[0]["retention"])
+	})
+
+	t.Run("does not invent defaults for fields the API did not return", func(t *testing.T) {
+		result := flattenBackupConfiguration(map[string]interface{}{"preserve": true})
+		require.Len(t, result, 1)
+		require.Equal(t, map[string]interface{}{"preserve": true}, result[0])
+	})
+
+	t.Run("omits retention that cannot be parsed instead of defaulting", func(t *testing.T) {
+		result := flattenBackupConfiguration(map[string]interface{}{
+			"preserve":  true,
+			"retention": "bogus",
+		})
+		require.Len(t, result, 1)
+		_, hasRetention := result[0]["retention"]
+		require.False(t, hasRetention)
+		require.Equal(t, true, result[0]["preserve"])
+	})
+
+	t.Run("omits preserve that cannot be parsed", func(t *testing.T) {
+		result := flattenBackupConfiguration(map[string]interface{}{"preserve": "maybe"})
+		require.Len(t, result, 1)
+		_, hasPreserve := result[0]["preserve"]
+		require.False(t, hasPreserve)
+	})
+
+	t.Run("flattens preserve returned as string", func(t *testing.T) {
+		// The ADR example provisioning payload uses string booleans.
+		result := flattenBackupConfiguration(map[string]interface{}{"preserve": "true"})
+		require.Len(t, result, 1)
+		require.Equal(t, true, result[0]["preserve"])
+	})
+
+	t.Run("flattens target regions and ignores other copy fields", func(t *testing.T) {
+		// The ADR metadata also carries copy.enabled and per-target account_id/resource_group_id;
+		// only the region is surfaced.
+		backups := map[string]interface{}{
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"enabled": "true",
+					"target": []interface{}{map[string]interface{}{
+						"region":            "ca-tor",
+						"account_id":        "23b09aee04da4545b6e32805fa93249d",
+						"resource_group_id": "c21a4e8564c14d1aab2a9a8b441904eb",
+					}},
+				},
+			},
+		}
+
+		result := flattenBackupConfiguration(backups)
+		require.Len(t, result, 1)
+		require.Equal(t, map[string]interface{}{"target_regions": []string{"ca-tor"}}, result[0])
+	})
+}
+
+func TestParseBoolValue(t *testing.T) {
+	v, ok := parseBoolValue(true)
+	require.True(t, ok)
+	require.True(t, v)
+
+	v, ok = parseBoolValue("false")
+	require.True(t, ok)
+	require.False(t, v)
+
+	_, ok = parseBoolValue("maybe")
+	require.False(t, ok)
+
+	_, ok = parseBoolValue(nil)
+	require.False(t, ok)
+}
+
+func TestParseRetentionDays(t *testing.T) {
+	valid := []struct {
+		in   interface{}
+		want int
+	}{
+		{"30d", 30},
+		{"45d", 45},
+		{" 60 ", 60},
+		{"60", 60},
+		{40, 40},
+		{int64(55), 55},
+		{float64(50), 50},
+	}
+	for _, c := range valid {
+		got, err := parseRetentionDays(c.in)
+		require.NoError(t, err, "input %v", c.in)
+		require.Equal(t, c.want, got, "input %v", c.in)
+	}
+
+	for _, in := range []interface{}{"invalid", "", "30h", nil, true, []string{"30d"}} {
+		_, err := parseRetentionDays(in)
+		require.Error(t, err, "input %v", in)
+	}
+}
+
+// targetRegionsOf returns the sorted target_regions of the first backup_configuration block.
+func targetRegionsOf(d *schema.ResourceData) []string {
+	set, _ := d.Get("backup_configuration.0.target_regions").(*schema.Set)
+	if set == nil {
+		return nil
+	}
+	var out []string
+	for _, r := range set.List() {
+		out = append(out, r.(string))
+	}
+	sort.Strings(out)
+	return out
+}
+
+func TestSetGen2BackupConfiguration(t *testing.T) {
+	newData := func() *schema.ResourceData {
+		return schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"backup_configuration": []interface{}{
+				map[string]interface{}{
+					"preserve":       true,
+					"retention":      45,
+					"target_regions": []interface{}{"ca-mon"},
+				},
+			},
+		})
+	}
+	instanceWith := func(backups interface{}) *rc.ResourceInstance {
+		return &rc.ResourceInstance{
+			Extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{"backups": backups},
+			},
+		}
+	}
+
+	t.Run("API values overwrite state", func(t *testing.T) {
+		d := newData()
+		require.NoError(t, setGen2BackupConfiguration(d, instanceWith(map[string]interface{}{
+			"preserve":  true,
+			"retention": "60d",
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"target": []interface{}{map[string]interface{}{"region": "us-south"}},
+				},
+			},
+		})))
+
+		require.Equal(t, 60, d.Get("backup_configuration.0.retention"))
+		require.Equal(t, []string{"us-south"}, targetRegionsOf(d))
+	})
+
+	t.Run("fields missing or unparseable in API response keep current value", func(t *testing.T) {
+		d := newData()
+		require.NoError(t, setGen2BackupConfiguration(d, instanceWith(map[string]interface{}{
+			"retention": "bogus",
+			"preserve":  true,
+		})))
+
+		require.Equal(t, 45, d.Get("backup_configuration.0.retention"))
+		require.Equal(t, true, d.Get("backup_configuration.0.preserve"))
+		require.Equal(t, []string{"ca-mon"}, targetRegionsOf(d))
+	})
+
+	t.Run("target regions are order-insensitive", func(t *testing.T) {
+		d := newData()
+		require.NoError(t, setGen2BackupConfiguration(d, instanceWith(map[string]interface{}{
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"target": []interface{}{
+						map[string]interface{}{"region": "us-south"},
+						map[string]interface{}{"region": "ca-tor"},
+					},
+				},
+			},
+		})))
+		first := targetRegionsOf(d)
+
+		d2 := newData()
+		require.NoError(t, setGen2BackupConfiguration(d2, instanceWith(map[string]interface{}{
+			"automatic_backups": map[string]interface{}{
+				"copy": map[string]interface{}{
+					"target": []interface{}{
+						map[string]interface{}{"region": "ca-tor"},
+						map[string]interface{}{"region": "us-south"},
+					},
+				},
+			},
+		})))
+
+		require.Equal(t, []string{"ca-tor", "us-south"}, first)
+		require.Equal(t, first, targetRegionsOf(d2))
+		require.Equal(t,
+			d.Get("backup_configuration.0.target_regions").(*schema.Set).Len(),
+			d2.Get("backup_configuration.0.target_regions").(*schema.Set).Len())
+	})
+
+	t.Run("API with no backups block clears stale state", func(t *testing.T) {
+		for name, ext := range map[string]map[string]interface{}{
+			"no dataservices":  {},
+			"no backups key":   {"dataservices": map[string]interface{}{}},
+			"nil backups":      {"dataservices": map[string]interface{}{"backups": nil}},
+			"empty backups":    {"dataservices": map[string]interface{}{"backups": map[string]interface{}{}}},
+			"nil extensions":   nil,
+			"wrong type value": {"dataservices": map[string]interface{}{"backups": "oops"}},
+		} {
+			t.Run(name, func(t *testing.T) {
+				d := newData()
+				require.NoError(t, setGen2BackupConfiguration(d, &rc.ResourceInstance{Extensions: ext}))
+				require.Equal(t, 0, d.Get("backup_configuration.#"))
+			})
+		}
+	})
+
+	t.Run("nil instance is a no-op", func(t *testing.T) {
+		d := newData()
+		require.NoError(t, setGen2BackupConfiguration(d, nil))
+		require.Equal(t, 45, d.Get("backup_configuration.0.retention"))
+	})
+}
+
+func TestExpandBackupConfiguration(t *testing.T) {
+	t.Run("returns nil for empty input", func(t *testing.T) {
+		require.Nil(t, expandBackupConfiguration(nil))
+		require.Nil(t, expandBackupConfiguration([]interface{}{}))
+	})
+
+	t.Run("accepts a schema.Set and sorts targets deterministically", func(t *testing.T) {
+		cfg := []interface{}{
+			map[string]interface{}{
+				"target_regions": schema.NewSet(schema.HashString, []interface{}{"us-south", "ca-mon", "eu-de"}),
+			},
+		}
+
+		result := expandBackupConfiguration(cfg)
+		copyObj := result["automatic_backups"].(map[string]interface{})["copy"].(map[string]interface{})
+		targets := copyObj["target"].([]map[string]interface{})
+		require.Equal(t, []map[string]interface{}{
+			{"region": "ca-mon"}, {"region": "eu-de"}, {"region": "us-south"},
+		}, targets)
+	})
+
+	t.Run("expands full backup configuration", func(t *testing.T) {
+		cfg := []interface{}{
+			map[string]interface{}{
+				"preserve":       true,
+				"retention":      45,
+				"target_regions": []interface{}{"ca-mon", "us-south"},
+			},
+		}
+
+		result := expandBackupConfiguration(cfg)
+		require.NotNil(t, result)
+		require.Equal(t, true, result["preserve"])
+		require.Equal(t, "45d", result["retention"])
+
+		autoBackups, ok := result["automatic_backups"].(map[string]interface{})
+		require.True(t, ok)
+		copyObj, ok := autoBackups["copy"].(map[string]interface{})
+		require.True(t, ok)
+		targets, ok := copyObj["target"].([]map[string]interface{})
+		require.True(t, ok)
+		require.Len(t, targets, 2)
+		require.Equal(t, "ca-mon", targets[0]["region"])
+		require.Equal(t, "us-south", targets[1]["region"])
+	})
+
+	t.Run("no target regions sends no automatic_backups", func(t *testing.T) {
+		cfg := []interface{}{
+			map[string]interface{}{
+				"preserve":       false,
+				"retention":      30,
+				"target_regions": []interface{}{},
+			},
+		}
+
+		result := expandBackupConfiguration(cfg)
+		require.Equal(t, map[string]interface{}{"preserve": false, "retention": "30d"}, result)
 	})
 }
