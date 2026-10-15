@@ -76,7 +76,7 @@ In addition to all argument references list, you can access the following attrib
 
       Nested scheme for `copy`:
       - `enabled` - (Boolean) Whether cross-regional copies of automatic backups are created.
-      - `target` - (List) The regions that automatic backup copies are created in.
+      - `target` - (Set) The regions that automatic backup copies are created in.
 
         Nested scheme for `target`:
         - `region` - (String) The region the automatic backup copy is created in.
