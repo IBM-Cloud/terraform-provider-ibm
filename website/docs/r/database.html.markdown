@@ -933,7 +933,7 @@ Review the argument reference that you can specify for your resource.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
   **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
-- `backups` - (Optional, List, Max: 1) Configures backups for the database. **Gen2 only:** `terraform plan` fails if this block is set on a Classic plan. All attributes in this block are optional; attributes you do not set keep the value the service assigned. Removing the block or an attribute from the configuration stops Terraform managing it but does not reset it on the instance.
+- `backups` - (Optional, List, Max: 1) Configures backups for the database. **Gen2 only:** `terraform plan` fails if this block is set on a Classic plan. All attributes in this block are optional; attributes you do not set keep the value the service assigned. Removing the block or an attribute from the configuration stops Terraform managing it but does not reset it on the instance. The `backups` settings are sent when the instance is created. On later updates, only the attributes whose values you changed are sent, in a separate request from scaling and configuration changes, so settings you did not change, such as `target` regions managed outside Terraform, are not overwritten.
 
   Nested scheme for `backups`:
   - `preserve` - (Optional, Boolean) Set to `true` to keep independent backups, except for on-demand backup copies, after the database instance is hard deleted. The default is `false`. This option can be enabled but it cannot be disabled after it is enabled; `terraform plan` fails if you change it from `true` to `false`. It cannot be enabled for `databases-for-mysql`.
@@ -945,7 +945,7 @@ Review the argument reference that you can specify for your resource.
 
       Nested scheme for `copy`:
       - `enabled` - (Optional, Boolean) Whether automatic copies of automatic backups are created. The default is `true`. When set to `false`, cross-regional copies are no longer created; copies created earlier remain until the retention duration expires. `terraform plan` fails if this is `false` and `target` blocks are configured.
-      - `target` - (Optional, Block, Repeatable) A region to create the automatic backup copy in. The supported regions are validated by the service when the change is applied, not at plan time.
+      - `target` - (Optional, Set) A region to create the automatic backup copy in. Repeat the block for each region. The order of `target` blocks is not significant. The supported regions are validated by the service when the change is applied, not at plan time.
 
         Nested scheme for `target`:
         - `region` - (Required, String) The region to create the automatic backup copy in, for example `ca-mon`.
