@@ -15,20 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func gen2BackupsTestData(t *testing.T, backups []interface{}) *schema.ResourceData {
-	t.Helper()
-	raw := map[string]interface{}{
-		"name":     "test-gen2-db",
-		"location": "us-south",
-		"service":  "databases-for-postgresql",
-		"plan":     "standard-gen2",
-	}
-	if backups != nil {
-		raw["backups"] = backups
-	}
-	return schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, raw)
-}
-
 // gen2BackupsParamsData returns resource data with a member group (so buildGen2Parameters
 // needs no catalog lookup) and an optional backups block. A non-empty id simulates an
 // existing instance.
@@ -94,7 +80,7 @@ func TestGen2BuildGen2ParametersBackups(t *testing.T) {
 // have not changed (the guard returns before any client is used).
 func TestGen2BackupsUpdateGuard(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
-	d := gen2BackupsTestData(t, nil)
+	d := backupsTestResourceData(t, nil)
 
 	diags := g.applyBackupsWithDiagnostics(d, nil, nil)
 	assert.Empty(t, diags)
@@ -200,7 +186,7 @@ func TestGen2BackupsFlattenAcceptedBySchema(t *testing.T) {
 		},
 	}
 
-	d := gen2BackupsTestData(t, nil)
+	d := backupsTestResourceData(t, nil)
 	require.NoError(t, d.Set("backups", flattenBackupsFromExtensions(extensions)))
 
 	assert.Equal(t, true, d.Get("backups.0.preserve"))
@@ -226,7 +212,7 @@ func TestGen2BackupsFlattenCopyDisabledAcceptedBySchema(t *testing.T) {
 		},
 	}
 
-	d := gen2BackupsTestData(t, nil)
+	d := backupsTestResourceData(t, nil)
 	require.NoError(t, d.Set("backups", flattenBackupsFromExtensions(extensions)))
 
 	assert.Equal(t, false, d.Get("backups.0.preserve"))
@@ -238,7 +224,7 @@ func TestGen2BackupsFlattenCopyDisabledAcceptedBySchema(t *testing.T) {
 // TestGen2BackupsCopyDisabledDropsRetainedTargets verifies targets retained from state
 // (Computed) are not sent when copies are disabled.
 func TestGen2BackupsCopyDisabledDropsRetainedTargets(t *testing.T) {
-	d := gen2BackupsTestData(t, []interface{}{map[string]interface{}{
+	d := backupsTestResourceData(t, []interface{}{map[string]interface{}{
 		"automatic_backups": []interface{}{map[string]interface{}{
 			"copy": []interface{}{map[string]interface{}{
 				"enabled": false,
