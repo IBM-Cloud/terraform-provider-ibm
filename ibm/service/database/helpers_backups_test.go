@@ -103,7 +103,7 @@ func TestBuildBackupsConfig(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			d := backupsTestResourceData(t, c.backups)
-			require.Equal(t, c.want, buildBackupsConfig(d))
+			require.Equal(t, c.want, buildBackupsConfig(d, false))
 		})
 	}
 }
@@ -195,6 +195,15 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 					}},
 				}},
 			}},
+		},
+		{
+			name: "numeric retention is accepted",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{"retention": float64(45)},
+				},
+			},
+			want: []interface{}{map[string]interface{}{"retention": 45}},
 		},
 		{
 			name: "unparseable retention is skipped without panic",
