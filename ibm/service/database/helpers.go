@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,6 +45,10 @@ const (
 	databaseInstanceInactiveStatus     = "inactive"
 	databaseInstanceFailStatus         = "failed"
 	databaseInstanceRemovedStatus      = "removed"
+
+	// Gen2 independent backups retention bounds (days)
+	backupsRetentionMinDays = 30
+	backupsRetentionMaxDays = 60
 
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
@@ -1015,6 +1021,152 @@ func isTruthy(v interface{}) bool {
 		return val == "true"
 	}
 	return false
+}
+
+const (
+	backupsPreservePath = "backups.0.preserve"
+	backupsRetentionKey = "backups.0.retention"
+	backupsCopyPath     = "backups.0.automatic_backups.0.copy.0"
+)
+
+// isBackupsConfigured reports whether a backups block is present in the resource data.
+func isBackupsConfigured(d interface{ Get(string) interface{} }) bool {
+	list, ok := d.Get("backups").([]interface{})
+	return ok && len(list) > 0
+}
+
+// buildBackupsConfig builds the dataservices.backups payload from the backups block.
+// Returns nil when nothing needs to be sent.
+// Values left unset by the user (Optional+Computed) are omitted from the payload.
+// When onlyChanged is true (update), only fields that differ from state are included so
+// that settings the user did not touch, such as targets managed outside Terraform, are
+// never overwritten.
+func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]interface{} {
+	if !isBackupsConfigured(d) {
+		return nil
+	}
+	include := func(path string) bool {
+		return !onlyChanged || d.HasChange(path)
+	}
+
+	backups := map[string]interface{}{}
+
+	if v, ok := d.GetOkExists(backupsPreservePath); ok && include(backupsPreservePath) {
+		backups["preserve"] = v.(bool)
+	}
+
+	if v, ok := d.GetOk(backupsRetentionKey); ok && include(backupsRetentionKey) {
+		backups["retention"] = fmt.Sprintf("%dd", v.(int))
+	}
+
+	copyCfg := map[string]interface{}{}
+	copyEnabled := true
+	if v, ok := d.GetOkExists(backupsCopyPath + ".enabled"); ok {
+		copyEnabled = v.(bool)
+		if include(backupsCopyPath + ".enabled") {
+			copyCfg["enabled"] = copyEnabled
+		}
+	}
+	// Targets are retained from state (Computed) when removed from HCL, so they
+	// must not be sent when copies are disabled.
+	if v, ok := d.GetOk(backupsCopyPath + ".target"); ok && copyEnabled && include(backupsCopyPath+".target") {
+		var targets []interface{}
+		for _, raw := range v.(*schema.Set).List() {
+			target, ok := raw.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if region, _ := target["region"].(string); region != "" {
+				targets = append(targets, map[string]interface{}{"region": region})
+			}
+		}
+		// Sets have no stable order; sort so the payload is deterministic.
+		sort.Slice(targets, func(i, j int) bool {
+			return targets[i].(map[string]interface{})["region"].(string) < targets[j].(map[string]interface{})["region"].(string)
+		})
+		if len(targets) > 0 {
+			copyCfg["target"] = targets
+		}
+	}
+	if len(copyCfg) > 0 {
+		backups["automatic_backups"] = map[string]interface{}{"copy": copyCfg}
+	}
+
+	if len(backups) == 0 {
+		return nil
+	}
+	return backups
+}
+
+// parseBackupsRetentionDays converts an API retention value to a number of days.
+// It accepts a duration string such as "45d" or a plain number (JSON numbers decode as float64).
+func parseBackupsRetentionDays(v interface{}) (int, bool) {
+	switch val := v.(type) {
+	case string:
+		days, err := strconv.Atoi(strings.TrimSuffix(val, "d"))
+		if err != nil {
+			log.Printf("[WARN] Unable to parse backups retention %q: %s", val, err)
+			return 0, false
+		}
+		return days, true
+	case float64:
+		return int(val), true
+	}
+	return 0, false
+}
+
+// flattenBackupsFromExtensions converts extensions["dataservices"]["backups"] into the
+// shape of the backups schema block. Returns nil when backups are not present.
+// The retention (a duration string such as "45d", or a number) is converted to an integer number of days.
+func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface{} {
+	if extensions == nil {
+		return nil
+	}
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	backups, ok := dataservices["backups"].(map[string]interface{})
+	if !ok || backups == nil {
+		return nil
+	}
+
+	result := map[string]interface{}{}
+
+	if v, exists := backups["preserve"]; exists && v != nil {
+		result["preserve"] = isTruthy(v)
+	}
+
+	if days, ok := parseBackupsRetentionDays(backups["retention"]); ok {
+		result["retention"] = days
+	}
+
+	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {
+		if cp, ok := auto["copy"].(map[string]interface{}); ok {
+			copyBlock := map[string]interface{}{}
+			if v, exists := cp["enabled"]; exists && v != nil {
+				copyBlock["enabled"] = isTruthy(v)
+			}
+			targets := []interface{}{}
+			if rawTargets, ok := cp["target"].([]interface{}); ok {
+				for _, rt := range rawTargets {
+					t, ok := rt.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					if region, ok := t["region"].(string); ok && region != "" {
+						targets = append(targets, map[string]interface{}{"region": region})
+					}
+				}
+			}
+			copyBlock["target"] = targets
+			result["automatic_backups"] = []interface{}{
+				map[string]interface{}{"copy": []interface{}{copyBlock}},
+			}
+		}
+	}
+
+	return []interface{}{result}
 }
 
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
