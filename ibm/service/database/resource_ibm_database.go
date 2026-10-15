@@ -455,7 +455,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 													Description: "Whether cross-regional copies of automatic backups are created. Defaults to true. When false, existing copies remain until the retention duration expires. Cannot be false when target blocks are configured.",
 												},
 												"target": {
-													Type:        schema.TypeList,
+													Type:        schema.TypeSet,
 													Optional:    true,
 													Computed:    true,
 													Description: "The regions that automatic backup copies are created in.",
