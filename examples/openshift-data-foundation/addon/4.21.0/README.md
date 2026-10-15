@@ -107,8 +107,9 @@ setDefaultStorageClassForVirtualization = false
 enableAutomaticCapacityScaling = false
 clusterExpansionLimit = "12Ti"
 enableAutomaticBackup = false
-backupFrequency" = "@daily"
-numOfBackupCopies" = "5"
+backupFrequency = "@daily"
+numOfBackupCopies = "5"
+autoDetectFlexibleScaling = true
 ```
 
 ### Scale-Up of ODF
@@ -197,6 +198,7 @@ ocsUpgrade = "false" -> "true"
 | enableAutomaticBackup | To enable, automatic scheduled backups for the MultiCloud Object Gateway metadata database. It can be enabled only when `ignoreNoobaa` is set to false. | `bool` | no | false
 | backupFrequency | Defines how often automatic backups of the MultiCloud Object Gateway metadata database are created, if `enableAutomaticBackup` is set to true. Supported values are `@daily`, `@weekly`, and `@monthly`. | `string` | no | @daily
 | numOfBackupCopies | The maximum number of automatic backup copies to retain for the MultiCloud Object Gateway metadata database, if `enableAutomaticBackup` is set to true. Supported values are between `1` and `12`. | `string` | no | 5
+| autoDetectFlexibleScaling | If enabled, Automatically evaluates the cluster topology and enables Flexible Scaling for supported deployments. When disabled, Flexible Scaling is not automatically detected or configured. | `boolean` | no | true |
 
 
 Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui#odf-vpc-param-ref
