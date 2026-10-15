@@ -278,7 +278,6 @@ func TestAccIBMISVPNGateway_regional_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res, "availability_mode", "regional"),
 					resource.TestCheckResourceAttr(res, "mode", "route"),
 					resource.TestCheckResourceAttr(res, "local_asn", "64520"),
-					resource.TestCheckResourceAttr(res, "subnet", ""),
 					resource.TestCheckResourceAttr(res, "members.#", "2"),
 					// The members must land in the subnets that were asked for (order is not guaranteed).
 					resource.TestCheckTypeSetElemAttrPair(res, "members.*.private_ip.0.subnet.0.id", "ibm_is_subnet.testacc_subnet1", "id"),

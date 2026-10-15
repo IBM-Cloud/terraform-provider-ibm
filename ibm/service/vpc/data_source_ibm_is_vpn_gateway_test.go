@@ -171,13 +171,13 @@ func testAccCheckIBMIsVPNGatewayDataSourceRegionalConfig(vpc, subnet1, subnet2, 
     		name = "%s"
     		vpc = ibm_is_vpc.example.id
     		zone = "%s"
-    		ipv4_cidr_block = "10.240.10.0/24"
+    		total_ipv4_address_count = 16
     	}
     	resource "ibm_is_subnet" "example2" {
     		name = "%s"
     		vpc = ibm_is_vpc.example.id
     		zone = "%s"
-    		ipv4_cidr_block = "10.240.11.0/24"
+			total_ipv4_address_count = 16
     	}
     	resource "ibm_is_vpn_gateway" "example" {
 			name = "%s"

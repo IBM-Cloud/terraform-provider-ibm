@@ -62,14 +62,14 @@ func testAccCheckIBMIsVPNGatewayMembersDataSourceConfigBasic(vpc, subnet1, subne
 			name = "%s"
 			vpc = ibm_is_vpc.example.id
 			zone = "%s"
-			ipv4_cidr_block = "10.240.40.0/24"
+			total_ipv4_address_count = 16
 		}
 		
 		resource "ibm_is_subnet" "example2" {
 			name = "%s"
 			vpc = ibm_is_vpc.example.id
 			zone = "%s"
-			ipv4_cidr_block = "10.240.41.0/24"
+			total_ipv4_address_count = 16
 		}
 		
 		resource "ibm_is_vpn_gateway" "example" {
