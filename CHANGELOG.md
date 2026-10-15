@@ -1,3 +1,20 @@
+# 2.8.0 (October 15, 2026)
+
+## Bug Fixes
+
+### IAM
+* IAM Identity: create IAM key files with 0600 permissions ([7053](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7053))
+
+## Enhancements
+
+### Red Hat AI Inference
+* added support for Red Hat AI Inference ([7051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7051))
+
+### VPC Infrastructure
+* added id in vpc vpn gateways data source ([7056](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7056))
+* added support for vpc regional vpn ([6940](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6940))
+
+
 # 2.7.0 (October 7, 2026)
 
 ## Bug Fixes
