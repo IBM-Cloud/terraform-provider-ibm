@@ -11,6 +11,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -506,6 +507,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		// Red Hat AI Inference
 		rhaii.NewRhaiiProjectResource,
+		registry.NewCrQuotaResource,
 	}
 }
 
