@@ -52,5 +52,5 @@ resource "ibm_tg_connection" "test_tg_vpngw_connection" {
 	name         = "%s"
 	network_id   = "%s"
 }
-`, gatewayName, connectionName, acc.Tg_cross_network_id)
+	`, gatewayName, connectionName, acc.Tg_cross_network_id)
 }
