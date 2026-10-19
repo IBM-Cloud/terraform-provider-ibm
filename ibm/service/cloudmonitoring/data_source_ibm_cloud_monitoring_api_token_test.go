@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudmonitoring"
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
@@ -80,7 +80,7 @@ func TestCloudMonitoringInstanceGUID(t *testing.T) {
 		{in: "crn:v1:bluemix:public:sysdig-monitor:us-south:a/acct123:::", wantErr: true},
 	}
 	for _, c := range cases {
-		got, err := iamidentity.CloudMonitoringInstanceGUID(c.in)
+		got, err := cloudmonitoring.CloudMonitoringInstanceGUID(c.in)
 		if c.wantErr != (err != nil) || got != c.want {
 			t.Errorf("CloudMonitoringInstanceGUID(%q) = %q, %v", c.in, got, err)
 		}
@@ -88,23 +88,23 @@ func TestCloudMonitoringInstanceGUID(t *testing.T) {
 }
 
 func TestCloudMonitoringServiceURL(t *testing.T) {
-	if got, _ := iamidentity.CloudMonitoringServiceURL("us-south", "public"); got != "https://us-south.monitoring.cloud.ibm.com" {
+	if got, _ := cloudmonitoring.CloudMonitoringServiceURL("us-south", "public"); got != "https://us-south.monitoring.cloud.ibm.com" {
 		t.Errorf("unexpected public URL %q", got)
 	}
-	if got, _ := iamidentity.CloudMonitoringServiceURL("eu-de", "private"); got != "https://private.eu-de.monitoring.cloud.ibm.com" {
+	if got, _ := cloudmonitoring.CloudMonitoringServiceURL("eu-de", "private"); got != "https://private.eu-de.monitoring.cloud.ibm.com" {
 		t.Errorf("unexpected private URL %q", got)
 	}
-	if _, err := iamidentity.CloudMonitoringServiceURL("", "public"); err == nil {
+	if _, err := cloudmonitoring.CloudMonitoringServiceURL("", "public"); err == nil {
 		t.Error("expected error for empty region")
 	}
 }
 
 func TestParseCloudMonitoringAPITokenResponse(t *testing.T) {
-	if got, err := iamidentity.ParseCloudMonitoringAPITokenResponse([]byte(`{"token":{"key":"abc"}}`)); err != nil || got != "abc" {
+	if got, err := cloudmonitoring.ParseCloudMonitoringAPITokenResponse([]byte(`{"token":{"key":"abc"}}`)); err != nil || got != "abc" {
 		t.Errorf("got %q, %v", got, err)
 	}
 	for _, body := range []string{`{}`, `{"token":null}`, `{"token":{"key":""}}`, `not json`} {
-		if _, err := iamidentity.ParseCloudMonitoringAPITokenResponse([]byte(body)); err == nil {
+		if _, err := cloudmonitoring.ParseCloudMonitoringAPITokenResponse([]byte(body)); err == nil {
 			t.Errorf("expected error for body %s", body)
 		}
 	}
@@ -137,11 +137,11 @@ func TestFetchCloudMonitoringAPIToken(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := iamidentity.FetchCloudMonitoringAPIToken(context.Background(), service, "good-guid")
+	got, err := cloudmonitoring.FetchCloudMonitoringAPIToken(context.Background(), service, "good-guid")
 	if err != nil || got != "monitoring-key" {
 		t.Errorf("got %q, %v", got, err)
 	}
-	if _, err := iamidentity.FetchCloudMonitoringAPIToken(context.Background(), service, "bad-guid"); err == nil || !regexp.MustCompile(`status 401`).MatchString(err.Error()) {
+	if _, err := cloudmonitoring.FetchCloudMonitoringAPIToken(context.Background(), service, "bad-guid"); err == nil || !regexp.MustCompile(`status 401`).MatchString(err.Error()) {
 		t.Errorf("expected status 401 error, got %v", err)
 	}
 }
