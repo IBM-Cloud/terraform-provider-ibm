@@ -39,9 +39,9 @@ Review the argument references that you can specify for your data source.
 
 - `instance_id` - (Required, String) The GUID or the CRN of the IBM Cloud Monitoring instance. When you pass a CRN, the GUID is read from it.
 - `region` - (Optional, String) The region of the IBM Cloud Monitoring instance, for example `us-south`. Default value is the provider region.
-- `endpoint_type` - (Optional, String) The type of IBM Cloud Monitoring endpoint to call. Allowed values are `public` and `private`. Default value is `public`. Use `private` when Terraform runs inside IBM Cloud and must use private endpoints.
+- `endpoint_type` - (Optional, String) The type of IBM Cloud Monitoring endpoint to call. Allowed values are `public` and `private`. When not set, the endpoint follows the provider `visibility` setting, the same as other services.
 
-You can set the `IBMCLOUD_MONITORING_API_ENDPOINT` environment variable (for example `https://us-south.monitoring.cloud.ibm.com`) to override the endpoint. When it is set, `region` and `endpoint_type` are not used to build the URL.
+The data source uses the IBM Cloud Monitoring client that the provider builds from its configuration (region, `visibility`, endpoints file and IAM authentication). You can override the endpoint with the `IBMCLOUD_MONITORING_API_ENDPOINT` environment variable or the same key in the endpoints file, for example `https://us-south.monitoring.cloud.ibm.com`. For more information, see [custom service endpoints](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints). When the environment variable is set, it is used as is and `region` and `endpoint_type` do not change the URL.
 
 ## Attribute reference
 

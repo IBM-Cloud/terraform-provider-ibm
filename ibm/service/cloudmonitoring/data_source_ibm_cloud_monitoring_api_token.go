@@ -1,28 +1,26 @@
 // Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package iamidentity
+package cloudmonitoring
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
 	cloudMonitoringAPITokenDataSource = "(Data) ibm_cloud_monitoring_api_token"
-	// CloudMonitoringEndpointEnv overrides the computed IBM Cloud Monitoring endpoint (for example for test or staging environments).
+	// CloudMonitoringEndpointEnv overrides the IBM Cloud Monitoring endpoint built in conns/config.go.
 	CloudMonitoringEndpointEnv = "IBMCLOUD_MONITORING_API_ENDPOINT"
 )
 
@@ -45,15 +43,14 @@ func DataSourceIBMCloudMonitoringAPIToken() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "public",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
-				Description:  "The type of IBM Cloud Monitoring endpoint to call. Allowed values are public and private.",
+				Description:  "The type of IBM Cloud Monitoring endpoint to call. Allowed values are public and private. Defaults to the provider visibility setting.",
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The IBM Cloud Monitoring API token of the IBM Cloud Monitoring instance.",
+				Description: "The API token of the IBM Cloud Monitoring instance.",
 			},
 		},
 	}
@@ -82,21 +79,22 @@ func CloudMonitoringInstanceGUID(instanceID string) (string, error) {
 	return parts[7], nil
 }
 
-// CloudMonitoringAPITokenURL builds the URL of the IBM Cloud Monitoring API token endpoint.
-func CloudMonitoringAPITokenURL(region, endpointType string) (string, error) {
-	if endpoint := strings.TrimRight(strings.TrimSpace(os.Getenv(CloudMonitoringEndpointEnv)), "/"); endpoint != "" {
-		return endpoint + "/api/token", nil
-	}
+// CloudMonitoringServiceURL builds the base URL of the IBM Cloud Monitoring instance API for a region and endpoint type.
+func CloudMonitoringServiceURL(region, endpointType string) (string, error) {
 	if region == "" {
 		return "", fmt.Errorf("region must be set on the data source or the provider")
 	}
 	if endpointType == "private" {
-		return fmt.Sprintf("https://private.%s.monitoring.cloud.ibm.com/api/token", region), nil
+		return conns.ContructEndpoint(fmt.Sprintf("private.%s.monitoring", region), "cloud.ibm.com"), nil
 	}
-	return fmt.Sprintf("https://%s.monitoring.cloud.ibm.com/api/token", region), nil
+	return conns.ContructEndpoint(fmt.Sprintf("%s.monitoring", region), "cloud.ibm.com"), nil
 }
 
 func dataSourceIBMCloudMonitoringAPITokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	cloudMonitoringClient, err := meta.(conns.ClientSession).CloudMonitoringV1()
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "initialize-client").GetDiag()
+	}
 	bmxSess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "initialize-client").GetDiag()
@@ -111,21 +109,28 @@ func dataSourceIBMCloudMonitoringAPITokenRead(context context.Context, d *schema
 	if region == "" {
 		region = bmxSess.Config.Region
 	}
-	url, err := CloudMonitoringAPITokenURL(region, d.Get("endpoint_type").(string))
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "build-url").GetDiag()
+
+	// Work on a copy so the shared session client keeps the URL built in conns/config.go.
+	service := cloudMonitoringClient.Clone()
+	endpointType, endpointTypeSet := d.GetOk("endpoint_type")
+	_, regionSet := d.GetOk("region")
+	if (regionSet || endpointTypeSet) && os.Getenv(CloudMonitoringEndpointEnv) == "" {
+		if !endpointTypeSet {
+			endpointType = "public"
+			if strings.Contains(service.GetServiceURL(), "://private.") {
+				endpointType = "private"
+			}
+		}
+		serviceURL, err := CloudMonitoringServiceURL(region, endpointType.(string))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "build-url").GetDiag()
+		}
+		if err = service.SetServiceURL(serviceURL); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "set-service-url").GetDiag()
+		}
 	}
 
-	iamToken := bmxSess.Config.IAMAccessToken
-	if iamToken == "" {
-		err = fmt.Errorf("IAM access token is not available; configure the provider with an IBM Cloud API key or IAM token")
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), cloudMonitoringAPITokenDataSource, "read", "iam-token").GetDiag()
-	}
-	if !strings.HasPrefix(strings.ToLower(iamToken), "bearer ") {
-		iamToken = "Bearer " + iamToken
-	}
-
-	token, err := fetchCloudMonitoringAPIToken(context, url, iamToken, guid)
+	token, err := FetchCloudMonitoringAPIToken(context, service, guid)
 	if err != nil {
 		return flex.TerraformErrorf(err, fmt.Sprintf("Error fetching IBM Cloud Monitoring API token: %s", err), cloudMonitoringAPITokenDataSource, "read").GetDiag()
 	}
@@ -140,30 +145,31 @@ func dataSourceIBMCloudMonitoringAPITokenRead(context context.Context, d *schema
 	return nil
 }
 
-func fetchCloudMonitoringAPIToken(ctx context.Context, url, authorization, guid string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
+// FetchCloudMonitoringAPIToken calls GET /api/token on the IBM Cloud Monitoring instance API.
+func FetchCloudMonitoringAPIToken(ctx context.Context, service *core.BaseService, guid string) (string, error) {
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = service.GetEnableGzipCompression()
+	if _, err := builder.ResolveRequestURL(service.GetServiceURL(), "/api/token", nil); err != nil {
 		return "", err
 	}
-	req.Header.Set("Authorization", authorization)
-	req.Header.Set("IBMInstanceID", guid)
-	req.Header.Set("Accept", "application/json")
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("IBMInstanceID", guid)
 
-	client := &http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Do(req)
+	request, err := builder.Build()
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	var rawResponse json.RawMessage
+	response, err := service.Request(request, &rawResponse)
 	if err != nil {
+		if response != nil {
+			return "", fmt.Errorf("GET %s/api/token returned status %d: %s", service.GetServiceURL(), response.StatusCode, err)
+		}
 		return "", err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("GET %s returned status %d: %s", url, resp.StatusCode, strings.TrimSpace(string(body)))
-	}
-	return ParseCloudMonitoringAPITokenResponse(body)
+	return ParseCloudMonitoringAPITokenResponse(rawResponse)
 }
 
 // ParseCloudMonitoringAPITokenResponse extracts the token key from the /api/token response body.
