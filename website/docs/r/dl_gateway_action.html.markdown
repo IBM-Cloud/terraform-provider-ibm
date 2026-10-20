@@ -148,7 +148,7 @@ Review the argument reference that you can specify for your resource.
    - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
    - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
    - `le` - (Optional, Integer) The maximum matching length of the prefix-set
-- `authentication_key` - (Optional, String) BGP MD5 authentication key.Applicable only create_gateway_approve for requests.
+- `authentication_key` - (Optional, String) CRN of the Key Protect standard key, Hyper Protect Crypto Services standard key, or Secrets Manager arbitrary secret used for BGP MD5 authentication. Applicable only to `create_gateway_approve` requests.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.Applicable only for create_gateway_approve requests.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.Applicable only for create_gateway_approve requests.
 - `connection_mode` - (Optional, String) Type of network connection that you want to bind to your direct link. Allowed values are `direct` and `transit`. Applicable only for create_gateway_approve requests.
