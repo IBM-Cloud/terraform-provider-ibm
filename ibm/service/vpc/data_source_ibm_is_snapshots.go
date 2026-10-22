@@ -516,6 +516,49 @@ func DataSourceSnapshots() *schema.Resource {
 								},
 							},
 						},
+						"software_attachments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The software attachments for this snapshot.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this snapshot software attachment.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this snapshot software attachment.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"allowed_use": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -802,6 +845,15 @@ func getSnapshots(context context.Context, d *schema.ResourceData, meta interfac
 				"[ERROR] Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
 		}
 		l[isSnapshotAccessTags] = accesstags
+		softwareAttachments := []map[string]interface{}{}
+		for _, softwareAttachmentsItem := range snapshot.SoftwareAttachments {
+			softwareAttachmentsItemMap, err := DataSourceIBMIsSnapshotsSnapshotSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshots", "read", "software_attachments-to-map").GetDiag()
+			}
+			softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+		}
+		l["software_attachments"] = softwareAttachments
 		snapshotsInfo = append(snapshotsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSnapshotsID(d))
@@ -849,5 +901,27 @@ func dataSourceIBMIsSnapshotsSnapshotRemoteReferenceDeletedToMap(model *vpcv1.De
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
 	}
+	return modelMap, nil
+}
+
+func DataSourceIBMIsSnapshotsSnapshotSoftwareAttachmentReferenceToMap(model *vpcv1.SnapshotSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsSnapshotsDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func DataSourceIBMIsSnapshotsDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
 	return modelMap, nil
 }

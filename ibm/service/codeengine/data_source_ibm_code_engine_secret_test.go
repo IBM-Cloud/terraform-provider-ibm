@@ -25,7 +25,7 @@ func TestAccIbmCodeEngineSecretDataSourceGeneric(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID, secretFormat, secretName, secretData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -53,7 +53,7 @@ func TestAccIbmCodeEngineSecretDataSourceBasicAuth(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID, secretFormat, secretName, secretData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -84,7 +84,7 @@ func TestAccIbmCodeEngineSecretDataSourceRegistry(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID, secretFormat, secretName, secretData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -115,7 +115,7 @@ func TestAccIbmCodeEngineSecretDataSourceSSHAuth(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID, secretFormat, secretName, secretData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -142,7 +142,7 @@ func TestAccIbmCodeEngineSecretDataSourceTls(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheckCodeEngine(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretDataSourceTLSConfigBasic(projectID, string(tlsKey), string(tlsCert), secretFormat, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -169,7 +169,7 @@ func TestAccIbmCodeEngineSecretDataSourceServiceAccess(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineServiceAccessSecretDataSourceConfigBasic(projectID, secretFormat, secretName, resourceKeyId, serviceInstanceId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),

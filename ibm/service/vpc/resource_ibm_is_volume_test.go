@@ -34,6 +34,8 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
 					resource.TestCheckResourceAttr(
 						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "software_attachments.#", "0"),
 				),
 			},
 
@@ -904,4 +906,87 @@ func testAccCheckIBMISVolumeConfigSnapshotCrn(vpcname, subnetname, sshname, publ
 		   source_snapshot_crn = ibm_is_snapshot.testacc_snapshot.crn
 		 }
 	`, volname, acc.ISZoneName)
+}
+
+func TestAccIBMISVolume_softwareAttachments(t *testing.T) {
+	var vol string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotName := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName, volname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "name", volname),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "software_attachments.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "software_attachments.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "software_attachments.0.resource_type", "volume_software_attachment"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVolumeSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName, volname string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+
+		resource "ibm_is_volume" "storage" {
+			name            = "%s"
+			profile         = "general-purpose"
+			zone            = "%s"
+			source_snapshot = ibm_is_snapshot.test_snapshot.id
+		}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, snapshotName, volname, acc.ISZoneName)
 }

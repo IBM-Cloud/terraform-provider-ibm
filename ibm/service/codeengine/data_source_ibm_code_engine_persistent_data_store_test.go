@@ -34,7 +34,7 @@ func TestAccIbmCodeEnginePersistentDataStoreDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEnginePersistentDataStoreDataSourceConfigBasic(projectID, secretName, cosAccessKeyID, cosSecretAccessKey, pdsName, cosBucketName, cosBucketLocation),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_persistent_data_store.code_engine_persistent_data_store_instance", "id"),

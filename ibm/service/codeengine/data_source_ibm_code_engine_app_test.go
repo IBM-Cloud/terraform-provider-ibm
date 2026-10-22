@@ -23,7 +23,7 @@ func TestAccIbmCodeEngineAppDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineAppDataSourceConfigBasic(projectID, appImageReference, appName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_app.code_engine_app_instance", "app_id"),
@@ -73,7 +73,7 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineAppDataSourceConfig(projectID, appImageReference, appName, appImagePort, appManagedDomainMappings, appRunAsUser, appRunServiceAccount, appScaleConcurrency, appScaleConcurrencyTarget, appScaleCPULimit, appScaleEphemeralStorageLimit, appScaleInitialInstances, appScaleMaxInstances, appScaleMemoryLimit, appScaleMinInstances, appScaleRequestTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "project_id", projectID),

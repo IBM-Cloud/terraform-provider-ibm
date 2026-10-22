@@ -154,8 +154,8 @@ func TestAccIBMIsVolumesFromSnapshotDataSourceWithCatalogOffering(t *testing.T) 
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
-	planCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
-	versionCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+	planCrn := acc.ISCatalogImagePlanCRN
+	versionCrn := acc.ISCatalogImageOfferingCRN
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -171,6 +171,16 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						resName, "volumes.0.catalog_offering.0.plan_crn"),
 					resource.TestCheckResourceAttrSet(
 						resName, "volumes.0.catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.software_attachments.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(
+						resName, "volumes.0.software_attachments.0.name"),
+					resource.TestCheckResourceAttr(
+						resName, "volumes.0.software_attachments.0.resource_type", "volume_software_attachment"),
 				),
 			},
 		},

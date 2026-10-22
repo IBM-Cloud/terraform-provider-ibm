@@ -110,8 +110,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		resource "ibm_is_instance" "testacc_instance" {
 			name    = "%s"
 			catalog_offering {
-				version_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
-				plan_crn    = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
+				version_crn = "%s"
+				plan_crn    = "%s"
 			}
 			profile = "%s"
 			primary_network_interface {
@@ -121,7 +121,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			zone = "%s"
 			keys = [ibm_is_ssh_key.testacc_sshkey.id]
 		}
-	`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISZoneName)
+	`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, acc.InstanceProfileName, acc.ISZoneName)
 }
 
 func testAccCheckIBMIsInstanceSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName string) string {

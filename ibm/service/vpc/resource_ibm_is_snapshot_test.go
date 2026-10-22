@@ -42,6 +42,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
 					resource.TestCheckResourceAttr(
 						"ibm_is_snapshot.testacc_snapshot", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "software_attachments.#", "0"),
 				),
 			},
 			{
@@ -636,4 +638,79 @@ func testAccCheckIBMISSnapshotConfigCRC(copySnapshotName string) string {
 	}
 `, copySnapshotName, acc.ISSnapshotCRN)
 
+}
+
+func TestAccIBMISSnapshot_softwareAttachments(t *testing.T) {
+	var snapshot string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	snapshotName := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSnapshotSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.test_snapshot", snapshot),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.test_snapshot", "name", snapshotName),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_snapshot.test_snapshot", "software_attachments.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_snapshot.test_snapshot", "software_attachments.0.resource_type", "snapshot_software_attachment"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISSnapshotSoftwareAttachmentsConfig(vpcname, subnetname, sshname, instanceName, snapshotName string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "test_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "test_subnet" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.test_vpc.id
+			zone                     = "%s"
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "test_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "test_instance" {
+			name    = "%s"
+			profile = "%s"
+			catalog_offering {
+				version_crn = "%s"
+				plan_crn    = "%s"
+			}
+			vpc  = ibm_is_vpc.test_vpc.id
+			zone = ibm_is_subnet.test_subnet.zone
+			keys = [ibm_is_ssh_key.test_key.id]
+
+			primary_network_attachment {
+				virtual_network_interface {
+					subnet = ibm_is_subnet.test_subnet.id
+				}
+			}
+		}
+
+		resource "ibm_is_snapshot" "test_snapshot" {
+			name          = "%s"
+			source_volume = ibm_is_instance.test_instance.boot_volume[0].volume_id
+		}
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISCatalogImageOfferingCRN, acc.ISCatalogImagePlanCRN, snapshotName)
 }

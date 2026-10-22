@@ -80,6 +80,7 @@ This example includes configurations for:
 ### Storage Resources
 * Block storage volumes
 * Block storage snapshots
+* Volume and snapshot software attachments
 * Backup policies
 * File storage shares
 

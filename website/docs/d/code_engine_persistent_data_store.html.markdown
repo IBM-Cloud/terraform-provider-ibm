@@ -39,14 +39,17 @@ After your data source is created, you can read values from the following attrib
 * `data` - (List) Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.
 Nested schema for **data**:
 	* `bucket_location` - (Forces new resource, String) Specify the location of the bucket.
-	  * Constraints: Allowable values are: `au-syd`, `br-sao`, `ca-mon`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`, `ap`, `eu`, `us`, `ams03`, `che01`, `mil01`, `mon01`, `par01`, `sjc04`, `sng01`. The maximum length is `10` characters. The minimum length is `4` characters. The value must match regular expression `/^(au-syd|br-sao|ca-mon|ca-tor|eu-de|eu-es|eu-gb|jp-osa|jp-tok|us-east|us-south|ap|eu|us|ams03|che01|mil01|mon01|par01|sjc04|sng01)$/`.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
 	* `bucket_name` - (Forces new resource, String) Specify the name of the bucket.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/`.
 	* `secret_name` - (Forces new resource, String) Specify the name of the HMAC secret.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 * `entity_tag` - (String) The version of the persistent data store, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
+* `href` - (String) When you provision a new persistent data store, a URL is created identifying the location of the instance.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
+* `resource_type` - (String) The type of the persistent data store.
+  * Constraints: Allowable values are: `persistent_data_store_v2`.
 * `storage_type` - (Forces new resource, String) Specify the storage type of the persistent data store.
   * Constraints: Allowable values are: `object_storage`. The value must match regular expression `/^(object_storage)$/`.
 

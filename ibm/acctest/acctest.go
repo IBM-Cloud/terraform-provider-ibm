@@ -85,6 +85,8 @@ var (
 	ISCIDR                          string
 	ISCIDR2                         string
 	ISCatalogImageName              string
+	ISCatalogImageOfferingCRN       string
+	ISCatalogImagePlanCRN           string
 	ISIPV4Address                   string
 	ISPrivateSSHKeyFilePath         string
 	ISPublicSSHKeyFilePath          string
@@ -1088,6 +1090,18 @@ func init() {
 	if ISCatalogImageName == "" {
 		ISCatalogImageName = "test-catalog"
 		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_NAME for testing ibm_is_instance_template resource else it is set to default value 'test-catalog'")
+	}
+
+	ISCatalogImageOfferingCRN = os.Getenv("IS_CATALOG_IMAGE_OFFERING_CRN")
+	if ISCatalogImageOfferingCRN == "" {
+		ISCatalogImageOfferingCRN = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_OFFERING_CRN for testing catalog offering and software attachment acceptance tests else it is set to default value 'crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global'")
+	}
+
+	ISCatalogImagePlanCRN = os.Getenv("IS_CATALOG_IMAGE_PLAN_CRN")
+	if ISCatalogImagePlanCRN == "" {
+		ISCatalogImagePlanCRN = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
+		fmt.Println("[INFO] Set the environment variable IS_CATALOG_IMAGE_PLAN_CRN for testing catalog offering and software attachment acceptance tests else it is set to default value 'crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global'")
 	}
 
 	ISBootSnapshotID = os.Getenv("IS_BOOT_SNAPSHOT_ID")

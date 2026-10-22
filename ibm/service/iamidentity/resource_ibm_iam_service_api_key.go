@@ -6,8 +6,9 @@ package iamidentity
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -394,12 +395,49 @@ func saveToFile(apiKey *iamidentityv1.APIKey, filePath string) error {
 		key.Description = ""
 	}
 
-	out, _ := json.MarshalIndent(key, "", "\t")
-
-	err = ioutil.WriteFile(outputFilePath, out, 0666)
-	if err == nil {
-		log.Println("Successfully save API key information to ", outputFilePath)
+	out, err := json.MarshalIndent(key, "", "\t")
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error marshalling API Key information: %s", err)
 	}
 
-	return err
+	if err := writeFileOwnerOnly(outputFilePath, out); err != nil {
+		return fmt.Errorf("[ERROR] Error saving API Key information to %s: %s", outputFilePath, err)
+	}
+	log.Println("Successfully save API key information to ", outputFilePath)
+
+	return nil
+}
+
+// writeFileOwnerOnly writes data to path with mode 0600, regardless of the
+// process umask or the mode of any file that already exists at path. The data
+// is written to a temporary file in the same directory and then renamed over
+// path, so the write is atomic and does not follow a symlink at path.
+func writeFileOwnerOnly(path string, data []byte) (err error) {
+	tmp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".tmp-*")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	defer func() {
+		if err != nil {
+			os.Remove(tmpName)
+		}
+	}()
+
+	if err = tmp.Chmod(0600); err != nil {
+		tmp.Close()
+		return err
+	}
+	if _, err = tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Sync(); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmpName, path)
 }
