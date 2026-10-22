@@ -20,8 +20,8 @@ import (
 func TestAccIBMContainerVPCWorkerReloadEnvvar(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
 		ExternalProviders: map[string]resource.ExternalProvider{
 			"null": {
 				Source:            "hashicorp/null",
@@ -31,7 +31,7 @@ func TestAccIBMContainerVPCWorkerReloadEnvvar(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMContainerVpcWorkerReloadEnvvar(acc.IksClusterID, acc.IksClusterResourceGroupID, "1h", false),
-				Check:  testAccCheckIBMContainerVpcWorkerState(acc.IksClusterID, "undeploying", "undeployed", "reload_pending", "reloading"),
+				Check:  testAccCheckIBMContainerVpcWorkerState(acc.IksClusterID, "normal", "deployed"), // waitForVpcWorkerReloadAvailable covers other states in invoke
 			},
 		},
 	})
@@ -47,33 +47,31 @@ func testAccCheckIBMContainerVpcWorkerReloadEnvvar(clusterName, resourceGroupID,
 		noWaitConfig = fmt.Sprintf(`no_wait = "%s"`, "true")
 	}
 	return fmt.Sprintf(`
-	# Get the worker from the cluster
-	data "ibm_container_vpc_cluster" "cluster_data" {
-		cluster_name_id              = %s
-		resource_group_id = %s
-	}
+data "ibm_container_vpc_cluster" "cluster_data" {
+    cluster_name_id   = %q
+    resource_group_id = %q
+}
 
-	# Reload the first worker using the worker ID (which is the server ID for  workers)
-	action "ibm_container_vpc_worker_reload" "test_reload" {
-		config {
-			cluster_name_id           = ibm_container_vpc_cluster.cluster.id
-			worker_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
-			%s
-			%s
-		}
-	}
+action "ibm_container_vpc_worker_reload" "test_reload" {
+    config {
+        cluster_name_id = data.ibm_container_vpc_cluster.cluster_data.id
+        worker_id       = data.ibm_container_vpc_cluster.cluster_data.workers[0]
+        %s
+        %s
+    }
+}
 
-	resource "null_resource" "trigger_reload" {
-		provisioner "local-exec" {
-			command = "echo 'All infrastructure ready. Triggering worker reload now...'"
-		}
+resource "null_resource" "trigger_reload" {
+    provisioner "local-exec" {
+        command = "echo 'All infrastructure ready. Triggering worker reload now...'"
+    }
 
-		lifecycle {
-			action_trigger {
-				events  = [after_create]
-				actions = [action.ibm_container_vpc_worker_reload.test_reload]
-			}
-		}
-	}
-	`, clusterName, resourceGroupID, timeout, noWaitConfig)
+    lifecycle {
+        action_trigger {
+            events  = [after_create]
+            actions = [action.ibm_container_vpc_worker_reload.test_reload]
+        }
+    }
+}
+`, clusterName, resourceGroupID, timeout, noWaitConfig)
 }
