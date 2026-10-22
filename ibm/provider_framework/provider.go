@@ -11,6 +11,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/watsonx"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -501,13 +502,17 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 // Resources defines the resources implemented in the provider.
 // Initially empty - all resources remain in SDKv2 provider.
 func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		watsonx.NewProjectResource,
+	}
 }
 
 // DataSources defines the data sources implemented in the provider.
 // Initially empty - all data sources remain in SDKv2 provider.
 func (p *frameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		watsonx.NewProjectDataSource,
+	}
 }
 
 // Actions defines the actions implemented in the provider.
