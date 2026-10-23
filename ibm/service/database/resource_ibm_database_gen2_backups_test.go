@@ -192,7 +192,12 @@ func TestGen2BackupsFlattenAcceptedBySchema(t *testing.T) {
 	assert.Equal(t, true, d.Get("backups.0.preserve"))
 	assert.Equal(t, 45, d.Get("backups.0.retention"))
 	assert.Equal(t, true, d.Get("backups.0.automatic_backups.0.copy.0.enabled"))
-	targets := d.Get("backups.0.automatic_backups.0.copy.0.target").(*schema.Set).List()
+	var targets []interface{}
+	if set, ok := d.Get("backups.0.automatic_backups.0.copy.0.target").(*schema.Set); ok {
+		targets = set.List()
+	} else if list, ok := d.Get("backups.0.automatic_backups.0.copy.0.target").([]interface{}); ok {
+		targets = list
+	}
 	require.Len(t, targets, 1)
 	assert.Equal(t, "ca-mon", targets[0].(map[string]interface{})["region"])
 	assert.Equal(t, 1, d.Get("backups.0.automatic_backups.0.copy.0.target.#"))

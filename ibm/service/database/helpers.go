@@ -1071,7 +1071,13 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	// must not be sent when copies are disabled.
 	if v, ok := d.GetOk(backupsCopyPath + ".target"); ok && copyEnabled && include(backupsCopyPath+".target") {
 		var targets []interface{}
-		for _, raw := range v.(*schema.Set).List() {
+		var rawList []interface{}
+		if set, ok := v.(*schema.Set); ok {
+			rawList = set.List()
+		} else if list, ok := v.([]interface{}); ok {
+			rawList = list
+		}
+		for _, raw := range rawList {
 			target, ok := raw.(map[string]interface{})
 			if !ok {
 				continue
