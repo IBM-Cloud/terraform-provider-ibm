@@ -25,8 +25,6 @@ import (
 )
 
 var gen2UnsupportedAttrs = []string{
-	"point_in_time_recovery_deployment_id",
-	"point_in_time_recovery_time",
 	"backup_policy",
 	"users",
 	"allowlist",
@@ -111,12 +109,6 @@ var gen2AttrGuidance = map[string]string{
 	"adminpassword": "Gen2 databases do not create default admin user during provisioning.\n" +
 		"Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
-
-	"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
-
-	"point_in_time_recovery_time": "Gen2 databases do not support restoring from backups using point_in_time_recovery at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"backup_policy": "Gen2 databases do not support backup_policy at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
@@ -236,7 +228,7 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.Resour
 	}
 
 	// Build Gen2 parameters (database config + encryption)
-	parameters, err := g.buildGen2Parameters(d, serviceName, meta, catalogCRN)
+	parameters, err := g.buildGen2CreateParameters(d, serviceName, meta, catalogCRN)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +328,6 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
 // Includes database configuration, encryption settings, and backup_id for restore.
-// Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
 	// Get the database type for the dataservices key.
 	// getDatabaseTypeFromResourceID handles the enterprise-sharding-gen2 → "mongodbees" override.
@@ -410,13 +401,16 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	// Get member group configuration
 	memberGroup := g.getMemberGroup(d)
+	inheritMembers := restoresToPointInTime(d) && (memberGroup == nil || memberGroup.Members == nil)
 
 	// Members count - use from group if specified, otherwise get default from catalog
-	members, err := g.getMembersCount(memberGroup, catalogCRN, meta)
-	if err != nil {
-		return nil, err
+	if !inheritMembers {
+		members, err := g.getMembersCount(memberGroup, catalogCRN, meta)
+		if err != nil {
+			return nil, err
+		}
+		config.Members = members
 	}
-	config.Members = members
 
 	if dbType == "mongodbees" {
 		config.Shards = d.Get("shards").(int)
@@ -435,6 +429,10 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	// Build the result map and inject configuration overrides.
 	// addConfigurationOverrides is independent of memberGroup — called once here.
 	result := g.dbConfigToMap(config, dbType)
+	if inheritMembers {
+		// A point-in-time restore takes the source's member count unless one is configured.
+		delete(result, "members")
+	}
 	g.addConfigurationOverrides(d, result)
 	return result, nil
 }
@@ -828,6 +826,12 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	if retention := flattenPointInTimeRecoveryRetention(instance.Extensions); retention != nil {
+		if err := d.Set("backups", retention); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting backups: %w", err))
+		}
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -1112,6 +1116,11 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.updateTagsWithDiagnostics(d, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	// Retention goes first: its wait follows last_operation, so the group and configuration updates never overlap it.
+	if diags := g.applyPointInTimeRecoveryRetentionWithDiagnostics(ctx, d, rsConClient, instanceID); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
