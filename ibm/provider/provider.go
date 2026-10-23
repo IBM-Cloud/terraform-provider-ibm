@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudmonitoring"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -437,6 +438,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings":                      iamidentity.DataSourceIBMIamAccountSettings(),
 			"ibm_iam_effective_account_settings":            iamidentity.DataSourceIBMIamEffectiveAccountSettings(),
 			"ibm_iam_auth_token":                            iamidentity.DataSourceIBMIAMAuthToken(),
+			"ibm_cloud_monitoring_api_token":                cloudmonitoring.DataSourceIBMCloudMonitoringAPIToken(),
 			"ibm_iam_role_actions":                          iampolicy.DataSourceIBMIAMRoleAction(),
 			"ibm_iam_users":                                 iamidentity.DataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                                 iampolicy.DataSourceIBMIAMRole(),
