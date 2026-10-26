@@ -962,6 +962,8 @@ Review the argument reference that you can specify for your resource.
           - `bxf.8x32`
 
 - `maintenance` - (Optional, List) Maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
+  - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
+  - Supported regions: `eu-de`, `eu-fr2`.
 
   Nested scheme for `maintenance`:
   - `window` - (Optional, List) Maintenance window schedule.
