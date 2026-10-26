@@ -42,53 +42,63 @@ provider "ibm" {
 
 ## Supported endpoint customizations 
 
-| Service | Endpoint Variable |
-|---------|-----------------|
-|Account Management|IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT|
-|App Id|IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT|
-|Atracker|IBMCLOUD_ATRACKER_API_ENDPOINT|
-|Catalog Management|IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT|
-|Cloud Object Storage|IBMCLOUD_COS_CONFIG_ENDPOINT|
-|Context-based Restrictions|IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT|
-|Internet Services|IBMCLOUD_CIS_API_ENDPOINT|
-|Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|
-|Compliance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
-|Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|
-|Container Registry|IBMCLOUD_CR_API_ENDPOINT|
-|Cloud Logs | IBMCLOUD_LOGS_API_ENDPOINT |
-|Cloud Monitoring | IBMCLOUD_MONITORING_API_ENDPOINT |
-|Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|
-|Metrics Router| IBMCLOUD_METRICS_ROUTING_API_ENDPOINT|
-|MQ on Cloud| IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT|
-|Direct Link|IBMCLOUD_DL_API_ENDPOINT|
-|Direct Link Provider|IBMCLOUD_DL_PROVIDER_API_ENDPOINT|
-|Enterprise Management|IBMCLOUD_ENTERPRISE_API_ENDPOINT|
-|Cloud Functions|IBMCLOUD_FUNCTIONS_API_ENDPOINT|
-|Global Tagging|IBMCLOUD_GT_API_ENDPOINT|
-|Global Search|IBMCLOUD_GS_API_ENDPOINT|
-|Hyper Protect Crypto Services|IBMCLOUD_HPCS_API_ENDPOINT|
-|Hyper Protect Crypto Services TKE Endpoint|IBMCLOUD_HPCS_TKE_ENDPOINT|
-|Identity and Access Management|IBMCLOUD_IAM_API_ENDPOINT|
-|Cloud Databases|IBMCLOUD_ICD_API_ENDPOINT|
-|Virtual Private Cloud (VPC)|IBMCLOUD_IS_NG_API_ENDPOINT|
-|Key Management Services|IBMCLOUD_KP_API_ENDPOINT|
-|Cloud Foundry|IBMCLOUD_MCCP_API_ENDPOINT|
-|Push Notifications|IBMCLOUD_PUSH_API_ENDPOINT|
-|Private DNS|IBMCLOUD_PRIVATE_DNS_API_ENDPOINT|
-|Resource Controller|IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT|
-|Resource Manager|IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT|
-|Red Hat AI Inference|IBMCLOUD_RHAII_API_ENDPOINT|
-|Global Catalog|IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT|
-|Satellite|IBMCLOUD_SATELLITE_API_ENDPOINT|
-|Satellite Link|IBMCLOUD_SATELLITE_LINK_API_ENDPOINT|
-|Schematics|IBMCLOUD_SCHEMATICS_API_ENDPOINT|
-|Secrets Manager|IBMCLOUD_SECRETS_MANAGER_API_ENDPOINT|
-|Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|
-|UAA|IBMCLOUD_UAA_ENDPOINT|
-|User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
-|Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
-|Logs Routing Version 1|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT|
-|Logs Routing Version 3|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3|
+| Service | Endpoint Variable | Supported in endpoints file |
+|---------|-----------------|-----------------------------|
+|Account Management|IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT|No|
+|App Configuration (feature instance API)|IBMCLOUD_APP_CONFIG_API_ENDPOINT|No|
+|App Configuration and Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|Yes|
+|App Id|IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT|Yes|
+|Atracker|IBMCLOUD_ATRACKER_API_ENDPOINT|Yes|
+|Backup and Recovery|IBMCLOUD_BACKUP_RECOVERY_ENDPOINT|Yes|
+|Backup and Recovery Connector|IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT|Yes|
+|Backup and Recovery Manager|IBMCLOUD_BACKUP_RECOVERY_MANAGER_ENDPOINT|Yes|
+|Catalog Management|IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT|Yes|
+|Cloud Databases|IBMCLOUD_DATABASES_API_ENDPOINT|No|
+|Cloud Logs|IBMCLOUD_LOGS_API_ENDPOINT|Yes|
+|Cloud Monitoring|IBMCLOUD_MONITORING_API_ENDPOINT|Yes|
+|Cloud Object Storage|IBMCLOUD_COS_CONFIG_ENDPOINT|Yes|
+|Cloud Object Storage (S3 API)|IBMCLOUD_COS_ENDPOINT|Yes|
+|Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|Yes|
+|Cloudant|IBMCLOUD_CLOUDANT_API_ENDPOINT|No|
+|Code Engine|IBMCLOUD_CODE_ENGINE_API_ENDPOINT|Yes|
+|Container Registry|IBMCLOUD_CR_API_ENDPOINT|Yes|
+|Context-based Restrictions|IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT|Yes|
+|Db2 SaaS|IBMCLOUD_DB2_API_ENDPOINT|No|
+|Direct Link|IBMCLOUD_DL_API_ENDPOINT|Yes|
+|Direct Link Provider|IBMCLOUD_DL_PROVIDER_API_ENDPOINT|Yes|
+|Enterprise Management|IBMCLOUD_ENTERPRISE_API_ENDPOINT|Yes|
+|Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|Yes|
+|Global Catalog|IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT|Yes|
+|Global Search|IBMCLOUD_GS_API_ENDPOINT|Yes|
+|Global Tagging|IBMCLOUD_GT_API_ENDPOINT|Yes|
+|Hyper Protect Crypto Services TKE Endpoint|IBMCLOUD_HPCS_TKE_ENDPOINT|No|
+|Identity and Access Management|IBMCLOUD_IAM_API_ENDPOINT|Yes|
+|Internet Services|IBMCLOUD_CIS_API_ENDPOINT|Yes|
+|Key Management Services|IBMCLOUD_KP_API_ENDPOINT|Yes|
+|Key Protect Crypto Unit|IBMCLOUD_KP_CRYPTOUNIT_ENDPOINT|No|
+|Logs Routing Version 1|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT|Yes|
+|Logs Routing Version 3|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3|Yes|
+|Metrics Router|IBMCLOUD_METRICS_ROUTING_API_ENDPOINT|Yes|
+|MQ on Cloud|IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT|Yes|
+|Partner Center Sell|IBMCLOUD_PARTNER_CENTER_SELL_API_ENDPOINT|Yes|
+|Platform Notifications|IBMCLOUD_PLATFORM_NOTIFICATIONS_API_ENDPOINT|No|
+|Power Systems Virtual Server|IBMCLOUD_PI_API_ENDPOINT|No|
+|Private DNS|IBMCLOUD_PRIVATE_DNS_API_ENDPOINT|Yes|
+|Projects|IBMCLOUD_PROJECT_API_ENDPOINT|Yes|
+|Push Notifications|IBMCLOUD_PUSH_API_ENDPOINT|Yes|
+|Red Hat AI Inference|IBMCLOUD_RHAII_API_ENDPOINT|Yes|
+|Resource Controller|IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT|Yes|
+|Resource Manager|IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT|Yes|
+|Satellite|IBMCLOUD_SATELLITE_API_ENDPOINT|Yes|
+|Satellite Link|IBMCLOUD_SATELLITE_LINK_API_ENDPOINT|Yes|
+|Schematics|IBMCLOUD_SCHEMATICS_API_ENDPOINT|Yes|
+|Security and Compliance Center|IBMCLOUD_SCC_API_ENDPOINT|No|
+|Software Defined Storage|IBMCLOUD_SDS_ENDPOINT|No|
+|Tekton Pipelines|IBMCLOUD_TEKTON_PIPELINE_ENDPOINT|Yes|
+|Toolchain|IBMCLOUD_TOOLCHAIN_ENDPOINT|Yes|
+|Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|Yes|
+|Usage Reports|IBMCLOUD_USAGE_REPORTS_API_ENDPOINT|Yes|
+|Virtual Private Cloud (VPC)|IBMCLOUD_IS_NG_API_ENDPOINT|Yes|
 
 ## File structure for endpoints file
 
@@ -110,7 +120,7 @@ To use public and private regional endpoints for a service, you must add these e
 
 ```json
 {
-    "IBMCLOUD_API_GATEWAY_ENDPOINT":{
+    "IBMCLOUD_IS_NG_API_ENDPOINT":{
         "public":{
             "us-south":"<endpoint>",
             "us-east":"<endpoint>",
@@ -124,7 +134,7 @@ To use public and private regional endpoints for a service, you must add these e
             "eu-de":"<endpoint>"
         }
     },
-    "IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT":{
+    "IBMCLOUD_IAM_API_ENDPOINT":{
         "public":{
             "us-south":"<endpoint>",
             "us-east":"<endpoint>",
@@ -198,7 +208,7 @@ The IBM Cloud Provider plug-in gives highest priority to the exported environmen
 
 2. Export the environment variable for your IBM Cloud service and set it to the IBM Cloud service endpoint that you want to use. 
    ```text
-   export IBMCLOUD_API_GATEWAY_ENDPOINT="<endpoint_url>" 
+   export IBMCLOUD_IS_NG_API_ENDPOINT="<endpoint_url>" 
    ```
    
 3. Initialize the Terraform CLI. The IBM Cloud Provider plug-in automatically loads the environment variables. 
