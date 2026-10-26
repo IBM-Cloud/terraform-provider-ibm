@@ -54,6 +54,7 @@ var (
 	CloudShellAccountID             string
 	CosBackupPolicyID               string
 	CosCRN                          string
+	CloudMonitoringInstanceID       string
 	CosName                         string
 	CsRegion                        string
 	Customerpeerip                  string
@@ -678,6 +679,11 @@ func init() {
 	if CisResourceGroup == "" {
 		CisResourceGroup = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
+	}
+
+	CloudMonitoringInstanceID = os.Getenv("IBM_CLOUD_MONITORING_INSTANCE_ID")
+	if CloudMonitoringInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLOUD_MONITORING_INSTANCE_ID with the GUID or CRN of an IBM Cloud Monitoring instance for testing ibm_cloud_monitoring_api_token")
 	}
 
 	CosCRN = os.Getenv("IBM_COS_CRN")
@@ -2675,6 +2681,13 @@ func TestAccPreCheckIAMIdpAccountSetting(t *testing.T) {
 	TestAccPreCheckIAMIdp(t)
 	if IAMIdpConsumerAccountId == "" {
 		t.Fatal("IBM_IAM_IDP_CONSUMER_ACCOUNT_ID must be set for IDP account-setting acceptance tests")
+	}
+}
+
+func TestAccPreCheckCloudMonitoring(t *testing.T) {
+	TestAccPreCheck(t)
+	if CloudMonitoringInstanceID == "" {
+		t.Fatal("IBM_CLOUD_MONITORING_INSTANCE_ID must be set for ibm_cloud_monitoring_api_token acceptance tests")
 	}
 }
 
