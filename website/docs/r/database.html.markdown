@@ -1077,7 +1077,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
 | Shard scale-out (shards, MongoDB enterprise-sharding-gen2) | ❌ Not supported | ✅ Supported (1–3 shards, increase only) |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
-| Single-node database (`allocation_count = 1`, `member_zones`) | ❌ Not available | 🧪 Beta |
+| Single-node database (`allocation_count = 1`, `member_zones`) | ❌ Not available | ✅ Supported — 🧪 Beta |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |
 | Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
