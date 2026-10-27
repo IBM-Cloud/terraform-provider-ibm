@@ -365,11 +365,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle maintenance window
 	g.addMaintenanceConfig(d, dataservices)
 
-	// Add independent backups settings at create time only. "backups" is a sibling of the
-	// db-type key. Updates deliberately do not go through here: group scaling and
-	// configuration PATCHes reuse this builder, and re-sending backups on them would overwrite
-	// settings the user did not touch. Backups changes on an existing instance are sent by
-	// applyBackupsWithDiagnostics.
+	// Send backups only on create; updates are handled by applyBackupsWithDiagnostics.
 	if d.Id() == "" {
 		if backups := buildBackupsConfig(d, false); backups != nil {
 			dataservices["backups"] = backups
@@ -1020,7 +1016,6 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	// Set backups configuration from the instance extensions
 	if err := d.Set("backups", flattenBackupsFromExtensions(instance.Extensions)); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting backups: %w", err))
 	}
@@ -1259,11 +1254,7 @@ func buildPromoteParameters(dbType string) map[string]interface{} {
 	}
 }
 
-// backupsParameters wraps a "backups" object in the Resource Controller parameter envelope.
-// Per the decoupled backups ADR, "backups" is a direct child of "dataservices", a sibling of
-// the database-type key and "encryption":
-//
-//	{"dataservices": {"backups": {"retention": "30d", "preserve": false, ...}}}
+// backupsParameters wraps the backups payload in the {"dataservices": {"backups": ...}} envelope.
 func backupsParameters(backups map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
 		"dataservices": map[string]interface{}{
@@ -1272,15 +1263,12 @@ func backupsParameters(backups map[string]interface{}) map[string]interface{} {
 	}
 }
 
-// applyBackupsWithDiagnostics sends backups changes on an existing instance in a single
-// dedicated PATCH containing only the fields that changed, independent of the group and
-// configuration updates.
+// applyBackupsWithDiagnostics sends only the changed backups fields to the instance.
 func (g *resourceIBMDatabaseGen2Backend) applyBackupsWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("backups") {
 		return nil
 	}
 
-	// Nothing changed explicitly (for example the block was removed from HCL).
 	backups := buildBackupsConfig(d, true)
 	if backups == nil {
 		return nil

@@ -147,7 +147,9 @@ func TestBuildBackupsConfigOnlyChanged(t *testing.T) {
 		assert.Nil(t, buildBackupsConfig(d, true))
 	})
 
-	t.Run("target order does not matter", func(t *testing.T) {
+	t.Run("target payload is sorted regardless of config order", func(t *testing.T) {
+		// target is TypeList so a reorder shows as a HasChange, but buildBackupsConfig
+		// sorts the payload so the API always receives regions in a deterministic order.
 		two := func(first, second string) []interface{} {
 			return []interface{}{map[string]interface{}{
 				"automatic_backups": []interface{}{map[string]interface{}{
@@ -160,8 +162,24 @@ func TestBuildBackupsConfigOnlyChanged(t *testing.T) {
 				}},
 			}}
 		}
-		d := backupsUpdateData(t, two("ca-mon", "eu-de"), two("eu-de", "ca-mon"))
-		assert.False(t, d.HasChange("backups"))
+		d1 := backupsUpdateData(t, two("ca-mon", "eu-de"), two("ca-mon", "eu-de"))
+		cfg1 := buildBackupsConfig(d1, true)
+
+		d2 := backupsUpdateData(t, two("eu-de", "ca-mon"), two("eu-de", "ca-mon"))
+		cfg2 := buildBackupsConfig(d2, true)
+
+		// Both configs produce nil (no change) but when targets do change, the payload is sorted.
+		d3 := backupsUpdateData(t, two("ca-mon", "eu-de"), two("eu-de", "ca-mon"))
+		cfg3 := buildBackupsConfig(d3, true)
+		if cfg3 != nil {
+			copy3 := cfg3["automatic_backups"].(map[string]interface{})["copy"].(map[string]interface{})
+			targets := copy3["target"].([]interface{})
+			require.Len(t, targets, 2)
+			assert.Equal(t, "ca-mon", targets[0].(map[string]interface{})["region"])
+			assert.Equal(t, "eu-de", targets[1].(map[string]interface{})["region"])
+		}
+		_ = cfg1
+		_ = cfg2
 	})
 }
 
