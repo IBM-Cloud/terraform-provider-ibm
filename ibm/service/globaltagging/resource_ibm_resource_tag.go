@@ -306,15 +306,6 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error detaching resource tags %v: %s\n%s", remove, err, resp)
 		}
-		for _, v := range remove {
-			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: flex.PtrToString(v),
-			}
-			_, resp, err := gtClient.DeleteTag(delTagOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting resource tag %v: %s\n%s", v, err, resp)
-			}
-		}
 	}
 	return nil
 }

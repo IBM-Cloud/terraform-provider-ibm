@@ -2349,53 +2349,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// func UpdateTags(d *schema.ResourceData, meta interface{}) error {
-// 	resourceID := d.Id()
-// 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
-// 	if err != nil {
-// 		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-// 	}
-// 	oldList, newList := d.GetChange("tags")
-// 	if oldList == nil {
-// 		oldList = new(schema.Set)
-// 	}
-// 	if newList == nil {
-// 		newList = new(schema.Set)
-// 	}
-// 	olds := oldList.(*schema.Set)
-// 	news := newList.(*schema.Set)
-// 	removeInt := olds.Difference(news).List()
-// 	addInt := news.Difference(olds).List()
-// 	add := make([]string, len(addInt))
-// 	for i, v := range addInt {
-// 		add[i] = fmt.Sprint(v)
-// 	}
-// 	remove := make([]string, len(removeInt))
-// 	for i, v := range removeInt {
-// 		remove[i] = fmt.Sprint(v)
-// 	}
-
-// 	if len(add) > 0 {
-// 		_, err := gtClient.Tags().AttachTags(resourceID, add)
-// 		if err != nil {
-// 			return fmt.Errorf("[ERROR] Error updating database tags %v : %s", add, err)
-// 		}
-// 	}
-// 	if len(remove) > 0 {
-// 		_, err := gtClient.Tags().DetachTags(resourceID, remove)
-// 		if err != nil {
-// 			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
-// 		}
-// 		for _, v := range remove {
-// 			_, err := gtClient.Tags().DeleteTag(v)
-// 			if err != nil {
-// 				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s", v, err)
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
-
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -2532,15 +2485,6 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s\n%s", remove, err, resp)
 		}
-		for _, v := range remove {
-			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: PtrToString(v),
-			}
-			_, resp, err := gtClient.DeleteTag(delTagOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s\n%s", v, err, resp)
-			}
-		}
 	}
 
 	if len(add) > 0 {
@@ -2621,12 +2565,6 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 		_, err := gtClient.Tags().DetachTags(resourceCRN, remove)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
-		}
-		for _, v := range remove {
-			_, err := gtClient.Tags().DeleteTag(v)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s", v, err)
-			}
 		}
 	}
 
