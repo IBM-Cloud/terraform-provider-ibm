@@ -41,6 +41,14 @@ func TestAccIBMResourceInstanceParametersBasic(t *testing.T) {
 				Config:   testAccResourceInstanceParametersConfig(instanceID, params),
 				PlanOnly: true,
 			},
+			{
+				ResourceName:      "ibm_resource_instance_parameters.test",
+				ImportState:       true,
+				ImportStateId:     instanceID,
+				ImportStateVerify: true,
+				// Parameters are not read back as a whole: only configured keys are managed.
+				ImportStateVerifyIgnore: []string{"parameters", "timeouts"},
+			},
 		},
 	})
 }
@@ -53,6 +61,26 @@ func TestAccIBMResourceInstanceParametersInvalidJSON(t *testing.T) {
 			{
 				Config:      testAccResourceInstanceParametersConfig("00000000-0000-0000-0000-000000000000", "not-json"),
 				ExpectError: regexp.MustCompile("parameters must be a JSON object"),
+			},
+		},
+	})
+}
+
+// destroy_parameters is checked at plan time, not first during destroy.
+func TestAccIBMResourceInstanceParametersInvalidDestroyJSON(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+		resource "ibm_resource_instance_parameters" "test" {
+			resource_instance_id = "00000000-0000-0000-0000-000000000000"
+			parameters           = jsonencode({ enable_cspm = true })
+			destroy_parameters   = "{enable_cspm: false"
+		}`,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("destroy_parameters must be a JSON object"),
 			},
 		},
 	})

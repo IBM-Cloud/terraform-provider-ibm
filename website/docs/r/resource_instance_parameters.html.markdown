@@ -12,6 +12,8 @@ Applies service-specific parameters to an existing resource instance through the
 
 Drift is checked only on the top-level keys in `parameters`. Server-generated fields are ignored.
 
+When the Resource Controller runs the update asynchronously (`last_operation.async = true`), create and update wait until the operation finishes and the instance is `active` again. A failed operation fails the apply with the operation's description.
+
 ## Example usage
 
 ```terraform
@@ -33,10 +35,31 @@ resource "ibm_resource_instance_parameters" "cspm" {
 ## Argument reference
 
 - `resource_instance_id` - (Required, Forces new resource, String) GUID or CRN of the instance.
-- `parameters` - (Required, String) JSON object of parameters to send.
-- `destroy_parameters` - (Optional, String) JSON object to send on destroy. When omitted, destroy only removes the resource from state.
+- `parameters` - (Required, String) JSON object of parameters to send. Checked at plan time.
+- `destroy_parameters` - (Optional, String) JSON object to send on destroy. Checked at plan time. When omitted, destroy only removes the resource from state. If the instance is already deleted (`404 Not Found` or `410 Gone`), destroy succeeds without sending anything.
 
 ## Attribute reference
 
 - `id` - Same as `resource_instance_id`.
 - `state` - Instance state after the last update or refresh.
+
+## Timeouts
+
+- `create` - (Default 30 minutes) Waiting for an asynchronous update.
+- `update` - (Default 30 minutes) Waiting for an asynchronous update.
+- `delete` - (Default 30 minutes) Waiting for an asynchronous update with `destroy_parameters`.
+
+## Import
+
+Import with the instance GUID or CRN. Only the keys you then set in `parameters` are managed, and the first apply sends them again (the update is idempotent).
+
+```terraform
+import {
+  to = ibm_resource_instance_parameters.cspm
+  id = ibm_resource_instance.scc_wp.guid
+}
+```
+
+```
+$ terraform import ibm_resource_instance_parameters.cspm <instance_guid>
+```
