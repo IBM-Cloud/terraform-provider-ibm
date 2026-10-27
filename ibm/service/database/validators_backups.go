@@ -81,14 +81,13 @@ func backupsIntentFromRawConfig(raw cty.Value) backupsConfigIntent {
 // backupsRuleInput holds everything validateBackupsRules needs, so the rules can
 // be unit tested without a real ResourceDiff.
 type backupsRuleInput struct {
-	gen2        bool
-	service     string
-	intent      backupsConfigIntent
-	isUpdate    bool
-	preserveOld bool
-	preserveNew bool
-	// preserveChanged is true when the preserve value differs between state and plan.
-	preserveChanged bool
+	gen2            bool
+	service         string
+	intent          backupsConfigIntent
+	isUpdate        bool
+	preserveOld     bool
+	preserveNew     bool
+	preserveChanged bool // true when preserve differs between state and plan
 }
 
 // validateBackupsRules applies the plan-time rules for the backups block.

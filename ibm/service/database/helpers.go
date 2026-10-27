@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1034,12 +1035,8 @@ func isBackupsConfigured(d interface{ Get(string) interface{} }) bool {
 	return ok && len(list) > 0
 }
 
-// buildBackupsConfig builds the dataservices.backups payload from the backups block.
-// Returns nil when nothing needs to be sent.
-// Values left unset by the user (Optional+Computed) are omitted from the payload.
-// When onlyChanged is true (update), only fields that differ from state are included so
-// that settings the user did not touch, such as targets managed outside Terraform, are
-// never overwritten.
+// buildBackupsConfig builds the backups payload. When onlyChanged is true (update),
+// only changed fields are included to avoid overwriting settings managed outside Terraform.
 func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]interface{} {
 	if !isBackupsConfigured(d) {
 		return nil
@@ -1070,13 +1067,17 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	// must not be sent when copies are disabled.
 	if v, ok := d.GetOk(backupsCopyPath + ".target"); ok && copyEnabled && include(backupsCopyPath+".target") {
 		var targets []interface{}
-		for _, raw := range v.(*schema.Set).List() {
+		for _, raw := range v.([]interface{}) {
 			if target, ok := raw.(map[string]interface{}); ok {
 				if region, _ := target["region"].(string); region != "" {
 					targets = append(targets, map[string]interface{}{"region": region})
 				}
 			}
 		}
+		// Sort so the payload is deterministic regardless of config order.
+		sort.Slice(targets, func(i, j int) bool {
+			return targets[i].(map[string]interface{})["region"].(string) < targets[j].(map[string]interface{})["region"].(string)
+		})
 		if len(targets) > 0 {
 			copyCfg["target"] = targets
 		}
@@ -1108,9 +1109,7 @@ func parseBackupsRetentionDays(v interface{}) (int, bool) {
 	return 0, false
 }
 
-// flattenBackupsFromExtensions converts extensions["dataservices"]["backups"] into the
-// shape of the backups schema block. Returns nil when backups are not present.
-// The retention (a duration string such as "45d", or a number) is converted to an integer number of days.
+// flattenBackupsFromExtensions maps the backups object from instance extensions into the backups schema block.
 func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface{} {
 	if extensions == nil {
 		return nil
@@ -1136,23 +1135,19 @@ func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface
 
 	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {
 		if cp, ok := auto["copy"].(map[string]interface{}); ok {
-			copyBlock := map[string]interface{}{}
+			copyBlock := map[string]interface{}{"target": []interface{}{}}
 			if v, exists := cp["enabled"]; exists && v != nil {
 				copyBlock["enabled"] = isTruthy(v)
 			}
-			targets := []interface{}{}
 			if rawTargets, ok := cp["target"].([]interface{}); ok {
 				for _, rt := range rawTargets {
-					t, ok := rt.(map[string]interface{})
-					if !ok {
-						continue
-					}
-					if region, ok := t["region"].(string); ok && region != "" {
-						targets = append(targets, map[string]interface{}{"region": region})
+					if t, ok := rt.(map[string]interface{}); ok {
+						if region, _ := t["region"].(string); region != "" {
+							copyBlock["target"] = append(copyBlock["target"].([]interface{}), map[string]interface{}{"region": region})
+						}
 					}
 				}
 			}
-			copyBlock["target"] = targets
 			result["automatic_backups"] = []interface{}{
 				map[string]interface{}{"copy": []interface{}{copyBlock}},
 			}
