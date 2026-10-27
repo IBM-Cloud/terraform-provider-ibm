@@ -960,6 +960,12 @@ Review the argument reference that you can specify for your resource.
           - `bxf.48x192`
           - `bxf.4x16`
           - `bxf.8x32`
+          - `nxf-1x4`
+          - `nxf-1x8`
+          - `bxf-2x8`
+          - `mxf-2x16`
+
+          The `nxf-*`, `bxf-*` and `mxf-*` flavors are nano profiles and are supported for Gen2 plans only. A Gen2 instance can be updated to a larger supported profile, but downgrading to a smaller profile is not supported.
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
