@@ -110,17 +110,25 @@ func resourceIbmBackupRecoveryConnectorAgentRegistrationRead(context context.Con
 }
 
 func resourceIbmBackupRecoveryConnectorAgentRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
-
-	var diags diag.Diagnostics
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Delete Not Supported",
-		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_connector_agent_registration", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	diags = append(diags, warning)
+
+	unregisterConnectorAgentOptions := &backuprecoveryv1.UnregisterConnectorAgentOptions{}
+
+	_, err = backupRecoveryClient.UnregisterConnectorAgentWithContext(context, unregisterConnectorAgentOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UnregisterConnectorAgentWithContext failed: %s", err.Error()), "ibm_backup_recovery_connector_agent_registration", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
 	d.SetId("")
-	return diags
+
+	return nil
 }
 
 func resourceIbmBackupRecoveryConnectorAgentRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

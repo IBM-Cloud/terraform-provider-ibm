@@ -163,6 +163,60 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
+			"db2_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Specifies parameters to register a DB2 source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"host_os_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the type of DB2 host.",
+						},
+					},
+				},
+			},
+			"sap_hana_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Specifies parameters to register a SAP HANA source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backint_protocol_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "1.0",
+							Description: "Backint protocol version to be used during backup/restore.",
+						},
+						"hosts": &schema.Schema{
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Specifies the IPs/hostnames for the nodes forming the SAP HANA source cluster.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"script_dir": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the absolute path of scripts used to interact with the SAP HANA source.",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies user friendly name for the source.",
+						},
+					},
+				},
+			},
+			"delete_connector_agent": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Specifies whether to also delete the connector agent associated with the source when the source is unregistered. Has no effect if the source's connection is not a connector agent.",
+			},
 			"kubernetes_params": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -1448,6 +1502,20 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		}
 		registerProtectionSourceOptions.SetPhysicalParams(physicalParamsModel)
 	}
+	if _, ok := d.GetOk("db2_params"); ok {
+		db2ParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToDB2SourceRegistrationParams(d.Get("db2_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-db2_params").GetDiag()
+		}
+		registerProtectionSourceOptions.SetDb2Params(db2ParamsModel)
+	}
+	if _, ok := d.GetOk("sap_hana_params"); ok {
+		sapHanaParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToSapHanaSourceRegistrationParams(d.Get("sap_hana_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-sap_hana_params").GetDiag()
+		}
+		registerProtectionSourceOptions.SetSapHanaParams(sapHanaParamsModel)
+	}
 
 	sourceRegistrationReponseParams, _, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)
 	if err != nil {
@@ -1608,6 +1676,26 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 		if err = d.Set("physical_params", []map[string]interface{}{physicalParamsMap}); err != nil {
 			err = fmt.Errorf("Error setting physical_params: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-physical_params").GetDiag()
+		}
+	}
+	if !core.IsNil(sourceRegistrationReponseParams.Db2Params) {
+		db2ParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(sourceRegistrationReponseParams.Db2Params)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "db2_params-to-map").GetDiag()
+		}
+		if err = d.Set("db2_params", []map[string]interface{}{db2ParamsMap}); err != nil {
+			err = fmt.Errorf("Error setting db2_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-db2_params").GetDiag()
+		}
+	}
+	if !core.IsNil(sourceRegistrationReponseParams.SapHanaParams) {
+		sapHanaParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationSapHanaSourceRegistrationParamsToMap(sourceRegistrationReponseParams.SapHanaParams)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "sap_hana_params-to-map").GetDiag()
+		}
+		if err = d.Set("sap_hana_params", []map[string]interface{}{sapHanaParamsMap}); err != nil {
+			err = fmt.Errorf("Error setting sap_hana_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-sap_hana_params").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.KubernetesParams) {
@@ -1882,6 +1970,9 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 
 	deleteProtectionSourceRegistrationOptions.SetID(int64(id))
 	deleteProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
+	if v, ok := d.GetOkExists("delete_connector_agent"); ok {
+		deleteProtectionSourceRegistrationOptions.SetDeleteConnectorAgent(v.(bool))
+	}
 
 	_, err = backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)
 	if err != nil {
@@ -2102,6 +2193,29 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesVlanInfo(modelMap
 	return model, nil
 }
 
+func ResourceIbmBackupRecoverySourceRegistrationMapToDB2SourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.DB2SourceRegistrationParams, error) {
+	model := &backuprecoveryv1.DB2SourceRegistrationParams{}
+	if modelMap["host_os_type"] != nil && modelMap["host_os_type"].(string) != "" {
+		model.HostOsType = core.StringPtr(modelMap["host_os_type"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationMapToSapHanaSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.SapHanaSourceRegistrationParams, error) {
+	model := &backuprecoveryv1.SapHanaSourceRegistrationParams{}
+	if modelMap["backint_protocol_version"] != nil && modelMap["backint_protocol_version"].(string) != "" {
+		model.BackintProtocolVersion = core.StringPtr(modelMap["backint_protocol_version"].(string))
+	}
+	hosts := []string{}
+	for _, hostsItem := range modelMap["hosts"].([]interface{}) {
+		hosts = append(hosts, hostsItem.(string))
+	}
+	model.Hosts = hosts
+	model.ScriptDir = core.StringPtr(modelMap["script_dir"].(string))
+	model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	return model, nil
+}
+
 func ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalSourceRegistrationParams, error) {
 	model := &backuprecoveryv1.PhysicalSourceRegistrationParams{}
 	model.Endpoint = core.StringPtr(modelMap["endpoint"].(string))
@@ -2146,6 +2260,25 @@ func ResourceIbmBackupRecoverySourceRegistrationKeyValuePairToMap(model *backupr
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = *model.Key
 	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(model *backuprecoveryv1.DB2SourceRegistrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.HostOsType != nil {
+		modelMap["host_os_type"] = *model.HostOsType
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoverySourceRegistrationSapHanaSourceRegistrationParamsToMap(model *backuprecoveryv1.SapHanaSourceRegistrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BackintProtocolVersion != nil {
+		modelMap["backint_protocol_version"] = *model.BackintProtocolVersion
+	}
+	modelMap["hosts"] = model.Hosts
+	modelMap["script_dir"] = *model.ScriptDir
+	modelMap["source_name"] = *model.SourceName
 	return modelMap, nil
 }
 
