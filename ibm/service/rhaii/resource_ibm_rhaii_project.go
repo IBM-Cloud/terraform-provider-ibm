@@ -169,28 +169,22 @@ func (r *rhaiiProjectResource) Configure(_ context.Context, req resource.Configu
 func (r *rhaiiProjectResource) ValidateConfig(context.Context, resource.ValidateConfigRequest, *resource.ValidateConfigResponse) {
 }
 
-// ModifyPlan does what the SDKv2 resources do in CustomizeDiff:
-//   - adds the IC_ENV_TAGS tags of Schematics to the planned tags, because the
-//     flex tag helpers always attach them (no endless diff)
-//   - fails the plan when an access tag does not exist in the account
+// ModifyPlan fails the plan when an access tag does not exist in the account,
+// as the SDKv2 resources do in CustomizeDiff.
+//
+// The IC_ENV_TAGS tags of Schematics are not added to the plan: the framework
+// does not allow a planned value that differs from the config value. The flex
+// tag helpers attach them on create and update, and rhaiiReadTags drops them
+// on read (the equivalent of flex.ResourceTagsCustomizeDiff).
 func (r *rhaiiProjectResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroy
 	}
 
-	var config, plan rhaiiProjectResourceModel
+	var config rhaiiProjectResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
-	}
-
-	if envTags := rhaiiEnvTags(); len(envTags) > 0 && !config.Tags.IsNull() && !config.Tags.IsUnknown() {
-		tags, d := rhaiiSetToStrings(ctx, config.Tags)
-		resp.Diagnostics.Append(d...)
-		merged, d := types.SetValueFrom(ctx, types.StringType, rhaiiMergeTags(tags, envTags))
-		resp.Diagnostics.Append(d...)
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("tags"), merged)...)
 	}
 
 	if r.meta != nil && !config.AccessTags.IsNull() && !config.AccessTags.IsUnknown() {

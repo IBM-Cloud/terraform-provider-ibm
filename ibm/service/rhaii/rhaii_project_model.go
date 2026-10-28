@@ -238,14 +238,19 @@ func flattenRhaiiProject(ctx context.Context, meta conns.ClientSession, instance
 
 // rhaiiReadTags reads the user tags and the access tags of a CRN as framework sets.
 // Read errors are warnings and give an empty set, as in the other resources of the provider.
+// The IC_ENV_TAGS tags that Schematics attaches are left out of the user tags,
+// so the state keeps matching the config (see rhaiiWithoutEnvTags).
 func rhaiiReadTags(ctx context.Context, meta conns.ClientSession, crn string) (types.Set, types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	toSet := func(tags *schema.Set) types.Set {
+	toSet := func(tags *schema.Set, dropEnvTags bool) types.Set {
 		out := []string{}
 		if tags != nil {
 			for _, t := range tags.List() {
 				out = append(out, fmt.Sprint(t))
 			}
+		}
+		if dropEnvTags {
+			out = rhaiiWithoutEnvTags(out)
 		}
 		sort.Strings(out)
 		s, d := types.SetValueFrom(ctx, types.StringType, out)
@@ -261,7 +266,7 @@ func rhaiiReadTags(ctx context.Context, meta conns.ClientSession, crn string) (t
 	if err != nil {
 		diags.AddWarning("Error reading the access tags of the Red Hat AI Inference project", err.Error())
 	}
-	return toSet(userTags), toSet(accessTags), diags
+	return toSet(userTags, true), toSet(accessTags, false), diags
 }
 
 // rhaiiSetToStrings returns the strings of a known framework set, or nil.
@@ -286,7 +291,7 @@ func rhaiiUpdateTags(meta conns.ClientSession, crn, tagType string, oldTags, new
 }
 
 // rhaiiEnvTags returns the tags that Schematics adds through IC_ENV_TAGS. The
-// flex tag helpers attach them to every resource, so they are part of the plan.
+// flex tag helpers attach them to every resource on create and update.
 func rhaiiEnvTags() []string {
 	v := os.Getenv("IC_ENV_TAGS")
 	if v == "" {
@@ -295,19 +300,25 @@ func rhaiiEnvTags() []string {
 	return strings.Split(v, ",")
 }
 
-// rhaiiMergeTags returns the sorted union of two tag lists.
-func rhaiiMergeTags(a, b []string) []string {
-	seen := map[string]struct{}{}
-	out := []string{}
-	for _, list := range [][]string{a, b} {
-		for _, t := range list {
-			if _, ok := seen[t]; !ok {
-				seen[t] = struct{}{}
-				out = append(out, t)
-			}
+// rhaiiWithoutEnvTags returns the tags without the IC_ENV_TAGS tags of
+// Schematics. The SDKv2 resources suppress the same tags in
+// flex.ResourceTagsCustomizeDiff; the framework cannot change the plan away
+// from the config, so the tags are dropped when the resource is read instead.
+func rhaiiWithoutEnvTags(tags []string) []string {
+	envTags := rhaiiEnvTags()
+	if len(envTags) == 0 {
+		return tags
+	}
+	env := make(map[string]struct{}, len(envTags))
+	for _, t := range envTags {
+		env[strings.TrimSpace(t)] = struct{}{}
+	}
+	out := make([]string, 0, len(tags))
+	for _, t := range tags {
+		if _, ok := env[t]; !ok {
+			out = append(out, t)
 		}
 	}
-	sort.Strings(out)
 	return out
 }
 
