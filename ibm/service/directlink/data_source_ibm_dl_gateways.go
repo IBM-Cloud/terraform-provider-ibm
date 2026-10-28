@@ -520,9 +520,9 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 			gateway[dlChangeRequest] = *gatewayChangeRequest.Type
 		}
 
-		// if instance.AuthenticationKey != nil {
-		// 	gateway[dlAuthenticationKey] = *instance.AuthenticationKey.Crn
-		// }
+		if authenticationKeyCrn, ok := authenticationKeyCRN(instance.AuthenticationKey); ok {
+			gateway[dlAuthenticationKey] = authenticationKeyCrn
+		}
 
 		if instance.ConnectionMode != nil {
 			gateway[dlConnectionMode] = *instance.ConnectionMode
