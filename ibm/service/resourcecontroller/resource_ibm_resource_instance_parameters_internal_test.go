@@ -30,6 +30,47 @@ func TestJSONEqual(t *testing.T) {
 	}
 }
 
+func TestProjectOnto(t *testing.T) {
+	desired := map[string]any{
+		"enable_cspm":     true,
+		"target_accounts": []any{map[string]any{"account_id": "a", "trusted_profile_id": "p"}},
+	}
+	// Server adds keys at the top level and inside each list entry: no drift.
+	observed := map[string]any{
+		"enable_cspm":      true,
+		"target_accounts":  []any{map[string]any{"account_id": "a", "trusted_profile_id": "p", "server_added": "x"}},
+		"server_generated": "y",
+	}
+	if !jsonEqual(desired, projectOnto(desired, observed)) {
+		t.Error("server-added nested keys must not be drift")
+	}
+	// A changed value inside a list entry is drift.
+	observed["target_accounts"] = []any{map[string]any{"account_id": "a", "trusted_profile_id": "CHANGED"}}
+	if jsonEqual(desired, projectOnto(desired, observed)) {
+		t.Error("changed nested value must be drift")
+	}
+	// Extra list entries on the server are drift.
+	observed["target_accounts"] = []any{
+		map[string]any{"account_id": "a", "trusted_profile_id": "p"},
+		map[string]any{"account_id": "b", "trusted_profile_id": "q"},
+	}
+	if jsonEqual(desired, projectOnto(desired, observed)) {
+		t.Error("extra list entries must be drift")
+	}
+	// null for an empty list is not drift.
+	if !jsonEqual([]any{}, projectOnto([]any{}, nil)) {
+		t.Error("null must equal an empty list")
+	}
+	// A key the server does not echo keeps the desired value.
+	if !jsonEqual(desired, projectOnto(desired, map[string]any{"enable_cspm": true})) {
+		t.Error("missing keys must keep the desired value")
+	}
+	// Shape mismatch is returned as observed, so it is reported as drift.
+	if jsonEqual(desired, projectOnto(desired, map[string]any{"enable_cspm": true, "target_accounts": "oops"})) {
+		t.Error("type change must be drift")
+	}
+}
+
 func TestParseParametersJSON(t *testing.T) {
 	for raw, ok := range map[string]bool{
 		`{"enable_cspm":false,"target_accounts":[]}`: true,

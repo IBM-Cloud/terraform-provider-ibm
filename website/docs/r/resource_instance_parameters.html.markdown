@@ -10,7 +10,7 @@ description: |-
 
 Applies service-specific parameters to an existing resource instance through the Resource Controller update API (`PATCH /v2/resource_instances/{id}`). Use it when the parameters depend on resources created after the instance, which would otherwise be a dependency cycle on `ibm_resource_instance`. 
 
-Drift is checked only on the top-level keys in `parameters`. Server-generated fields are ignored.
+Drift is checked only on the keys in `parameters`, recursively. Keys the service adds, at the top level or inside nested objects, are ignored, and a `null` list from the service is treated as an empty list. A changed value, a changed type, or an extra list entry is reported as drift and planned as an update.
 
 When the Resource Controller runs the update asynchronously (`last_operation.async = true`), create and update wait until the operation finishes and the instance is `active` again. A failed operation fails the apply with the operation's description.
 

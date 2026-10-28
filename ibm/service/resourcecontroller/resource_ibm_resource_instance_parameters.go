@@ -68,7 +68,7 @@ func (r *resourceInstanceParametersResource) Metadata(ctx context.Context, req r
 
 func (r *resourceInstanceParametersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Applies service-specific parameters to an existing resource instance through the Resource Controller update API. Use it for parameters that depend on resources created after the instance, such as enabling CSPM or CDR on SCC Workload Protection. Drift is checked only on the top-level keys you set, so server-generated fields never show as changes.",
+		Description: "Applies service-specific parameters to an existing resource instance through the Resource Controller update API. Use it for parameters that depend on resources created after the instance, such as enabling CSPM or CDR on SCC Workload Protection. Drift is checked only on the keys you set, recursively, so server-generated fields never show as changes.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,
@@ -199,6 +199,9 @@ func (r *resourceInstanceParametersResource) Read(ctx context.Context, req resou
 				observed[k] = v
 				continue
 			}
+			// Project the server value onto the shape the user sent, so keys the
+			// service adds inside nested objects never show as drift.
+			got = projectOnto(v, got)
 			if !jsonEqual(v, got) {
 				drift = true
 			}
@@ -335,6 +338,49 @@ func (r *resourceInstanceParametersResource) waitForUpdate(ctx context.Context, 
 		return nil, err
 	}
 	return result.(*rc.ResourceInstance), nil
+}
+
+// projectOnto returns the observed value reduced to the shape of the desired
+// value: object keys missing from desired are dropped (recursively, including
+// inside lists), and a null observed list is treated as an empty list. Scalars
+// and anything with a different shape are returned as observed.
+func projectOnto(desired, observed any) any {
+	switch d := desired.(type) {
+	case map[string]any:
+		o, ok := observed.(map[string]any)
+		if !ok {
+			return observed
+		}
+		out := make(map[string]any, len(d))
+		for k, dv := range d {
+			ov, present := o[k]
+			if !present {
+				// Services do not echo every key back; keep the desired value.
+				out[k] = dv
+				continue
+			}
+			out[k] = projectOnto(dv, ov)
+		}
+		return out
+	case []any:
+		if observed == nil {
+			return []any{}
+		}
+		o, ok := observed.([]any)
+		if !ok {
+			return observed
+		}
+		out := make([]any, len(o))
+		for i, ov := range o {
+			if i < len(d) {
+				out[i] = projectOnto(d[i], ov)
+			} else {
+				out[i] = ov
+			}
+		}
+		return out
+	}
+	return observed
 }
 
 // jsonEqual compares two decoded JSON values after a normalising round trip, so
