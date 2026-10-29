@@ -36,6 +36,13 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 				ForceNew:    true,
 				Description: "The field denoting if the resource collection is enabled.",
 			},
+			"realtime_config_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The field denoting if the realtime collection is enabled.",
+			},
 			"trusted_profile_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -125,6 +132,9 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 	}
 	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
 	replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
+	if v, ok := d.GetOkExists("realtime_config_enabled"); ok {
+		replaceSettingsOptions.SetRealtimeConfigEnabled(v.(bool))
+	}
 	if _, ok := d.GetOk("trusted_profile_id"); ok {
 		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
 	}
@@ -197,6 +207,12 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 		if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
 			err = fmt.Errorf("Error setting resource_collection_enabled: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
+		}
+	}
+	if !core.IsNil(settingsResponse.RealtimeConfigEnabled) {
+		if err = d.Set("realtime_config_enabled", settingsResponse.RealtimeConfigEnabled); err != nil {
+			err = fmt.Errorf("Error setting realtime_config_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-realtime_config_enabled").GetDiag()
 		}
 	}
 	if !core.IsNil(settingsResponse.TrustedProfileID) {

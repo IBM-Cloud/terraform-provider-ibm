@@ -43,6 +43,7 @@ Nested schema for **additional_scope**:
 * `resource_collection_regions` - (List) Regions for which the resource collection is enabled.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9-]*$/`. The maximum length is `10` items. The minimum length is `0` items.
 * `resource_collection_enabled` - (Boolean) The field to check if the resource collection is enabled.
+* `realtime_config_enabled` - (Boolean) The field to check if the realtime collection is enabled.
 * `trusted_profile_id` - (String) The trusted profile ID that provides access to App Configuration instance to retrieve resource metadata.
   * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 
