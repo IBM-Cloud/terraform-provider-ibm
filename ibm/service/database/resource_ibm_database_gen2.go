@@ -467,7 +467,7 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 }
 
 // dbConfigToMap converts DBConfig to a map for the API, omitting zero-value fields.
-// mongodbees: emits "shards" when set, "members" otherwise. All other types: emits "members".
+// mongodbees: emits members and shards independently when set. All other types: emits "members".
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -475,10 +475,11 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 		result["version"] = config.Version
 	}
 	if dbType == "mongodbees" {
+		if config.Members > 0 {
+			result["members"] = config.Members
+		}
 		if config.Shards > 0 {
 			result["shards"] = config.Shards
-		} else if config.Members > 0 {
-			result["members"] = config.Members
 		}
 	} else if config.Members > 0 {
 		result["members"] = config.Members
