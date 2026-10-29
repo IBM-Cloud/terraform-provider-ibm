@@ -366,11 +366,20 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 		dataservices["restore_backup_id"] = backupID.(string)
 	}
 
+	// For mongodbees, remote_leader_id starts a MongoSync migration: add the migrate block at creation only.
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok && dbType == "mongodbees" && d.IsNewResource() {
+		migrate, err := g.buildMongoSyncMigrate(sourceCRN.(string), meta)
+		if err != nil {
+			return nil, err
+		}
+		dbConfig["migrate"] = migrate
+	}
+
 	// Add read_replica block if remote_leader_id is set (for read replica creation).
 	// The dbConfig map already exists as dataservices[dbType]; inject read_replica into it.
 	// source_type is derived by looking up the source instance's plan: Gen2 plans contain
 	// "-gen2-"; anything else is treated as "gen1" (Classic).
-	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok {
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok && dbType != "mongodbees" {
 		if dbCfg, ok := dataservices[dbType].(map[string]interface{}); ok {
 			sourceType := "gen1"
 			if rsConClient, err := g.getResourceControllerClient(meta); err == nil {
@@ -394,6 +403,58 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	}
 
 	return parameters, nil
+}
+
+// buildMongoSyncMigrate validates the Gen1 source instance and builds the migrate block that
+// starts a MongoSync migration. commit is false: synchronization runs until remote_leader_id is cleared.
+func (g *resourceIBMDatabaseGen2Backend) buildMongoSyncMigrate(sourceCRN string, meta interface{}) (map[string]interface{}, error) {
+	rsConClient, err := g.getResourceControllerClient(meta)
+	if err != nil {
+		return nil, err
+	}
+	srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &sourceCRN})
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving %s source instance %s: %w", remoteLeaderIDKey, sourceCRN, err)
+	}
+	if srcInst.ResourcePlanID == nil {
+		return nil, fmt.Errorf("%s source instance %s has no resource plan ID", remoteLeaderIDKey, sourceCRN)
+	}
+
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize resource catalog client: %w", err)
+	}
+	planName, err := rsCatClient.ResourceCatalog().GetServicePlanName(*srcInst.ResourcePlanID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving plan of %s source instance %s: %w", remoteLeaderIDKey, sourceCRN, err)
+	}
+	if err := validateMongoSyncSource(sourceCRN, planName); err != nil {
+		return nil, err
+	}
+
+	sourceType := "gen1"
+	if isGen2Plan(*srcInst.ResourcePlanID) {
+		sourceType = "gen2"
+	}
+	return map[string]interface{}{
+		"source_crn":  sourceCRN,
+		"source_type": sourceType,
+		"commit":      false,
+	}, nil
+}
+
+// validateMongoSyncSource checks that the source is a Gen1 databases-for-mongodb Enterprise instance.
+func validateMongoSyncSource(sourceCRN, sourcePlanName string) error {
+	if parts := strings.Split(sourceCRN, ":"); len(parts) < 5 || parts[4] != "databases-for-mongodb" {
+		return fmt.Errorf("%s must be the CRN of a databases-for-mongodb instance, got %q", remoteLeaderIDKey, sourceCRN)
+	}
+	if isGen2Plan(sourcePlanName) {
+		return fmt.Errorf("%s: a Gen2 MongoDB instance (plan %s) is not yet supported as a MongoSync source", remoteLeaderIDKey, sourcePlanName)
+	}
+	if sourcePlanName != "enterprise" {
+		return fmt.Errorf("%s: only a Gen1 databases-for-mongodb Enterprise instance is supported as a MongoSync source, got plan %q", remoteLeaderIDKey, sourcePlanName)
+	}
+	return nil
 }
 
 // buildDBConfig creates database configuration with member group and storage settings.
@@ -1029,9 +1090,31 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// buildPromoteParameters builds the PATCH parameters that promote a read replica, or commit a MongoSync migration for mongodbees.
+func buildPromoteParameters(dbType string) map[string]interface{} {
+	dbParams := map[string]interface{}{
+		"read_replica": map[string]interface{}{
+			"promoted": true,
+		},
+	}
+	if dbType == "mongodbees" {
+		dbParams = map[string]interface{}{
+			"migrate": map[string]interface{}{
+				"commit": true,
+			},
+		}
+	}
+	return map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			dbType: dbParams,
+		},
+	}
+}
+
 // promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
 // Triggered when remote_leader_id is cleared (set to "") on an existing replica.
 // Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
+// For mongodbees (MongoSync) the migration is committed instead, with migrate.commit=true.
 func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
 	if !d.HasChange(remoteLeaderIDKey) {
 		return nil
@@ -1065,15 +1148,7 @@ func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *sc
 		return diagError("unable to determine database type from resource plan ID for promotion")
 	}
 
-	parameters := map[string]interface{}{
-		"dataservices": map[string]interface{}{
-			dbType: map[string]interface{}{
-				"read_replica": map[string]interface{}{
-					"promoted": true,
-				},
-			},
-		},
-	}
+	parameters := buildPromoteParameters(dbType)
 
 	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
 		return diagError("error promoting read replica: %s", err)
