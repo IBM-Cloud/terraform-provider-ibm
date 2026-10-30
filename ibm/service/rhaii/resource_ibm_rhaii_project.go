@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -172,10 +171,10 @@ func (r *rhaiiProjectResource) ValidateConfig(context.Context, resource.Validate
 // ModifyPlan fails the plan when an access tag does not exist in the account,
 // as the SDKv2 resources do in CustomizeDiff.
 //
-// The IC_ENV_TAGS tags of Schematics are not added to the plan: the framework
+// The IC_ENV_TAGS environment tags are not added to the plan: the framework
 // does not allow a planned value that differs from the config value. The flex
-// tag helpers attach them on create and update, and rhaiiReadTags drops them
-// on read (the equivalent of flex.ResourceTagsCustomizeDiff).
+// tag helpers attach them on create and update, and flex.ReadGlobalTagsUsingCRN
+// drops them on read (the equivalent of flex.ResourceTagsCustomizeDiff).
 func (r *rhaiiProjectResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroy
@@ -187,16 +186,8 @@ func (r *rhaiiProjectResource) ModifyPlan(ctx context.Context, req resource.Modi
 		return
 	}
 
-	if r.meta != nil && !config.AccessTags.IsNull() && !config.AccessTags.IsUnknown() {
-		accessTags, d := rhaiiSetToStrings(ctx, config.AccessTags)
-		resp.Diagnostics.Append(d...)
-		missing, err := rhaiiMissingAccessTags(ctx, r.meta, accessTags)
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(path.Root("access_tags"), "Error checking access tags", err.Error())
-		} else if len(missing) > 0 {
-			resp.Diagnostics.AddAttributeError(path.Root("access_tags"), "Access tags do not exist",
-				fmt.Sprintf("Access tag(s) %s do not exist in the account. Create them first, for example with ibm_iam_access_tag.", strings.Join(missing, ", ")))
-		}
+	if r.meta != nil {
+		resp.Diagnostics.Append(flex.FrameworkValidateAccessTags(ctx, r.meta, config.AccessTags, path.Root("access_tags"))...)
 	}
 }
 
@@ -267,17 +258,14 @@ func (r *rhaiiProjectResource) Create(ctx context.Context, req resource.CreateRe
 	// Tag errors are warnings. An error here would mark the new project as
 	// tainted, and the next apply would destroy and recreate it.
 	crn := strDeref(instance.CRN)
-	tags, d := rhaiiSetToStrings(ctx, plan.Tags)
-	resp.Diagnostics.Append(d...)
-	if len(tags) > 0 || len(rhaiiEnvTags()) > 0 {
-		if err := rhaiiUpdateTags(r.meta, crn, rhaiiUserTagType, nil, tags); err != nil {
+	none := types.SetNull(types.StringType)
+	if len(plan.Tags.Elements()) > 0 || len(flex.EnvTags()) > 0 {
+		if err := flex.FrameworkUpdateTagsUsingCRN(ctx, r.meta, crn, "", rhaiiUserTagType, none, plan.Tags); err != nil {
 			resp.Diagnostics.AddWarning("Error attaching tags to the Red Hat AI Inference project", err.Error())
 		}
 	}
-	accessTags, d := rhaiiSetToStrings(ctx, plan.AccessTags)
-	resp.Diagnostics.Append(d...)
-	if len(accessTags) > 0 {
-		if err := rhaiiUpdateTags(r.meta, crn, rhaiiAccessTagType, nil, accessTags); err != nil {
+	if len(plan.AccessTags.Elements()) > 0 {
+		if err := flex.FrameworkUpdateTagsUsingCRN(ctx, r.meta, crn, "", rhaiiAccessTagType, none, plan.AccessTags); err != nil {
 			resp.Diagnostics.AddWarning("Error attaching access tags to the Red Hat AI Inference project", err.Error())
 		}
 	}
@@ -330,21 +318,13 @@ func (r *rhaiiProjectResource) Update(ctx context.Context, req resource.UpdateRe
 
 	crn := state.CRN.ValueString()
 	if !plan.Tags.IsUnknown() && !plan.Tags.Equal(state.Tags) {
-		oldTags, d := rhaiiSetToStrings(ctx, state.Tags)
-		resp.Diagnostics.Append(d...)
-		newTags, d := rhaiiSetToStrings(ctx, plan.Tags)
-		resp.Diagnostics.Append(d...)
-		if err := rhaiiUpdateTags(r.meta, crn, rhaiiUserTagType, oldTags, newTags); err != nil {
+		if err := flex.FrameworkUpdateTagsUsingCRN(ctx, r.meta, crn, "", rhaiiUserTagType, state.Tags, plan.Tags); err != nil {
 			resp.Diagnostics.AddError("Error updating the tags of the Red Hat AI Inference project", err.Error())
 			return
 		}
 	}
 	if !plan.AccessTags.IsUnknown() && !plan.AccessTags.Equal(state.AccessTags) {
-		oldTags, d := rhaiiSetToStrings(ctx, state.AccessTags)
-		resp.Diagnostics.Append(d...)
-		newTags, d := rhaiiSetToStrings(ctx, plan.AccessTags)
-		resp.Diagnostics.Append(d...)
-		if err := rhaiiUpdateTags(r.meta, crn, rhaiiAccessTagType, oldTags, newTags); err != nil {
+		if err := flex.FrameworkUpdateTagsUsingCRN(ctx, r.meta, crn, "", rhaiiAccessTagType, state.AccessTags, plan.AccessTags); err != nil {
 			resp.Diagnostics.AddError("Error updating the access tags of the Red Hat AI Inference project", err.Error())
 			return
 		}
