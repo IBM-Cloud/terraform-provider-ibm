@@ -139,6 +139,52 @@ output "db_connection" {
 
 **Note:** Gen2 instances use `ibm_resource_key` for credential management instead of the `adminpassword` and `users` attributes used in Classic plans. The `groups` computed attribute can be used to verify current scaling configuration from instance extensions and catalog metadata.
 
+### Gen2 database instance with backup configuration
+
+The `backups` block is available for Gen2 plans only. It configures whether backups are preserved after the instance is deleted, how long they are retained, and whether automatic backups are copied to another region. Independent backups require a service-to-service authorization (see [Gen2 Independent Backups and S2S Authorization](#gen2-independent-backups-and-s2s-authorization)).
+
+```terraform
+resource "ibm_database" "postgres_gen2_backups" {
+  name              = "my-postgres-gen2-backups"
+  plan              = "standard-gen2"
+  location          = "in-che"
+  service           = "databases-for-postgresql"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  backups {
+    preserve  = true # cannot be set back to false once enabled
+    retention = 45   # days, between 30 and 60
+
+    automatic_backups {
+      copy {
+        enabled = true
+        target = [
+          { region = "in-che" },
+          { region = "ca-mon" },
+        ]
+      }
+    }
+  }
+}
+
+# Stop creating cross-regional copies of automatic backups
+resource "ibm_database" "postgres_gen2_no_copy" {
+  name              = "my-postgres-gen2-no-copy"
+  plan              = "standard-gen2"
+  location          = "in-che"
+  service           = "databases-for-postgresql"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  backups {
+    automatic_backups {
+      copy {
+        enabled = false
+      }
+    }
+  }
+}
+```
+
 ### Gen2 Valkey database instance example
 
 An example to configure and deploy a Gen2 Valkey instance. Valkey is only available as a Gen2 service.
@@ -888,6 +934,28 @@ Review the argument reference that you can specify for your resource.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
   **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
+- `backups` - (Optional, List, Max: 1) Configures backups for the database. **Gen2 only:** `terraform plan` fails if this block is set on a Classic plan. All attributes in this block are optional; attributes you do not set keep the value the service assigned. Removing the block or an attribute from the configuration stops Terraform managing it but does not reset it on the instance. The `backups` settings are sent when the instance is created. On later updates, only the attributes whose values you changed are sent, in a separate request from scaling and configuration changes, so settings you did not change, such as `target` regions managed outside Terraform, are not overwritten.
+
+  Nested scheme for `backups`:
+  - `preserve` - (Optional, Boolean) Set to `true` to keep independent backups, except for on-demand backup copies, after the database instance is hard deleted. The default is `false`. This option can be enabled but it cannot be disabled after it is enabled; `terraform plan` fails if you change it from `true` to `false`. It cannot be enabled for `databases-for-mysql`.
+  - `retention` - (Optional, Integer) The number of days backups are retained. Automatic backups are deleted automatically after the retention duration expires. On-demand backups can be deleted manually after the retention duration expires. The value must be between `30` and `60`. The default is `30`.
+  - `automatic_backups` - (Optional, List, Max: 1) Settings for automatic backups.
+
+    Nested scheme for `automatic_backups`:
+    - `copy` - (Optional, List, Max: 1) Settings for cross-regional copies of automatic backups.
+
+      Nested scheme for `copy`:
+      - `enabled` - (Optional, Boolean) Whether automatic copies of automatic backups are created. The default is `true`. When set to `false`, cross-regional copies are no longer created; copies created earlier remain until the retention duration expires. `terraform plan` fails if this is `false` and `target` blocks are configured.
+      - `target` - (Optional, List of Object) A region to create the automatic backup copy in. Repeat the block for each region. The order of `target` blocks is not significant. The supported regions are validated by the service when the change is applied, not at plan time. Example:
+        ```terraform
+        target = [
+          { region = "in-che" },
+          { region = "ca-mon" },
+        ]
+        ```
+        Nested scheme for `target`:
+        - `region` - (Required, String) The region to create the automatic backup copy in, for example `ca-mon`.
+
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
@@ -1067,6 +1135,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
+| Backup configuration (`backups` block: preserve, retention, automatic backup copy) | ❌ Plan fails if set | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
@@ -1091,6 +1160,7 @@ Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
   - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
+  - The `backups` block fails on Classic plans (it is Gen2 only).
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`

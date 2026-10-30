@@ -241,6 +241,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateAsyncRestoreDiff,
 			validateShardsDiff,
 			validateBackendSpecificServiceEndpointsDiff,
+			validateBackupsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{
@@ -410,6 +411,76 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"backups": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Backup configuration for the database. Gen2 only: plan fails if set on a Classic plan.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"preserve": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted. Defaults to false. Once enabled it cannot be disabled. Cannot be enabled for databases-for-mysql.",
+						},
+						"retention": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IntBetween(backupsRetentionMinDays, backupsRetentionMaxDays),
+							Description:  "The number of days backups are retained before they can be deleted. Must be between 30 and 60. Defaults to 30.",
+						},
+						"automatic_backups": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Description: "Settings for automatic backups.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"copy": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										MaxItems:    1,
+										Description: "Settings for cross-regional copies of automatic backups.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"enabled": {
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Computed:    true,
+													Description: "Whether cross-regional copies of automatic backups are created. Defaults to true. When false, existing copies remain until the retention duration expires. Cannot be false when target blocks are configured.",
+												},
+												"target": {
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													ConfigMode:  schema.SchemaConfigModeAttr,
+													Description: "The regions that automatic backup copies are created in.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"region": {
+																Type:         schema.TypeString,
+																Required:     true,
+																ValidateFunc: validation.StringIsNotEmpty,
+																Description:  "The region to create the automatic backup copy in.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,

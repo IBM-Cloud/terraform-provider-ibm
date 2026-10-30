@@ -360,6 +360,13 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Send backups only on create; updates are handled by applyBackupsWithDiagnostics.
+	if d.Id() == "" {
+		if backups := buildBackupsConfig(d, false); backups != nil {
+			dataservices["backups"] = backups
+		}
+	}
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
@@ -824,6 +831,10 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	if err := g.setGroupsInfo(d, instance, meta); err != nil {
 		return diag.FromErr(err)
 	}
+
+	if err := d.Set("backups", flattenBackupsFromExtensions(instance.Extensions)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting backups: %w", err))
+	}
 	if err := g.setShardsInfo(d, instance); err != nil {
 		return diag.FromErr(err)
 	}
@@ -1029,6 +1040,37 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// backupsParameters wraps the backups payload in the {"dataservices": {"backups": ...}} envelope.
+func backupsParameters(backups map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			"backups": backups,
+		},
+	}
+}
+
+// applyBackupsWithDiagnostics sends only the changed backups fields to the instance.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupsWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("backups") {
+		return nil
+	}
+
+	backups := buildBackupsConfig(d, true)
+	if backups == nil {
+		return nil
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, d.Id(), backupsParameters(backups)); err != nil {
+		return diagError("error applying backups update: %s", err)
+	}
+
+	if _, err := g.waitForGen2InstanceUpdate(d, meta); err != nil {
+		return diagError("error waiting for backups update to complete: %s", err)
+	}
+
+	return nil
+}
+
 // promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
 // Triggered when remote_leader_id is cleared (set to "") on an existing replica.
 // Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
@@ -1120,6 +1162,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.applyBackupsWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
