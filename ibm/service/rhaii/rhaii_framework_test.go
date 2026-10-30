@@ -267,12 +267,12 @@ func TestRhaiiProjectPlanTags(t *testing.T) {
 	}
 }
 
-// TestRhaiiProjectPlanEnvTags checks that the IC_ENV_TAGS tags of Schematics
+// TestRhaiiProjectPlanEnvTags checks that the IC_ENV_TAGS environment tags
 // are not added to the plan: Terraform rejects a planned value that differs
 // from the config value ("planned an invalid value"). The tags are attached by
 // the flex helpers and dropped again on read.
 func TestRhaiiProjectPlanEnvTags(t *testing.T) {
-	t.Setenv("IC_ENV_TAGS", "schematics:ws1")
+	t.Setenv("IC_ENV_TAGS", "env:ci")
 	p := plan(t, existingProject, map[string]interface{}{"name": "p", "resource_group_id": "rg", "tags": []string{"env:test"}})
 	if got := setStrings(t, p.values["tags"]); len(got) != 1 || got[0] != "env:test" {
 		t.Errorf("planned tags %v, want [env:test]", got)

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -263,19 +262,5 @@ func TestFlattenRhaiiInferenceModelMetadata(t *testing.T) {
 	empty, diags := flattenRhaiiInferenceModelMetadata(nil)
 	if diags.HasError() || !empty.TotalParams.IsNull() || len(empty.Pricing.Elements()) != 0 {
 		t.Errorf("nil metadata must flatten to empty values, got %+v", empty)
-	}
-}
-
-func TestRhaiiWithoutEnvTags(t *testing.T) {
-	t.Setenv("IC_ENV_TAGS", "Schematics:abc,env:schematics")
-	got := rhaiiWithoutEnvTags([]string{"Schematics:abc", "rhaii-da", "env:schematics", "test"})
-	if !reflect.DeepEqual(got, []string{"rhaii-da", "test"}) {
-		t.Errorf("rhaiiWithoutEnvTags() = %v", got)
-	}
-
-	t.Setenv("IC_ENV_TAGS", "")
-	got = rhaiiWithoutEnvTags([]string{"Schematics:abc", "rhaii-da"})
-	if !reflect.DeepEqual(got, []string{"Schematics:abc", "rhaii-da"}) {
-		t.Errorf("rhaiiWithoutEnvTags() without IC_ENV_TAGS = %v", got)
 	}
 }

@@ -172,10 +172,10 @@ func (r *rhaiiProjectResource) ValidateConfig(context.Context, resource.Validate
 // ModifyPlan fails the plan when an access tag does not exist in the account,
 // as the SDKv2 resources do in CustomizeDiff.
 //
-// The IC_ENV_TAGS tags of Schematics are not added to the plan: the framework
+// The IC_ENV_TAGS environment tags are not added to the plan: the framework
 // does not allow a planned value that differs from the config value. The flex
-// tag helpers attach them on create and update, and rhaiiReadTags drops them
-// on read (the equivalent of flex.ResourceTagsCustomizeDiff).
+// tag helpers attach them on create and update, and flex.ReadGlobalTagsUsingCRN
+// drops them on read (the equivalent of flex.ResourceTagsCustomizeDiff).
 func (r *rhaiiProjectResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return // destroy
@@ -269,7 +269,7 @@ func (r *rhaiiProjectResource) Create(ctx context.Context, req resource.CreateRe
 	crn := strDeref(instance.CRN)
 	tags, d := rhaiiSetToStrings(ctx, plan.Tags)
 	resp.Diagnostics.Append(d...)
-	if len(tags) > 0 || len(rhaiiEnvTags()) > 0 {
+	if len(tags) > 0 || len(flex.EnvTags()) > 0 {
 		if err := rhaiiUpdateTags(r.meta, crn, rhaiiUserTagType, nil, tags); err != nil {
 			resp.Diagnostics.AddWarning("Error attaching tags to the Red Hat AI Inference project", err.Error())
 		}

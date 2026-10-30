@@ -92,6 +92,13 @@ Thank you for contributing! Here you will find the information on what to includ
 - Normalize unordered results in **Read** using sorted lists/sets.
 - Don’t ignore user changes unless API truly ignores them.
 
+### Environment tags (IC_ENV_TAGS)
+- `IC_ENV_TAGS` holds comma-separated tags that are attached to every resource, on top of the configured `tags`. Do not read it in a resource; use the helpers in `ibm/flex/env_tags.go`.
+- `flex.UpdateGlobalTagsUsingCRN` and `flex.UpdateTagsUsingCRN` already attach these tags in Create/Update.
+- The tags must not show up in the plan. The Global Tagging service lower-cases tags, so compare ignoring case.
+- **SDKv2:** use `flex.ResourceTagsCustomizeDiff` and `flex.ResourceIBMVPCHash` for the `tags` set (see `ibm_is_vpc`).
+- **Plugin Framework:** read tags with `flex.ReadGlobalTagsUsingCRN`, which leaves the environment tags out of the state (see `ibm_rhaii_project`).
+
 ### Validation
 - Always use validators for string length, patterns, enums.
 - Fail early when invalid input is easier for user to correct.
