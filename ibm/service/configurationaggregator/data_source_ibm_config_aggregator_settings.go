@@ -31,6 +31,11 @@ func DataSourceIbmConfigAggregatorSettings() *schema.Resource {
 				Computed:    true,
 				Description: "The field to check if the resource collection is enabled.",
 			},
+			"realtime_config_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The field to check if the realtime collection is enabled.",
+			},
 			"trusted_profile_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -116,6 +121,10 @@ func dataSourceIbmConfigAggregatorSettingsRead(context context.Context, d *schem
 
 	if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_collection_enabled: %s", err), "(Data) ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
+	}
+
+	if err = d.Set("realtime_config_enabled", settingsResponse.RealtimeConfigEnabled); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting realtime_config_enabled: %s", err), "(Data) ibm_config_aggregator_settings", "read", "set-realtime_config_enabled").GetDiag()
 	}
 
 	if err = d.Set("trusted_profile_id", settingsResponse.TrustedProfileID); err != nil {
