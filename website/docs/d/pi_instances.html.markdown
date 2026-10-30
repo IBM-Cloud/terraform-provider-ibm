@@ -97,7 +97,7 @@ In addition to all argument reference list, you can access the following attribu
         - `network_id` - (String) The network ID of the instance.
         - `network_interface_id` - (String) ID of the network interface.
         - `network_name` - (String) The network name of the instance.
-        - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+        - `network_security_group_ids` - (List) IDs of the network security groups that the network interface is a member of.
         - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
         - `type` - (String) The type of the network.
 
