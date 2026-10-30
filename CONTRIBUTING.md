@@ -97,7 +97,10 @@ Thank you for contributing! Here you will find the information on what to includ
 - `flex.UpdateGlobalTagsUsingCRN` and `flex.UpdateTagsUsingCRN` already attach these tags in Create/Update.
 - The tags must not show up in the plan. The Global Tagging service lower-cases tags, so compare ignoring case.
 - **SDKv2:** use `flex.ResourceTagsCustomizeDiff` and `flex.ResourceIBMVPCHash` for the `tags` set (see `ibm_is_vpc`).
-- **Plugin Framework:** read tags with `flex.ReadGlobalTagsUsingCRN`, which leaves the environment tags out of the state (see `ibm_rhaii_project`).
+- **Plugin Framework:** use the helpers in `ibm/flex/framework_tags.go` (see `ibm_rhaii_project`):
+  - `flex.FrameworkValidateAccessTags` in `ModifyPlan`, to fail on access tags that do not exist.
+  - `flex.FrameworkUpdateTagsUsingCRN` in `Create` (null old set) and `Update`; it attaches the environment tags too.
+  - `flex.FrameworkReadTagsUsingCRN` in `Read`; it leaves the environment tags out, so the state matches the config.
 
 ### Validation
 - Always use validators for string length, patterns, enums.
