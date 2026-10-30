@@ -39,9 +39,9 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 			"realtime_config_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
+				Default:     false,
 				ForceNew:    true,
-				Description: "The field denoting if the realtime collection is enabled.",
+				Description: "The field denoting if the realtime collection is enabled. Defaults to false. If omitted, the service treats realtime collection as disabled.",
 			},
 			"trusted_profile_id": &schema.Schema{
 				Type:         schema.TypeString,
@@ -132,9 +132,7 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 	}
 	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
 	replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
-	if v, ok := d.GetOkExists("realtime_config_enabled"); ok {
-		replaceSettingsOptions.SetRealtimeConfigEnabled(v.(bool))
-	}
+	replaceSettingsOptions.SetRealtimeConfigEnabled(d.Get("realtime_config_enabled").(bool))
 	if _, ok := d.GetOk("trusted_profile_id"); ok {
 		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
 	}
