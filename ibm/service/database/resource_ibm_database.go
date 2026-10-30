@@ -375,7 +375,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"remote_leader_id": {
 				Description: "The CRN of the leader (source) database. " +
 					"Classic: creates a read-only replica at provisioning time; clear to promote the replica to a standalone instance. " +
-					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance.",
+					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance. " +
+					"Gen2 MongoDB (enterprise-sharding-gen2): the CRN of a Gen1 databases-for-mongodb Enterprise instance to migrate from using MongoSync; clear to stop synchronization and commit the migration (irreversible).",
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -3429,12 +3430,25 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 
-	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
-		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	if remoteLeaderIdOk && !isRemoteLeaderIDSupported(service, plan) {
+		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb, databases-for-mysql and databases-for-mongodb with plan enterprise-sharding-gen2")
 	}
 
 	return nil
+}
+
+// isRemoteLeaderIDSupported reports whether remote_leader_id can be used with the given service and plan.
+// For databases-for-mongodb only enterprise-sharding-gen2 is supported (MongoSync migration).
+func isRemoteLeaderIDSupported(service, plan string) bool {
+	switch service {
+	case "databases-for-postgresql", "databases-for-mysql", "databases-for-enterprisedb":
+		return true
+	case "databases-for-mongodb":
+		return plan == "enterprise-sharding-gen2"
+	}
+	return false
 }
 
 func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

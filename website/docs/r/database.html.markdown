@@ -569,6 +569,31 @@ resource "ibm_resource_key" "mongo_credentials" {
 }
 ```
 
+### Migrating a Gen1 MongoDB Enterprise instance to MongoDB Enterprise Sharding Gen2 (MongoSync)
+
+Set `remote_leader_id` on a new `enterprise-sharding-gen2` instance to the CRN of a Gen1 `databases-for-mongodb` Enterprise (`enterprise`) instance. Data is synchronized from the Gen1 source to the new Gen2 instance. The Gen1 instance must already exist and must not be a Gen2 instance.
+
+```terraform
+resource "ibm_database" "mongo_gen1" {
+  # ... existing Gen1 databases-for-mongodb Enterprise instance ...
+  service = "databases-for-mongodb"
+  plan    = "enterprise"
+}
+
+resource "ibm_database" "mongo_gen2" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = "my-mongo-gen2"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise-sharding-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  remote_leader_id = ibm_database.mongo_gen1.id
+}
+```
+
+To cut over, stop writes to the Gen1 instance, then set `remote_leader_id = ""` and apply. This stops the synchronization and commits the migration, and it cannot be undone.
+
 ### Scaling shards on an existing MongoDB Enterprise Sharding Gen2 instance
 
 To increase the shard count after provisioning, update the `shards` attribute. The plan will fail if you attempt to decrease the count.
@@ -984,6 +1009,8 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Supported. Set `remote_leader_id` to the CRN of an existing Gen1 (Classic) or Gen2 source instance to provision a Gen2 read-only replica. Clear the attribute on an existing Gen2 replica to promote it to a standalone primary instance.
 
+  **Gen2 MongoDB Enterprise Sharding (MongoSync):** Supported only for `databases-for-mongodb` with plan `enterprise-sharding-gen2` (`mongodbees`), as a migration from a Gen1 (Classic) `databases-for-mongodb` Enterprise instance (`mongodbee`). Set `remote_leader_id` to the CRN of the Gen1 Enterprise instance. When a CRN is provided, the behavior follows Mongosync: data is continuously synchronized from the Gen1 source to the Gen2 target until cutover. This is a one-time migration, not a long-lived read replica. A Gen2 MongoDB instance is not yet supported as a source, and the attribute is not supported for other MongoDB plans. Stop writes to the Gen1 source before cutover. Clearing `remote_leader_id` stops the synchronization and commits the migration. This is **irreversible**, and `remote_leader_id` cannot be set again afterward. `remote_leader_id` is the same attribute used for read-only replicas; "source" and "destination" are the Mongosync terms for the Gen1 and Gen2 instances.
+
   For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 
 - `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
@@ -1072,6 +1099,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
 | Shard scale-out (shards, MongoDB enterprise-sharding-gen2) | ❌ Not supported | ✅ Supported (1–3 shards, increase only) |
+| Migrate from Gen1 MongoDB Enterprise (remote_leader_id, MongoDB enterprise-sharding-gen2) | ❌ Not applicable | ✅ Supported (MongoSync, Gen1 Enterprise source only) |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |

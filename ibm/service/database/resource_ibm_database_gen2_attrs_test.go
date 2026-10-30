@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -591,4 +592,124 @@ func TestIsShardAttrConfigured(t *testing.T) {
 			t.Fatal("expected true when shards=2 is configured")
 		}
 	})
+}
+
+func TestIsRemoteLeaderIDSupported(t *testing.T) {
+	tests := []struct {
+		service string
+		plan    string
+		want    bool
+	}{
+		{"databases-for-postgresql", "standard", true},
+		{"databases-for-postgresql", "standard-gen2", true},
+		{"databases-for-mysql", "standard", true},
+		{"databases-for-enterprisedb", "standard", true},
+		{"databases-for-mongodb", "enterprise-sharding-gen2", true},
+		{"databases-for-mongodb", "standard-gen2", false},
+		{"databases-for-mongodb", "standard", false},
+		{"databases-for-mongodb", "enterprise", false},
+		{"databases-for-mongodb", "enterprise-sharding", false},
+		{"databases-for-redis", "standard", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.service+"/"+tt.plan, func(t *testing.T) {
+			if got := isRemoteLeaderIDSupported(tt.service, tt.plan); got != tt.want {
+				t.Fatalf("isRemoteLeaderIDSupported(%q, %q) = %v, want %v", tt.service, tt.plan, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateMongoSyncSource(t *testing.T) {
+	const mongoCRN = "crn:v1:bluemix:public:databases-for-mongodb:us-south:a/account-id:instance-id::"
+
+	t.Run("accepts Gen1 Enterprise instance", func(t *testing.T) {
+		if err := validateMongoSyncSource(mongoCRN, "enterprise"); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("rejects Gen2 source", func(t *testing.T) {
+		err := validateMongoSyncSource(mongoCRN, "enterprise-sharding-gen2")
+		requireErrContains(t, err, "not yet supported as a MongoSync source")
+	})
+
+	t.Run("rejects other Gen1 plans", func(t *testing.T) {
+		for _, plan := range []string{"standard", "enterprise-sharding"} {
+			err := validateMongoSyncSource(mongoCRN, plan)
+			requireErrContains(t, err, "only a Gen1 databases-for-mongodb Enterprise instance is supported")
+		}
+	})
+
+	t.Run("rejects non-MongoDB source", func(t *testing.T) {
+		err := validateMongoSyncSource("crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::", "enterprise")
+		requireErrContains(t, err, "must be the CRN of a databases-for-mongodb instance")
+	})
+
+	t.Run("rejects malformed CRN", func(t *testing.T) {
+		err := validateMongoSyncSource("not-a-crn", "enterprise")
+		requireErrContains(t, err, "must be the CRN of a databases-for-mongodb instance")
+	})
+}
+
+func TestBuildPromoteParameters(t *testing.T) {
+	t.Run("mongodbees commits the migration", func(t *testing.T) {
+		got := buildPromoteParameters("mongodbees")
+		want := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"migrate": map[string]interface{}{"commit": true},
+				},
+			},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("other database types promote the read replica", func(t *testing.T) {
+		got := buildPromoteParameters("postgresql")
+		want := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": map[string]interface{}{
+					"read_replica": map[string]interface{}{"promoted": true},
+				},
+			},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("expected %v, got %v", want, got)
+		}
+	})
+}
+
+// On an existing mongodbees instance (update path) remote_leader_id must not add a migrate or read_replica block.
+func TestBuildGen2Parameters_mongodbeesRemoteLeaderOnlyMigratesAtCreate(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service":          "databases-for-mongodb",
+		"plan":             "enterprise-sharding-gen2",
+		"remote_leader_id": "crn:v1:bluemix:public:databases-for-mongodb:us-south:a/account-id:instance-id::",
+		"group": []interface{}{
+			map[string]interface{}{
+				"group_id": "member",
+				// members set explicitly so getMembersCount doesn't call the catalog API
+				"members": []interface{}{
+					map[string]interface{}{"allocation_count": 3},
+				},
+			},
+		},
+	})
+
+	params, err := g.buildGen2Parameters(d, "databases-for-mongodb", nil, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := params["dataservices"].(map[string]interface{})["mongodbees"].(map[string]interface{})
+	for _, key := range []string{"migrate", "read_replica"} {
+		if _, ok := cfg[key]; ok {
+			t.Fatalf("expected %q absent on a non-create build, got %v", key, cfg[key])
+		}
+	}
 }
