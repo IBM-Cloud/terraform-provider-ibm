@@ -70,6 +70,12 @@ In addition to all argument reference list, you can access the following attribu
         - `message` -  (String) The fault message of the server.
 
   - `health_status` - (String) The health of the instance.
+  - `ibmi_css` - (Boolean) IBM i Cloud Storage Solution.
+  - `ibmi_pha` - (Boolean) IBM i Power High Availability.
+  - `ibmi_pha_fsm` - (Boolean) IBM i PHA Full System Manager (FSM) license is enabled.
+  - `ibmi_pha_fsm_count` - (Integer) Number of IBM i PHA FSM managed servers. `0` when FSM is disabled.
+  - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
+  - `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio number of user licenses.
   - `license_repository_capacity` - (Integer) The VTL license repository capacity TiB value. Only available with VTL instances.
   - `memory` - (Float) The amount of memory that is allocated to the instance.
   - `metadata_service` - (List) The metadata service configuration for the instance.
@@ -91,7 +97,7 @@ In addition to all argument reference list, you can access the following attribu
         - `network_id` - (String) The network ID of the instance.
         - `network_interface_id` - (String) ID of the network interface.
         - `network_name` - (String) The network name of the instance.
-        - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+        - `network_security_group_ids` - (List) IDs of the network security groups that the network interface is a member of.
         - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
         - `type` - (String) The type of the network.
 
