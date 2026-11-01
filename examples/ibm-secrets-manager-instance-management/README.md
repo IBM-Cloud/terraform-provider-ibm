@@ -2,8 +2,13 @@
 
 These examples illustrate how to use the resources and data sources associated with IBM Cloud Secrets Manager Instance Management API.
 
+The following resources are supported:
+* ibm_sm_destination
+
 The following data sources are supported:
 * ibm_sm_instance
+* ibm_sm_destinations
+* ibm_sm_destination
 
 ## Usage
 
@@ -17,13 +22,17 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## IBM Cloud Secrets Manager Instance Management API data sources
+## IBM Cloud Secrets Manager Instance Management API resources
 
-### Data source: ibm_sm_instance
+### Resource: ibm_sm_destination
 
 ```hcl
-data "ibm_sm_instance" "sm_instance_instance" {
-  instance_id = var.sm_instance_instance_id
+resource "ibm_sm_destination" "sm_destination_instance" {
+  instance_id = var.sm_destination_instance_id
+  name = var.sm_destination_name
+  type = var.sm_destination_type
+  description = var.sm_destination_description
+  crn = var.sm_destination_crn
 }
 ```
 
@@ -31,7 +40,40 @@ data "ibm_sm_instance" "sm_instance_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | instance_id | Secrets Manager instance ID. | `string` | true |
+| name | Destination name. | `string` | true |
+| type | Destination type. | `string` | true |
+| description | Optional description. | `string` | false |
+| crn | IBM Cloud Database service instance CRN. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| href | The URL of the destination resource. |
+| state | Destination state:- `not_started`: Initial state before the first provisioning attempt begins- `provisioning`: Provisioning in progress — poll until `succeeded` or `failed`- `succeeded`: Destination ready and usable- `failed`: Terminal state reached when provisioning or deletion fails. A `failed` destination still counts against the per-instance quota until deleted.- `deleting`: Deletion in progress. |
+| created_at | Timestamp when the destination was created. |
+| updated_at | Timestamp when the destination was last updated. |
+| created_by | IAM identity that created the destination. |
+| message | Human-readable message providing additional context about the current state. Present only when non-empty — set when `state` is `failed`, describing why provisioning or deletion failed. |
+| destination_id | Destination ID. |
+
+## IBM Cloud Secrets Manager Instance Management API data sources
+
+### Data source: ibm_sm_instance
+
+```hcl
+data "ibm_sm_instance" "sm_instance_instance" {
+  sm_instance_id = var.sm_instance_sm_instance_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| sm_instance_id | Secrets Manager instance ID. | `string` | true |
 
 #### Outputs
 
@@ -45,11 +87,12 @@ data "ibm_sm_instance" "sm_instance_instance" {
 | encryption | Vault encryption configuration for Vault Dedicated instances. |
 | href | The URL of the instance resource. |
 
-### Resource: ibm_sm_admin_token
+### Data source: ibm_sm_destinations
 
 ```hcl
-data "ibm_sm_admin_token" "sm_admin_token" {
-  instance_id = var.sm_instance_instance_id
+data "ibm_sm_destinations" "sm_destinations_instance" {
+  instance_id = var.sm_destinations_instance_id
+  state = var.sm_destinations_state
 }
 ```
 
@@ -58,13 +101,45 @@ data "ibm_sm_admin_token" "sm_admin_token" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | instance_id | Secrets Manager instance ID. | `string` | true |
+| state | Filter by destination state. | `string` | false |
 
 #### Outputs
 
-| Name          | Description                                                   |
-|---------------|---------------------------------------------------------------|
-| token         | The admin token.                                              |
-| created_at    | The date that the admin token was created.                    |
+| Name | Description |
+|------|-------------|
+| destinations | List of destinations. |
+| total | Total number of destinations. Maximum 20 per instance. |
+
+### Data source: ibm_sm_destination
+
+```hcl
+data "ibm_sm_destination" "sm_destination_instance" {
+  instance_id = var.data_sm_destination_instance_id
+  destination_id = var.data_sm_destination_destination_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| instance_id | Secrets Manager instance ID. | `string` | true |
+| destination_id | Destination ID. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| href | The URL of the destination resource. |
+| name | Destination name. |
+| type | Destination type. |
+| description | Optional description. |
+| state | Destination state:- `not_started`: Initial state before the first provisioning attempt begins- `provisioning`: Provisioning in progress — poll until `succeeded` or `failed`- `succeeded`: Destination ready and usable- `failed`: Terminal state reached when provisioning or deletion fails. A `failed` destination still counts against the per-instance quota until deleted.- `deleting`: Deletion in progress. |
+| created_at | Timestamp when the destination was created. |
+| updated_at | Timestamp when the destination was last updated. |
+| created_by | IAM identity that created the destination. |
+| message | Human-readable message providing additional context about the current state. Present only when non-empty — set when `state` is `failed`, describing why provisioning or deletion failed. |
+| crn | IBM Cloud Database service instance CRN. |
 
 ## Assumptions
 

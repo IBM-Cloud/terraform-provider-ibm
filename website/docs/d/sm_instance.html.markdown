@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a sm_instance. Yo
 
 ```hcl
 data "ibm_sm_instance" "sm_instance" {
-	instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+	sm_instance_id = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_sm_instance" "sm_instance" {
 
 You can specify the following arguments for this data source.
 
-* `instance_id` - (Required, Forces new resource, String) Secrets Manager instance ID.
+* `sm_instance_id` - (Required, Forces new resource, String) Secrets Manager instance ID.
   * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference
