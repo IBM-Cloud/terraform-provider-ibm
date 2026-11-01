@@ -28,6 +28,7 @@ output "config_aggregator_settings" {
     additional_scope            = []
     regions                     = ["all"]
     resource_collection_enabled  = ibm_config_aggregator_settings.config_aggregator_settings_instance.resource_collection_enabled
+    realtime_config_enabled      = ibm_config_aggregator_settings.config_aggregator_settings_instance.realtime_config_enabled
     trusted_profile_id           = ibm_config_aggregator_settings.config_aggregator_settings_instance.trusted_profile_id
   }
 }
@@ -37,6 +38,7 @@ output "aggregator_settings" {
     additional_scope            = []
     regions                     = ["all"]
     resource_collection_enabled  = ibm_config_aggregator_settings.config_aggregator_settings_instance.resource_collection_enabled
+    realtime_config_enabled      = ibm_config_aggregator_settings.config_aggregator_settings_instance.realtime_config_enabled
     trusted_profile_id           = ibm_config_aggregator_settings.config_aggregator_settings_instance.trusted_profile_id
   }
 }
@@ -44,5 +46,7 @@ output "aggregator_settings" {
 output "config_aggregator_resource_collection_status"{
     value={
       status=data.ibm_config_aggregator_resource_collection_status.config_aggregator_resource_collection_status_instance.status
+      latest_reconciliation_mode=data.ibm_config_aggregator_resource_collection_status.config_aggregator_resource_collection_status_instance.latest_reconciliation_mode
+      reconciliation_modes=data.ibm_config_aggregator_resource_collection_status.config_aggregator_resource_collection_status_instance.reconciliation_modes
     }
 }

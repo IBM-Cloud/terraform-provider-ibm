@@ -27,6 +27,18 @@ After your data source is created, you can read values from the following attrib
 * `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `id` - The unique identifier of the config_aggregator_resource_collection_status.
 * `last_config_refresh_time` - (String) The timestamp at which the configuration was last refreshed.
+* `latest_reconciliation_mode` - (String) Latest collection mode. Allowable values are: `automatic`, `manual`, `realtime`.
+* `reconciliation_modes` - (List) Per reconciliation mode details. Only the modes that have run are present; the list is empty if no reconciliation has completed yet.
+Nested schema for **reconciliation_modes**:
+	* `automatic` - (List) Status details of the automatic reconciliation mode.
+	Nested schema for **automatic**:
+		* `last_refresh_time` - (String) The timestamp at which the configuration was last refreshed by this reconciliation mode.
+	* `manual` - (List) Status details of the manual reconciliation mode.
+	Nested schema for **manual**:
+		* `last_refresh_time` - (String) The timestamp at which the configuration was last refreshed by this reconciliation mode.
+	* `realtime` - (List) Status details of the realtime reconciliation mode.
+	Nested schema for **realtime**:
+		* `last_refresh_time` - (String) The timestamp at which the configuration was last refreshed by this reconciliation mode.
 * `status` - (String) Status of the resource collection.
   * Constraints: Allowable values are: `initiated`, `inprogress`, `complete`.
 
