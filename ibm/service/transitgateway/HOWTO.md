@@ -18,9 +18,6 @@ export IBMCLOUD_CR_API_ENDPOINT=https://registry.stage1.ng.bluemix.net
 export IBMCLOUD_CIS_API_ENDPOINT=https://api.cis.test.cloud.ibm.com
 export IBMCLOUD_GS_API_ENDPOINT=https://api.global-search-tagging.test.cloud.ibm.com
 export IBMCLOUD_IAMPAP_API_ENDPOINT=https://iam.test.cloud.ibm.com
-export IBMCLOUD_ICD_API_ENDPOINT=https://api.us-south.databases.test.cloud.ibm.com
-export IBMCLOUD_MCCP_API_ENDPOINT=https://mccp.us-south.cf.test.cloud.ibm.com
-export IBMCLOUD_UAA_ENDPOINT=https://login.stage1.ng.bluemix.net/UAALoginServerWAR
 export IBMCLOUD_COS_ENDPOINT=https://s3.us-west.cloud-object-storage.test.appdomain.cloud
 export IBMCLOUD_COS_CONFIG_ENDPOINT=https://config.cloud-object-storage.test.cloud.ibm.com/v1
 

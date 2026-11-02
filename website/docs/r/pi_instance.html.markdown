@@ -93,6 +93,9 @@ Review the argument references that you can specify for your resource.
 
 - `pi_ibmi_css` - (Optional, Boolean) IBM i Cloud Storage Solution.
 - `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
+- `pi_ibmi_pha_fsm_count` - (Optional, Integer) Number of IBM i PHA Full System Manager (FSM) managed servers.
+  - Set to `0` to disable the FSM license.
+  - When `> 0`, the provider will enable the FSM license and set `ibmi_pha_fsm` (computed) to `true`.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi image list` command.
   - **Note**:
@@ -171,6 +174,7 @@ In addition to all argument reference list, you can access the following attribu
       - `message` -  (String) The fault message of the server.
 
 - `health_status` - (String) The health status of the VM.
+- `ibmi_pha_fsm` - (Boolean) IBM i PHA Full System Manager (FSM) license is enabled. This value is computed from `pi_ibmi_pha_fsm_count`.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
 - `instance_id` - (String) The unique identifier of the instance.
