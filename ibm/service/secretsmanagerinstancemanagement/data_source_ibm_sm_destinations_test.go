@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
@@ -42,10 +42,10 @@ func TestAccIbmSmDestinationsDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSmDestinationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_sm_destinations" "sm_destinations_instance" {
-			instance_id = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+			instance_id = "%s"
 			state = "not_started"
 		}
-	`)
+	`, acc.SecretsManagerDedicatedInstanceID)
 }
 
 func TestDataSourceIbmSmDestinationsDestinationToMap(t *testing.T) {

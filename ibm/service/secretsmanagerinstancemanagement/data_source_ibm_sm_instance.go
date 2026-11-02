@@ -26,7 +26,7 @@ func DataSourceIbmSmInstance() *schema.Resource {
 		ReadContext: dataSourceIbmSmInstanceRead,
 
 		Schema: map[string]*schema.Schema{
-			"sm_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Secrets Manager instance ID.",
@@ -155,7 +155,7 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 
 	getInstanceOptions := &secretsmanagerinstancemanagementv2.GetInstanceOptions{}
 
-	getInstanceOptions.SetID(d.Get("sm_instance_id").(string))
+	getInstanceOptions.SetID(d.Get("instance_id").(string))
 
 	instance, _, err := secretsManagerInstanceManagementClient.GetInstanceWithContext(context, getInstanceOptions)
 	if err != nil {

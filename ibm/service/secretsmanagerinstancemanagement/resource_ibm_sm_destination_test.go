@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,10 +22,10 @@ import (
 
 func TestAccIbmSmDestinationBasic(t *testing.T) {
 	var conf secretsmanagerinstancemanagementv2.IbmCloudDatabaseDestination
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	instanceID := acc.SecretsManagerDedicatedInstanceID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	typeVar := "ibm_cloud_database"
-	crn := fmt.Sprintf("tf_crn_%d", acctest.RandIntRange(10, 100))
+	crn := acc.IcdDbDeploymentId
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "ibm_cloud_database"
 
@@ -59,11 +59,11 @@ func TestAccIbmSmDestinationBasic(t *testing.T) {
 
 func TestAccIbmSmDestinationAllArgs(t *testing.T) {
 	var conf secretsmanagerinstancemanagementv2.IbmCloudDatabaseDestination
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	instanceID := acc.SecretsManagerDedicatedInstanceID
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	typeVar := "ibm_cloud_database"
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	crn := fmt.Sprintf("tf_crn_%d", acctest.RandIntRange(10, 100))
+	crn := acc.IcdDbDeploymentId
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "ibm_cloud_database"
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))

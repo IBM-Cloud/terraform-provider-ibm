@@ -11,17 +11,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSmDestinationDataSourceBasic(t *testing.T) {
-	ibmCloudDatabaseDestinationInstanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	ibmCloudDatabaseDestinationInstanceID := acc.SecretsManagerDedicatedInstanceID
 	ibmCloudDatabaseDestinationName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ibmCloudDatabaseDestinationType := "ibm_cloud_database"
-	ibmCloudDatabaseDestinationCrn := fmt.Sprintf("tf_crn_%d", acctest.RandIntRange(10, 100))
+	ibmCloudDatabaseDestinationCrn := acc.IcdDbDeploymentId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -46,11 +46,11 @@ func TestAccIbmSmDestinationDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmSmDestinationDataSourceAllArgs(t *testing.T) {
-	ibmCloudDatabaseDestinationInstanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	ibmCloudDatabaseDestinationInstanceID := acc.SecretsManagerDedicatedInstanceID
 	ibmCloudDatabaseDestinationName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ibmCloudDatabaseDestinationType := "ibm_cloud_database"
 	ibmCloudDatabaseDestinationDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	ibmCloudDatabaseDestinationCrn := fmt.Sprintf("tf_crn_%d", acctest.RandIntRange(10, 100))
+	ibmCloudDatabaseDestinationCrn := acc.IcdDbDeploymentId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },

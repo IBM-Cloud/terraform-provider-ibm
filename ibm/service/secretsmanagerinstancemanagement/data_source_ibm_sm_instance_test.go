@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
@@ -29,7 +29,7 @@ func TestAccIbmSmInstanceDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmSmInstanceDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "sm_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "instance_crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_instance.sm_instance_instance", "plan"),
@@ -45,9 +45,9 @@ func TestAccIbmSmInstanceDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSmInstanceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_sm_instance" "sm_instance_instance" {
-			id = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+			instance_id = "%s"
 		}
-	`)
+	`, acc.SecretsManagerDedicatedInstanceID)
 }
 
 func TestDataSourceIbmSmInstanceVaultDedicatedClusterToMap(t *testing.T) {
