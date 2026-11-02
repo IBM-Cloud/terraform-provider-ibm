@@ -195,6 +195,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidatePointInTimeRecoveryDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -233,6 +234,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 
 		CustomizeDiff: customdiff.All(
 			validateUnsupportedAttrsDiff,
+			validateBackendSpecificPointInTimeRecoveryDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
 			validateUsersDiff,
@@ -372,6 +374,35 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+			"backups": {
+				Description: "Backup settings. Gen2 plans only; plan fails if set on a Classic plan.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"point_in_time_recovery": {
+							Description: "Point-in-time recovery settings.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"retention_days": {
+										Description:  "Days of history kept for point-in-time recovery, from 7 to the region's maximum. An instance that never sets it keeps 7, except a point-in-time restore, which starts with the source's retention as stored when the restore is requested; later changes to either instance do not affect the other. Removing the block keeps the current value; set 7 to return to the minimum.",
+										Type:         schema.TypeInt,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validation.IntAtLeast(7),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"remote_leader_id": {
 				Description: "The CRN of the leader (source) database. " +
 					"Classic: creates a read-only replica at provisioning time; clear to promote the replica to a standalone instance. " +
@@ -418,13 +449,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Set:      flex.ResourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
-				Description:      "The CRN of source instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
+				Description:      "The CRN of source instance. Gen2: The CRN of a Gen2 instance of the same service, region and account; set together with point_in_time_recovery_time. Applied only at creation.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"point_in_time_recovery_time": {
-				Description:      "The point in time recovery time stamp of the deployed instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
+				Description:      "The point in time recovery time stamp of the deployed instance. Classic: A UTC timestamp, or \"\" for the latest available time. Gen2: Required with point_in_time_recovery_deployment_id; an RFC 3339 timestamp with an offset, for example 2026-09-27T09:30:00Z. \"\" is refused because Gen2 has no restore to the latest time. Applied only at creation.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -3450,6 +3481,10 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 
 func validateBackendSpecificServiceEndpointsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateServiceEndpointsDiff(context, diff, meta)
+}
+
+func validateBackendSpecificPointInTimeRecoveryDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidatePointInTimeRecoveryDiff(context, diff, meta)
 }
 
 func validateServiceEndpointsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
