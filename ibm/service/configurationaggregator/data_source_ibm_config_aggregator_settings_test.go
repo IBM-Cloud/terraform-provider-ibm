@@ -31,6 +31,7 @@ func TestAccIbmConfigAggregatorSettingsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_settings.config_aggregator_settings_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_settings.config_aggregator_settings_instance", "realtime_config_enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_settings.config_aggregator_settings_instance", "regions.#"),
 				),
 			},
 		},

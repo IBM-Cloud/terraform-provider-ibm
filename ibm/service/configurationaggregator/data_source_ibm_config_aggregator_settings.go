@@ -135,6 +135,10 @@ func dataSourceIbmConfigAggregatorSettingsRead(context context.Context, d *schem
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated: %s", err), "(Data) ibm_config_aggregator_settings", "read", "set-last_updated").GetDiag()
 	}
 
+	if err = d.Set("regions", settingsResponse.Regions); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting regions: %s", err), "(Data) ibm_config_aggregator_settings", "read", "set-regions").GetDiag()
+	}
+
 	additionalScope := []map[string]interface{}{}
 	if settingsResponse.AdditionalScope != nil {
 		for _, modelItem := range settingsResponse.AdditionalScope {
