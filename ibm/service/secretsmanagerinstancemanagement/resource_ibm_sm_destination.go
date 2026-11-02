@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.117.2-f568b7d6-20261016-181021
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package secretsmanagerinstancemanagement
@@ -30,7 +30,9 @@ func ResourceIbmSmDestination() *schema.Resource {
 		ReadContext:   resourceIbmSmDestinationRead,
 		UpdateContext: resourceIbmSmDestinationUpdate,
 		DeleteContext: resourceIbmSmDestinationDelete,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -49,6 +51,7 @@ func ResourceIbmSmDestination() *schema.Resource {
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "type"),
 				Description:  "Destination type.",
 			},
@@ -219,15 +222,22 @@ func waitForIbmSmDestinationCreate(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			stateObj, response, err := secretsManagerInstanceManagementClient.GetInstanceDestination(getInstanceDestinationOptions)
 			if err != nil {
-				if sdkErr, ok := err.(*core.SDKProblem); ok && response.GetStatusCode() == 404 {
-					sdkErr.Summary = fmt.Sprintf("the instance %s does not exist anymore: %s", "getInstanceDestinationOptions", err)
+				if sdkErr, ok := err.(*core.SDKProblem); ok && response != nil && response.GetStatusCode() == 404 {
+					sdkErr.Summary = fmt.Sprintf("the destination %s does not exist anymore: %s", d.Id(), err)
 					return nil, "", sdkErr
 				}
 				return nil, "", err
 			}
+			if stateObj == nil || stateObj.State == nil {
+				return nil, "", fmt.Errorf("destination %s returned no state", d.Id())
+			}
 			failStates := map[string]bool{"failed": true}
 			if failStates[*stateObj.State] {
-				return stateObj, *stateObj.State, fmt.Errorf("the instance %s failed: %s", "getInstanceDestinationOptions", err)
+				msg := ""
+				if stateObj.Message != nil {
+					msg = *stateObj.Message
+				}
+				return stateObj, *stateObj.State, fmt.Errorf("the destination %s failed: %s", d.Id(), msg)
 			}
 			return stateObj, *stateObj.State, nil
 		},
@@ -256,6 +266,11 @@ func resourceIbmSmDestinationRead(context context.Context, d *schema.ResourceDat
 
 	getInstanceDestinationOptions.SetInstanceID(parts[0])
 	getInstanceDestinationOptions.SetDestinationID(parts[1])
+
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		err = fmt.Errorf("error setting instance_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_destination", "read", "set-instance_id").GetDiag()
+	}
 
 	ibmCloudDatabaseDestination, response, err := secretsManagerInstanceManagementClient.GetInstanceDestinationWithContext(context, getInstanceDestinationOptions)
 	if err != nil {
@@ -435,14 +450,21 @@ func waitForIbmSmDestinationDelete(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			stateObj, response, err := secretsManagerInstanceManagementClient.GetInstanceDestination(getInstanceDestinationOptions)
 			if err != nil {
-				if _, ok := err.(*core.SDKProblem); ok && response.GetStatusCode() == 404 {
-					return nil, "success", nil
+				if _, ok := err.(*core.SDKProblem); ok && response != nil && response.GetStatusCode() == 404 {
+					return response, "success", nil
 				}
 				return nil, "", err
 			}
+			if stateObj == nil || stateObj.State == nil {
+				return nil, "", fmt.Errorf("destination %s returned no state", d.Id())
+			}
 			failStates := map[string]bool{"failed": true}
 			if failStates[*stateObj.State] {
-				return stateObj, *stateObj.State, fmt.Errorf("the instance %s failed: %s", "getInstanceDestinationOptions", err)
+				msg := ""
+				if stateObj.Message != nil {
+					msg = *stateObj.Message
+				}
+				return stateObj, *stateObj.State, fmt.Errorf("the destination %s failed: %s", d.Id(), msg)
 			}
 			return stateObj, *stateObj.State, nil
 		},

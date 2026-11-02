@@ -65,7 +65,7 @@ resource "ibm_sm_destination" "sm_destination_instance" {
 
 ```hcl
 data "ibm_sm_instance" "sm_instance_instance" {
-  sm_instance_id = var.sm_instance_sm_instance_id
+  instance_id = var.sm_instance_instance_id
 }
 ```
 
@@ -73,7 +73,7 @@ data "ibm_sm_instance" "sm_instance_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| sm_instance_id | Secrets Manager instance ID. | `string` | true |
+| instance_id | Secrets Manager instance ID. | `string` | true |
 
 #### Outputs
 

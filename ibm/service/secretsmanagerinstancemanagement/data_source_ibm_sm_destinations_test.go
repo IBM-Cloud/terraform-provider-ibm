@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.117.2-f568b7d6-20261016-181021
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package secretsmanagerinstancemanagement_test
@@ -52,7 +52,7 @@ func TestDataSourceIbmSmDestinationsDestinationToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-		model["href"] = "https://us-south.secrets-manager.cloud.ibm.com/v2/instances/bfc50c2e-d66d-4f37-9ccf-9713f8325b39/destinations/ce8aa9a4-8cde-4b63-8156-d4a8b252beeb"
+		model["href"] = "https://us-south.secrets-manager.cloud.ibm.com/v2/instances/fe5c5c27-3e44-474a-9484-55892e12d6d1/destinations/ce8aa9a4-8cde-4b63-8156-d4a8b252beeb"
 		model["name"] = "testString"
 		model["type"] = "ibm_cloud_database"
 		model["description"] = "testString"
@@ -67,7 +67,7 @@ func TestDataSourceIbmSmDestinationsDestinationToMap(t *testing.T) {
 
 	model := new(secretsmanagerinstancemanagementv2.Destination)
 	model.ID = CreateMockUUID("9fab83da-98cb-4f18-a7ba-b6f0435c9673")
-	model.Href = core.StringPtr("https://us-south.secrets-manager.cloud.ibm.com/v2/instances/bfc50c2e-d66d-4f37-9ccf-9713f8325b39/destinations/ce8aa9a4-8cde-4b63-8156-d4a8b252beeb")
+	model.Href = core.StringPtr("https://us-south.secrets-manager.cloud.ibm.com/v2/instances/fe5c5c27-3e44-474a-9484-55892e12d6d1/destinations/ce8aa9a4-8cde-4b63-8156-d4a8b252beeb")
 	model.Name = core.StringPtr("testString")
 	model.Type = core.StringPtr("ibm_cloud_database")
 	model.Description = core.StringPtr("testString")

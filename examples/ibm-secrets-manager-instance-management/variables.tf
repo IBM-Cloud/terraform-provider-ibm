@@ -7,7 +7,7 @@ variable "ibmcloud_api_key" {
 variable "sm_destination_instance_id" {
   description = "Secrets Manager instance ID."
   type        = string
-  default     = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+  default     = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
 }
 variable "sm_destination_name" {
   description = "Destination name."
@@ -31,17 +31,17 @@ variable "sm_destination_crn" {
 }
 
 // Data source arguments for sm_instance
-variable "sm_instance_sm_instance_id" {
+variable "sm_instance_instance_id" {
   description = "Secrets Manager instance ID."
   type        = string
-  default     = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+  default     = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
 }
 
 // Data source arguments for sm_destinations
 variable "sm_destinations_instance_id" {
   description = "Secrets Manager instance ID."
   type        = string
-  default     = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+  default     = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
 }
 variable "sm_destinations_state" {
   description = "Filter by destination state."
@@ -53,7 +53,7 @@ variable "sm_destinations_state" {
 variable "data_sm_destination_instance_id" {
   description = "Secrets Manager instance ID."
   type        = string
-  default     = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+  default     = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
 }
 variable "data_sm_destination_destination_id" {
   description = "Destination ID."

@@ -16,7 +16,7 @@ resource "ibm_sm_destination" "sm_destination_instance" {
 /*
 // Create sm_instance data source
 data "ibm_sm_instance" "sm_instance_instance" {
-  sm_instance_id = var.sm_instance_sm_instance_id
+  instance_id = var.sm_instance_instance_id
 }
 */
 

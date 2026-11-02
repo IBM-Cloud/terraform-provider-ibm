@@ -16,7 +16,7 @@ Create, update, and delete sm_destinations with this resource.
 resource "ibm_sm_destination" "sm_destination_instance" {
   crn = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/e91c8f42b3d74e1a9c2f05d8b67a3e10:3f8b1c7a-9d42-4e6f-b8a5-2c1d9e7f4b83::"
   description = "Production PostgreSQL database"
-  instance_id = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+  instance_id = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
   name = "name"
   type = "ibm_cloud_database"
 }
@@ -64,7 +64,7 @@ The `id` property can be formed from `instance_id`, and `destination_id` in the 
 <pre>
 &lt;instance_id&gt;/&lt;destination_id&gt;
 </pre>
-* `instance_id`: A string in the format `bfc50c2e-d66d-4f37-9ccf-9713f8325b39`. Secrets Manager instance ID.
+* `instance_id`: A string in the format `fe5c5c27-3e44-474a-9484-55892e12d6d1`. Secrets Manager instance ID.
 * `destination_id`: A strfmt.UUID. Destination ID.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager).
 
