@@ -15,13 +15,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationVolumeBasic(t *testing.T) {
 	var conf brsmigrationv1.Volume
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	env := "classic"
 	storageType := "block"
@@ -34,17 +35,19 @@ func TestAccIbmBrsMigrationVolumeBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBrsMigrationVolumeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationVolumeConfigBasic(migrationID, env, storageType),
+				Config: testAccCheckIbmBrsMigrationVolumeConfigBasic(brsInstance, migrationID, env, storageType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBrsMigrationVolumeExists("ibm_brs_migration_volume.brs_migration_volume_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "migration_id", migrationID),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "env", env),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "storage_type", storageType),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationVolumeConfigBasic(migrationID, envUpdate, storageTypeUpdate),
+				Config: testAccCheckIbmBrsMigrationVolumeConfigBasic(brsInstance, migrationID, envUpdate, storageTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "migration_id", migrationID),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "env", envUpdate),
 					resource.TestCheckResourceAttr("ibm_brs_migration_volume.brs_migration_volume_instance", "storage_type", storageTypeUpdate),
@@ -59,14 +62,15 @@ func TestAccIbmBrsMigrationVolumeBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationVolumeConfigBasic(migrationID string, env string, storageType string) string {
+func testAccCheckIbmBrsMigrationVolumeConfigBasic(brsInstance string, migrationID string, env string, storageType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_volume" "brs_migration_volume_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			env = "%s"
 			storage_type = "%s"
 		}
-	`, migrationID, env, storageType)
+	`, brsInstance, migrationID, env, storageType)
 }
 
 func testAccCheckIbmBrsMigrationVolumeExists(n string, obj brsmigrationv1.Volume) resource.TestCheckFunc {
@@ -89,8 +93,9 @@ func testAccCheckIbmBrsMigrationVolumeExists(n string, obj brsmigrationv1.Volume
 			return err
 		}
 
-		getVolumeOptions.SetMigrationID(parts[0])
-		getVolumeOptions.SetVolumeID(parts[1])
+		getVolumeOptions.SetBrsInstance(parts[0])
+		getVolumeOptions.SetMigrationID(parts[1])
+		getVolumeOptions.SetVolumeID(parts[2])
 
 		volume, _, err := brsMigrationClient.GetVolume(getVolumeOptions)
 		if err != nil {
@@ -119,8 +124,9 @@ func testAccCheckIbmBrsMigrationVolumeDestroy(s *terraform.State) error {
 			return err
 		}
 
-		getVolumeOptions.SetMigrationID(parts[0])
-		getVolumeOptions.SetVolumeID(parts[1])
+		getVolumeOptions.SetBrsInstance(parts[0])
+		getVolumeOptions.SetMigrationID(parts[1])
+		getVolumeOptions.SetVolumeID(parts[2])
 
 		// Try to find the key
 		_, response, err := brsMigrationClient.GetVolume(getVolumeOptions)

@@ -30,12 +30,19 @@ func ResourceIbmBrsMigrationDiscover() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_discover", "brs_instance"),
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_discover", "migration_id"),
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"env": &schema.Schema{
 				Type:        schema.TypeString,
@@ -43,6 +50,20 @@ func ResourceIbmBrsMigrationDiscover() *schema.Resource {
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_discover", "env"),
 				Description: "Infrastructure environment being discovered.",
+			},
+			"location": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_discover", "location"),
+				Description: "Location scope used for this discovery job (datacenter or zone).",
+			},
+			"vpc_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_discover", "vpc_id"),
+				Description: "VPC ID used to scope discovery. Present for env=vpc only.",
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
@@ -135,7 +156,7 @@ func ResourceIbmBrsMigrationDiscover() *schema.Resource {
 					},
 				},
 			},
-			"job_id": &schema.Schema{
+			"brs_migration_discover_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique discovery job ID (job-{uuid4} format).",
@@ -148,13 +169,22 @@ func ResourceIbmBrsMigrationDiscoverValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "brs_instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$`,
+			MinValueLength:             1,
+			MaxValueLength:             512,
+		},
+		validate.ValidateSchema{
 			Identifier:                 "migration_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^mgr-[0-9a-f-]{36}$`,
-			MinValueLength:             40,
-			MaxValueLength:             40,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "env",
@@ -162,6 +192,24 @@ func ResourceIbmBrsMigrationDiscoverValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "classic, vpc",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[a-z][a-z0-9-]+[0-9]$`,
+			MinValueLength:             3,
+			MaxValueLength:             32,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "vpc_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^r[0-9]+-[0-9a-zA-Z-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
 		},
 	)
 
@@ -179,17 +227,15 @@ func resourceIbmBrsMigrationDiscoverCreate(context context.Context, d *schema.Re
 
 	createDiscoverOptions := &brsmigrationv1.CreateDiscoverOptions{}
 
+	createDiscoverOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	createDiscoverOptions.SetMigrationID(d.Get("migration_id").(string))
 	createDiscoverOptions.SetEnv(d.Get("env").(string))
+	createDiscoverOptions.SetLocation(d.Get("location").(string))
+	if _, ok := d.GetOk("vpc_id"); ok {
+		createDiscoverOptions.SetVpcID(d.Get("vpc_id").(string))
+	}
 	if _, ok := d.GetOk("credentials_crn"); ok {
 		createDiscoverOptions.SetCredentialsCrn(d.Get("credentials_crn").(string))
-	}
-	if _, ok := d.GetOk("location"); ok {
-		locationModel, err := ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(d.Get("location.0").(map[string]interface{}))
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "create", "parse-location").GetDiag()
-		}
-		createDiscoverOptions.SetLocation(locationModel)
 	}
 	if _, ok := d.GetOk("compute"); ok {
 		computeModel, err := ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(d.Get("compute.0").(map[string]interface{}))
@@ -213,7 +259,7 @@ func resourceIbmBrsMigrationDiscoverCreate(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createDiscoverOptions.MigrationID, *discoverJobAccepted.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *createDiscoverOptions.BrsInstance, *createDiscoverOptions.MigrationID, *discoverJobAccepted.ID))
 
 	return resourceIbmBrsMigrationDiscoverRead(context, d, meta)
 }
@@ -233,8 +279,8 @@ func resourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "sep-id-parts").GetDiag()
 	}
 
-	getDiscoverOptions.SetMigrationID(parts[0])
-	getDiscoverOptions.SetJobID(parts[1])
+	getDiscoverOptions.SetBrsInstance(parts[0])
+	getDiscoverOptions.SetMigrationID(parts[1])
 
 	discoverJob, response, err := brsMigrationClient.GetDiscoverWithContext(context, getDiscoverOptions)
 	if err != nil {
@@ -250,6 +296,16 @@ func resourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Reso
 	if err = d.Set("env", discoverJob.Env); err != nil {
 		err = fmt.Errorf("Error setting env: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-env").GetDiag()
+	}
+	if err = d.Set("location", discoverJob.Location); err != nil {
+		err = fmt.Errorf("Error setting location: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-location").GetDiag()
+	}
+	if !core.IsNil(discoverJob.VpcID) {
+		if err = d.Set("vpc_id", discoverJob.VpcID); err != nil {
+			err = fmt.Errorf("Error setting vpc_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-vpc_id").GetDiag()
+		}
 	}
 	if err = d.Set("state", discoverJob.State); err != nil {
 		err = fmt.Errorf("Error setting state: %s", err)
@@ -283,44 +339,42 @@ func resourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Reso
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-summary").GetDiag()
 		}
 	}
-	if err = d.Set("job_id", discoverJob.ID); err != nil {
-		err = fmt.Errorf("Error setting job_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-job_id").GetDiag()
+	if err = d.Set("brs_migration_discover_id", discoverJob.ID); err != nil {
+		err = fmt.Errorf("Error setting brs_migration_discover_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "set-brs_migration_discover_id").GetDiag()
 	}
 
 	return nil
 }
 
 func resourceIbmBrsMigrationDiscoverDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
-	d.SetId("")
-	return nil
-}
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
-func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(modelMap map[string]interface{}) (*brsmigrationv1.DiscoverJobPrototypeLocation, error) {
-	model := &brsmigrationv1.DiscoverJobPrototypeLocation{}
-	if modelMap["datacenters"] != nil {
-		datacenters := []string{}
-		for _, datacentersItem := range modelMap["datacenters"].([]interface{}) {
-			datacenters = append(datacenters, datacentersItem.(string))
-		}
-		model.Datacenters = datacenters
+	cancelDiscoverOptions := &brsmigrationv1.CancelDiscoverOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "delete", "sep-id-parts").GetDiag()
 	}
-	if modelMap["regions"] != nil {
-		regions := []string{}
-		for _, regionsItem := range modelMap["regions"].([]interface{}) {
-			regions = append(regions, regionsItem.(string))
-		}
-		model.Regions = regions
+
+	cancelDiscoverOptions.SetBrsInstance(parts[0])
+	cancelDiscoverOptions.SetMigrationID(parts[1])
+
+	_, err = brsMigrationClient.CancelDiscoverWithContext(context, cancelDiscoverOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CancelDiscoverWithContext failed: %s", err.Error()), "ibm_brs_migration_discover", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	if modelMap["zones"] != nil {
-		zones := []string{}
-		for _, zonesItem := range modelMap["zones"].([]interface{}) {
-			zones = append(zones, zonesItem.(string))
-		}
-		model.Zones = zones
-	}
-	return model, nil
+
+	d.SetId("")
+
+	return nil
 }
 
 func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(modelMap map[string]interface{}) (*brsmigrationv1.DiscoverJobPrototypeCompute, error) {

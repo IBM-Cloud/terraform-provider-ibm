@@ -16,12 +16,13 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationWorkloadDataSourceBasic(t *testing.T) {
+	workloadBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	workloadMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -29,9 +30,10 @@ func TestAccIbmBrsMigrationWorkloadDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationWorkloadDataSourceConfigBasic(workloadMigrationID),
+				Config: testAccCheckIbmBrsMigrationWorkloadDataSourceConfigBasic(workloadBrsInstance, workloadMigrationID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "workload_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "state"),
@@ -44,6 +46,7 @@ func TestAccIbmBrsMigrationWorkloadDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmBrsMigrationWorkloadDataSourceAllArgs(t *testing.T) {
+	workloadBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	workloadMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	workloadName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -52,9 +55,10 @@ func TestAccIbmBrsMigrationWorkloadDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationWorkloadDataSourceConfig(workloadMigrationID, workloadName),
+				Config: testAccCheckIbmBrsMigrationWorkloadDataSourceConfig(workloadBrsInstance, workloadMigrationID, workloadName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "workload_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload.brs_migration_workload_instance", "name"),
@@ -75,9 +79,10 @@ func TestAccIbmBrsMigrationWorkloadDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationWorkloadDataSourceConfigBasic(workloadMigrationID string) string {
+func testAccCheckIbmBrsMigrationWorkloadDataSourceConfigBasic(workloadBrsInstance string, workloadMigrationID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			payloads {
 				id = "pl-c3d4e5f6-a7b8-9012-cdef-012345678901"
@@ -100,15 +105,17 @@ func testAccCheckIbmBrsMigrationWorkloadDataSourceConfigBasic(workloadMigrationI
 		}
 
 		data "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = ibm_brs_migration_workload.brs_migration_workload_instance.brs_instance
 			migration_id = ibm_brs_migration_workload.brs_migration_workload_instance.migration_id
 			workload_id = ibm_brs_migration_workload.brs_migration_workload_instance.workload_id
 		}
-	`, workloadMigrationID)
+	`, workloadBrsInstance, workloadMigrationID)
 }
 
-func testAccCheckIbmBrsMigrationWorkloadDataSourceConfig(workloadMigrationID string, workloadName string) string {
+func testAccCheckIbmBrsMigrationWorkloadDataSourceConfig(workloadBrsInstance string, workloadMigrationID string, workloadName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			name = "%s"
 			payloads {
@@ -132,10 +139,11 @@ func testAccCheckIbmBrsMigrationWorkloadDataSourceConfig(workloadMigrationID str
 		}
 
 		data "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = ibm_brs_migration_workload.brs_migration_workload_instance.brs_instance
 			migration_id = ibm_brs_migration_workload.brs_migration_workload_instance.migration_id
 			workload_id = ibm_brs_migration_workload.brs_migration_workload_instance.workload_id
 		}
-	`, workloadMigrationID, workloadName)
+	`, workloadBrsInstance, workloadMigrationID, workloadName)
 }
 
 func TestDataSourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(t *testing.T) {

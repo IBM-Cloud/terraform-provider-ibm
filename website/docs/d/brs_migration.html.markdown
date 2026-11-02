@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration"
 description: |-
   Get information about brs_migration
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration
@@ -14,7 +14,8 @@ Provides a read-only data source to retrieve information about a brs_migration. 
 
 ```hcl
 data "ibm_brs_migration" "brs_migration" {
-	migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+	brs_instance = "00000000-0000-4000-8000-000000000001"
+	migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
 }
 ```
 
@@ -22,8 +23,10 @@ data "ibm_brs_migration" "brs_migration" {
 
 You can specify the following arguments for this data source.
 
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference
 

@@ -16,12 +16,13 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationVolumeDataSourceBasic(t *testing.T) {
+	volumeBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	volumeMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	volumeEnv := "classic"
 	volumeStorageType := "block"
@@ -31,9 +32,10 @@ func TestAccIbmBrsMigrationVolumeDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationVolumeDataSourceConfigBasic(volumeMigrationID, volumeEnv, volumeStorageType),
+				Config: testAccCheckIbmBrsMigrationVolumeDataSourceConfigBasic(volumeBrsInstance, volumeMigrationID, volumeEnv, volumeStorageType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_volume.brs_migration_volume_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_volume.brs_migration_volume_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_volume.brs_migration_volume_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_volume.brs_migration_volume_instance", "volume_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_volume.brs_migration_volume_instance", "env"),
@@ -49,19 +51,21 @@ func TestAccIbmBrsMigrationVolumeDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationVolumeDataSourceConfigBasic(volumeMigrationID string, volumeEnv string, volumeStorageType string) string {
+func testAccCheckIbmBrsMigrationVolumeDataSourceConfigBasic(volumeBrsInstance string, volumeMigrationID string, volumeEnv string, volumeStorageType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_volume" "brs_migration_volume_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			env = "%s"
 			storage_type = "%s"
 		}
 
 		data "ibm_brs_migration_volume" "brs_migration_volume_instance" {
+			brs_instance = ibm_brs_migration_volume.brs_migration_volume_instance.brs_instance
 			migration_id = ibm_brs_migration_volume.brs_migration_volume_instance.migration_id
 			volume_id = ibm_brs_migration_volume.brs_migration_volume_instance.volume_id
 		}
-	`, volumeMigrationID, volumeEnv, volumeStorageType)
+	`, volumeBrsInstance, volumeMigrationID, volumeEnv, volumeStorageType)
 }
 
 

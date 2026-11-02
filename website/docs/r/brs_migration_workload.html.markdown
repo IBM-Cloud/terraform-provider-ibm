@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_workload"
 description: |-
   Manages brs_migration_workload.
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_workload
@@ -14,7 +14,8 @@ Create, update, and delete brs_migration_workloads with this resource.
 
 ```hcl
 resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
-  migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+  brs_instance = "00000000-0000-4000-8000-000000000001"
+  migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
   name = "prod-to-vpc-migration"
   payloads {
 		id = "pl-c3d4e5f6-a7b8-9012-cdef-012345678901"
@@ -41,8 +42,10 @@ resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
 
 You can specify the following arguments for this resource.
 
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `name` - (Optional, Forces new resource, String) Human-readable name for this workload.
   * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 * `payloads` - (Required, Forces new resource, List) List of source-to-destination payload mappings.
@@ -230,15 +233,16 @@ Nested schema for **schedule**:
 ## Import
 
 You can import the `ibm_brs_migration_workload` resource by using `id`.
-The `id` property can be formed from `migration_id`, and `workload_id` in the following format:
+The `id` property can be formed from `brs_instance`, `migration_id`, and `workload_id` in the following format:
 
 <pre>
-&lt;migration_id&gt;/&lt;workload_id&gt;
+&lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;workload_id&gt;
 </pre>
-* `migration_id`: A string in the format `mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (mgr-{uuid4} format).
+* `brs_instance`: A string in the format `00000000-0000-4000-8000-000000000001`. The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+* `migration_id`: A string in the format `a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (uuid4 format).
 * `workload_id`: A string in the format `wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890`. Migration service workload ID (wl-{uuid4} format).
 
 # Syntax
 <pre>
-$ terraform import ibm_brs_migration_workload.brs_migration_workload &lt;migration_id&gt;/&lt;workload_id&gt;
+$ terraform import ibm_brs_migration_workload.brs_migration_workload &lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;workload_id&gt;
 </pre>

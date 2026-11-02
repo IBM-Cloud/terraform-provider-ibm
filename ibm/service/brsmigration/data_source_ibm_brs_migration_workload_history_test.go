@@ -15,8 +15,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -30,6 +30,7 @@ func TestAccIbmBrsMigrationWorkloadHistoryDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBrsMigrationWorkloadHistoryDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload_history.brs_migration_workload_history_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload_history.brs_migration_workload_history_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload_history.brs_migration_workload_history_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload_history.brs_migration_workload_history_instance", "workload_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_workload_history.brs_migration_workload_history_instance", "history.#"),
@@ -42,7 +43,8 @@ func TestAccIbmBrsMigrationWorkloadHistoryDataSourceBasic(t *testing.T) {
 func testAccCheckIbmBrsMigrationWorkloadHistoryDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_brs_migration_workload_history" "brs_migration_workload_history_instance" {
-			migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+			brs_instance = "00000000-0000-4000-8000-000000000001"
+			migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
 			workload_id = "wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 		}
 	`)

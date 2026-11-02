@@ -30,12 +30,19 @@ func ResourceIbmBrsMigrationWorkloadRun() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_workload_run", "brs_instance"),
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_workload_run", "migration_id"),
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"workload_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -183,7 +190,7 @@ func ResourceIbmBrsMigrationWorkloadRun() *schema.Resource {
 					},
 				},
 			},
-			"run_id": &schema.Schema{
+			"brs_migration_workload_run_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique run ID (run-{uuid4} format).",
@@ -196,13 +203,22 @@ func ResourceIbmBrsMigrationWorkloadRunValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "brs_instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$`,
+			MinValueLength:             1,
+			MaxValueLength:             512,
+		},
+		validate.ValidateSchema{
 			Identifier:                 "migration_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^mgr-[0-9a-f-]{36}$`,
-			MinValueLength:             40,
-			MaxValueLength:             40,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "workload_id",
@@ -229,6 +245,7 @@ func resourceIbmBrsMigrationWorkloadRunCreate(context context.Context, d *schema
 
 	createWorkloadRunOptions := &brsmigrationv1.CreateWorkloadRunOptions{}
 
+	createWorkloadRunOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	createWorkloadRunOptions.SetMigrationID(d.Get("migration_id").(string))
 	createWorkloadRunOptions.SetWorkloadID(d.Get("workload_id").(string))
 	createWorkloadRunOptions.SetBackupType(d.Get("backup_type").(string))
@@ -240,7 +257,7 @@ func resourceIbmBrsMigrationWorkloadRunCreate(context context.Context, d *schema
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", *createWorkloadRunOptions.MigrationID, *createWorkloadRunOptions.WorkloadID, *workloadRunAccepted.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s/%s", *createWorkloadRunOptions.BrsInstance, *createWorkloadRunOptions.MigrationID, *createWorkloadRunOptions.WorkloadID, *workloadRunAccepted.ID))
 
 	return resourceIbmBrsMigrationWorkloadRunRead(context, d, meta)
 }
@@ -260,9 +277,9 @@ func resourceIbmBrsMigrationWorkloadRunRead(context context.Context, d *schema.R
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "read", "sep-id-parts").GetDiag()
 	}
 
-	getWorkloadRunOptions.SetMigrationID(parts[0])
-	getWorkloadRunOptions.SetWorkloadID(parts[1])
-	getWorkloadRunOptions.SetRunID(parts[2])
+	getWorkloadRunOptions.SetBrsInstance(parts[0])
+	getWorkloadRunOptions.SetMigrationID(parts[1])
+	getWorkloadRunOptions.SetWorkloadID(parts[2])
 
 	workloadRun, response, err := brsMigrationClient.GetWorkloadRunWithContext(context, getWorkloadRunOptions)
 	if err != nil {
@@ -335,17 +352,42 @@ func resourceIbmBrsMigrationWorkloadRunRead(context context.Context, d *schema.R
 		err = fmt.Errorf("Error setting payload_results: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "read", "set-payload_results").GetDiag()
 	}
-	if err = d.Set("run_id", workloadRun.ID); err != nil {
-		err = fmt.Errorf("Error setting run_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "read", "set-run_id").GetDiag()
+	if err = d.Set("brs_migration_workload_run_id", workloadRun.ID); err != nil {
+		err = fmt.Errorf("Error setting brs_migration_workload_run_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "read", "set-brs_migration_workload_run_id").GetDiag()
 	}
 
 	return nil
 }
 
 func resourceIbmBrsMigrationWorkloadRunDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	cancelWorkloadRunOptions := &brsmigrationv1.CancelWorkloadRunOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "delete", "sep-id-parts").GetDiag()
+	}
+
+	cancelWorkloadRunOptions.SetBrsInstance(parts[0])
+	cancelWorkloadRunOptions.SetMigrationID(parts[1])
+	cancelWorkloadRunOptions.SetWorkloadID(parts[2])
+
+	_, err = brsMigrationClient.CancelWorkloadRunWithContext(context, cancelWorkloadRunOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CancelWorkloadRunWithContext failed: %s", err.Error()), "ibm_brs_migration_workload_run", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
 	d.SetId("")
+
 	return nil
 }
 

@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationVolumes() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationVolumesRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"env": &schema.Schema{
 				Type:        schema.TypeString,
@@ -259,6 +264,7 @@ func dataSourceIbmBrsMigrationVolumesRead(context context.Context, d *schema.Res
 
 	listVolumesOptions := &brsmigrationv1.ListVolumesOptions{}
 
+	listVolumesOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	listVolumesOptions.SetMigrationID(d.Get("migration_id").(string))
 	if _, ok := d.GetOk("env"); ok {
 		listVolumesOptions.SetEnv(d.Get("env").(string))

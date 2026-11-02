@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationDiscovers() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationDiscoversRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"env": &schema.Schema{
 				Type:        schema.TypeString,
@@ -61,6 +66,16 @@ func DataSourceIbmBrsMigrationDiscovers() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Current lifecycle state of the discovery job.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Location scope used for this discovery job (datacenter or zone).",
+						},
+						"vpc_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "VPC ID used to scope discovery. Present for env=vpc only.",
 						},
 						"start_time": &schema.Schema{
 							Type:        schema.TypeString,
@@ -156,6 +171,7 @@ func dataSourceIbmBrsMigrationDiscoversRead(context context.Context, d *schema.R
 
 	listDiscoverOptions := &brsmigrationv1.ListDiscoverOptions{}
 
+	listDiscoverOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	listDiscoverOptions.SetMigrationID(d.Get("migration_id").(string))
 	if _, ok := d.GetOk("env"); ok {
 		listDiscoverOptions.SetEnv(d.Get("env").(string))
@@ -207,6 +223,10 @@ func DataSourceIbmBrsMigrationDiscoversDiscoverJobToMap(model *brsmigrationv1.Di
 	modelMap["id"] = *model.ID
 	modelMap["env"] = *model.Env
 	modelMap["state"] = *model.State
+	modelMap["location"] = *model.Location
+	if model.VpcID != nil {
+		modelMap["vpc_id"] = *model.VpcID
+	}
 	if model.StartTime != nil {
 		modelMap["start_time"] = model.StartTime.String()
 	}

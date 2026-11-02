@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_discovers"
 description: |-
   Get information about brs_migration_discovers
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_discovers
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about brs_migration_dis
 
 ```hcl
 data "ibm_brs_migration_discovers" "brs_migration_discovers" {
+	brs_instance = ibm_brs_migration_discover.brs_migration_discover_instance.brs_instance
 	migration_id = ibm_brs_migration_discover.brs_migration_discover_instance.migration_id
 }
 ```
@@ -22,10 +23,12 @@ data "ibm_brs_migration_discovers" "brs_migration_discovers" {
 
 You can specify the following arguments for this data source.
 
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
 * `env` - (Optional, String) Filter discovery jobs by infrastructure environment.
   * Constraints: Allowable values are: `classic`, `vpc`.
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `state` - (Optional, String) Filter discovery jobs by current state.
   * Constraints: Allowable values are: `pending`, `running`, `completed`, `failed`, `canceled`.
 
@@ -42,6 +45,8 @@ Nested schema for **discover**:
 	  * Constraints: Allowable values are: `classic`, `vpc`.
 	* `id` - (String) Unique discovery job ID (job-{uuid4} format).
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-zA-Z-]+$/`.
+	* `location` - (String) Location scope used for this discovery job (datacenter or zone).
+	  * Constraints: The maximum length is `32` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-z][a-z0-9-]+[0-9]$/`.
 	* `message` - (String) Human-readable status or error message.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 	* `start_time` - (String) Start of the time window used for this discovery run.
@@ -67,4 +72,6 @@ Nested schema for **discover**:
 			  * Constraints: The maximum value is `100000`. The minimum value is `0`.
 		* `total` - (Integer) Total number of compute resources discovered.
 		  * Constraints: The maximum value is `100000`. The minimum value is `0`.
+	* `vpc_id` - (String) VPC ID used to scope discovery. Present for env=vpc only.
+	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^r[0-9]+-[0-9a-zA-Z-]+$/`.
 

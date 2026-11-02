@@ -174,11 +174,9 @@ func resourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceData
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "read", "set-description").GetDiag()
 		}
 	}
-	if !core.IsNil(migration.Crn) {
-		if err = d.Set("crn", migration.Crn); err != nil {
-			err = fmt.Errorf("Error setting crn: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "read", "set-crn").GetDiag()
-		}
+	if err = d.Set("crn", migration.Crn); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("state", migration.State); err != nil {
 		err = fmt.Errorf("Error setting state: %s", err)

@@ -26,6 +26,11 @@ func DataSourceIbmBrsMigrations() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationsRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance CRN to filter migrations by.",
+			},
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -40,7 +45,7 @@ func DataSourceIbmBrsMigrations() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Migration project ID (mgr-{uuid4} format).",
+							Description: "Migration project ID (uuid4 format).",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -94,6 +99,7 @@ func dataSourceIbmBrsMigrationsRead(context context.Context, d *schema.ResourceD
 
 	listMigrationsOptions := &brsmigrationv1.ListMigrationsOptions{}
 
+	listMigrationsOptions.SetBrsCrn(d.Get("brs_crn").(string))
 	if _, ok := d.GetOk("state"); ok {
 		listMigrationsOptions.SetState(d.Get("state").(string))
 	}
@@ -141,9 +147,7 @@ func DataSourceIbmBrsMigrationsMigrationToMap(model *brsmigrationv1.Migration) (
 	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
 	modelMap["brs_crn"] = *model.BrsCrn
-	if model.Crn != nil {
-		modelMap["crn"] = *model.Crn
-	}
+	modelMap["crn"] = *model.Crn
 	modelMap["state"] = *model.State
 	if model.Description != nil {
 		modelMap["description"] = *model.Description

@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationWorkloadRuns() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationWorkloadRunsRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"workload_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -209,6 +214,7 @@ func dataSourceIbmBrsMigrationWorkloadRunsRead(context context.Context, d *schem
 
 	listWorkloadRunsOptions := &brsmigrationv1.ListWorkloadRunsOptions{}
 
+	listWorkloadRunsOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	listWorkloadRunsOptions.SetMigrationID(d.Get("migration_id").(string))
 	listWorkloadRunsOptions.SetWorkloadID(d.Get("workload_id").(string))
 	if _, ok := d.GetOk("status"); ok {

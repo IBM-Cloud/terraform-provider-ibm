@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_volumes"
 description: |-
   Get information about brs_migration_volumes
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_volumes
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about brs_migration_vol
 
 ```hcl
 data "ibm_brs_migration_volumes" "brs_migration_volumes" {
+	brs_instance = ibm_brs_migration_volume.brs_migration_volume_instance.brs_instance
 	migration_id = ibm_brs_migration_volume.brs_migration_volume_instance.migration_id
 }
 ```
@@ -22,11 +23,13 @@ data "ibm_brs_migration_volumes" "brs_migration_volumes" {
 
 You can specify the following arguments for this data source.
 
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
 * `env` - (Optional, String) Filter by infrastructure environment.
   * Constraints: Allowable values are: `classic`, `vpc`.
 * `migrated` - (Optional, Boolean) Filter by migration status.
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `storage_type` - (Optional, String) Filter by storage type.
   * Constraints: Allowable values are: `block`, `file`, `san`, `local`.
 

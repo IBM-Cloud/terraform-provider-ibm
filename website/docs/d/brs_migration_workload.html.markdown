@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_workload"
 description: |-
   Get information about brs_migration_workload
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_workload
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about a brs_migration_w
 
 ```hcl
 data "ibm_brs_migration_workload" "brs_migration_workload" {
+	brs_instance = ibm_brs_migration_workload.brs_migration_workload_instance.brs_instance
 	migration_id = ibm_brs_migration_workload.brs_migration_workload_instance.migration_id
 	workload_id = ibm_brs_migration_workload.brs_migration_workload_instance.workload_id
 }
@@ -23,8 +24,10 @@ data "ibm_brs_migration_workload" "brs_migration_workload" {
 
 You can specify the following arguments for this data source.
 
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `workload_id` - (Required, Forces new resource, String) The migration service workload ID (wl-{uuid4} format).
   * Constraints: Length must be `39` characters. The value must match regular expression `/^wl-[0-9a-f-]{36}$/`.
 

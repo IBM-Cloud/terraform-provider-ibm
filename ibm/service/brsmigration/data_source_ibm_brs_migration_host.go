@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationHost() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationHostRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"host_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -215,6 +220,25 @@ func DataSourceIbmBrsMigrationHost() *schema.Resource {
 				Computed:    true,
 				Description: "Timestamp when this host was registered in the Migration API.",
 			},
+			"agent": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Live state of the connector agent installed on a host.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "`connected` — agent is reachable. `disconnected` — agent is not reachable (not registered, or registered but not connected).`unknown` — status could not be determined.",
+						},
+						"message": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Human-readable reason for a `disconnected` or `unknown` status.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -229,6 +253,7 @@ func dataSourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resour
 
 	getHostOptions := &brsmigrationv1.GetHostOptions{}
 
+	getHostOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getHostOptions.SetMigrationID(d.Get("migration_id").(string))
 	getHostOptions.SetHostID(d.Get("host_id").(string))
 
@@ -239,7 +264,7 @@ func dataSourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getHostOptions.MigrationID, *getHostOptions.HostID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *getHostOptions.BrsInstance, *getHostOptions.MigrationID, *getHostOptions.HostID))
 
 	if err = d.Set("type", host.Type); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_brs_migration_host", "read", "set-type").GetDiag()
@@ -283,6 +308,18 @@ func dataSourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resour
 
 	if err = d.Set("registered_at", flex.DateTimeToString(host.RegisteredAt)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting registered_at: %s", err), "(Data) ibm_brs_migration_host", "read", "set-registered_at").GetDiag()
+	}
+
+	if !core.IsNil(host.Agent) {
+		agent := []map[string]interface{}{}
+		agentMap, err := DataSourceIbmBrsMigrationHostHostAgentToMap(host.Agent)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_host", "read", "agent-to-map").GetDiag()
+		}
+		agent = append(agent, agentMap)
+		if err = d.Set("agent", agent); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting agent: %s", err), "(Data) ibm_brs_migration_host", "read", "set-agent").GetDiag()
+		}
 	}
 
 	return nil
@@ -463,5 +500,14 @@ func DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmi
 func DataSourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv1.VolumeAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["volume_id"] = *model.VolumeID
+	return modelMap, nil
+}
+
+func DataSourceIbmBrsMigrationHostHostAgentToMap(model *brsmigrationv1.HostAgent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["status"] = *model.Status
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	return modelMap, nil
 }

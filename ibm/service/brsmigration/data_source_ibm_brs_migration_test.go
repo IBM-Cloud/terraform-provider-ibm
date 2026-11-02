@@ -29,9 +29,11 @@ func TestAccIbmBrsMigrationDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBrsMigrationDataSourceConfigBasic(migrationName, migrationBrsCrn),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "brs_crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "created_at"),
 				),
@@ -53,6 +55,7 @@ func TestAccIbmBrsMigrationDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIbmBrsMigrationDataSourceConfig(migrationName, migrationBrsCrn, migrationDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration.brs_migration_instance", "brs_crn"),
@@ -75,7 +78,8 @@ func testAccCheckIbmBrsMigrationDataSourceConfigBasic(migrationName string, migr
 		}
 
 		data "ibm_brs_migration" "brs_migration_instance" {
-			migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+			brs_instance = "00000000-0000-4000-8000-000000000001"
+			migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
 		}
 	`, migrationName, migrationBrsCrn)
 }
@@ -89,7 +93,8 @@ func testAccCheckIbmBrsMigrationDataSourceConfig(migrationName string, migration
 		}
 
 		data "ibm_brs_migration" "brs_migration_instance" {
-			migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+			brs_instance = "00000000-0000-4000-8000-000000000001"
+			migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
 		}
 	`, migrationName, migrationBrsCrn, migrationDescription)
 }

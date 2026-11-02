@@ -15,13 +15,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationWorkloadBasic(t *testing.T) {
 	var conf brsmigrationv1.Workload
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -30,9 +31,10 @@ func TestAccIbmBrsMigrationWorkloadBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBrsMigrationWorkloadDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationWorkloadConfigBasic(migrationID),
+				Config: testAccCheckIbmBrsMigrationWorkloadConfigBasic(brsInstance, migrationID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBrsMigrationWorkloadExists("ibm_brs_migration_workload.brs_migration_workload_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_workload.brs_migration_workload_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_workload.brs_migration_workload_instance", "migration_id", migrationID),
 				),
 			},
@@ -42,6 +44,7 @@ func TestAccIbmBrsMigrationWorkloadBasic(t *testing.T) {
 
 func TestAccIbmBrsMigrationWorkloadAllArgs(t *testing.T) {
 	var conf brsmigrationv1.Workload
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -51,9 +54,10 @@ func TestAccIbmBrsMigrationWorkloadAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBrsMigrationWorkloadDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationWorkloadConfig(migrationID, name),
+				Config: testAccCheckIbmBrsMigrationWorkloadConfig(brsInstance, migrationID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBrsMigrationWorkloadExists("ibm_brs_migration_workload.brs_migration_workload_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_workload.brs_migration_workload_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_workload.brs_migration_workload_instance", "migration_id", migrationID),
 					resource.TestCheckResourceAttr("ibm_brs_migration_workload.brs_migration_workload_instance", "name", name),
 				),
@@ -67,9 +71,10 @@ func TestAccIbmBrsMigrationWorkloadAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationWorkloadConfigBasic(migrationID string) string {
+func testAccCheckIbmBrsMigrationWorkloadConfigBasic(brsInstance string, migrationID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			payloads {
 				id = "pl-c3d4e5f6-a7b8-9012-cdef-012345678901"
@@ -90,13 +95,14 @@ func testAccCheckIbmBrsMigrationWorkloadConfigBasic(migrationID string) string {
 				}
 			}
 		}
-	`, migrationID)
+	`, brsInstance, migrationID)
 }
 
-func testAccCheckIbmBrsMigrationWorkloadConfig(migrationID string, name string) string {
+func testAccCheckIbmBrsMigrationWorkloadConfig(brsInstance string, migrationID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_brs_migration_workload" "brs_migration_workload_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			name = "%s"
 			payloads {
@@ -118,7 +124,7 @@ func testAccCheckIbmBrsMigrationWorkloadConfig(migrationID string, name string) 
 				}
 			}
 		}
-	`, migrationID, name)
+	`, brsInstance, migrationID, name)
 }
 
 func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv1.Workload) resource.TestCheckFunc {
@@ -141,8 +147,9 @@ func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv1.Work
 			return err
 		}
 
-		getWorkloadOptions.SetMigrationID(parts[0])
-		getWorkloadOptions.SetWorkloadID(parts[1])
+		getWorkloadOptions.SetBrsInstance(parts[0])
+		getWorkloadOptions.SetMigrationID(parts[1])
+		getWorkloadOptions.SetWorkloadID(parts[2])
 
 		workload, _, err := brsMigrationClient.GetWorkload(getWorkloadOptions)
 		if err != nil {
@@ -171,8 +178,9 @@ func testAccCheckIbmBrsMigrationWorkloadDestroy(s *terraform.State) error {
 			return err
 		}
 
-		getWorkloadOptions.SetMigrationID(parts[0])
-		getWorkloadOptions.SetWorkloadID(parts[1])
+		getWorkloadOptions.SetBrsInstance(parts[0])
+		getWorkloadOptions.SetMigrationID(parts[1])
+		getWorkloadOptions.SetWorkloadID(parts[2])
 
 		// Try to find the key
 		_, response, err := brsMigrationClient.GetWorkload(getWorkloadOptions)

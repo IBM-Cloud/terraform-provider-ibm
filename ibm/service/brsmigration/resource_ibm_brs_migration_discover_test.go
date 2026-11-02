@@ -15,15 +15,17 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationDiscoverBasic(t *testing.T) {
 	var conf brsmigrationv1.DiscoverJob
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	env := "classic"
+	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,11 +33,41 @@ func TestAccIbmBrsMigrationDiscoverBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBrsMigrationDiscoverDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationDiscoverConfigBasic(migrationID, env),
+				Config: testAccCheckIbmBrsMigrationDiscoverConfigBasic(brsInstance, migrationID, env, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBrsMigrationDiscoverExists("ibm_brs_migration_discover.brs_migration_discover_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "migration_id", migrationID),
 					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "env", env),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "location", location),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIbmBrsMigrationDiscoverAllArgs(t *testing.T) {
+	var conf brsmigrationv1.DiscoverJob
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
+	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
+	env := "classic"
+	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	vpcID := fmt.Sprintf("tf_vpc_id_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmBrsMigrationDiscoverDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBrsMigrationDiscoverConfig(brsInstance, migrationID, env, location, vpcID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmBrsMigrationDiscoverExists("ibm_brs_migration_discover.brs_migration_discover_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "brs_instance", brsInstance),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "migration_id", migrationID),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "env", env),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "location", location),
+					resource.TestCheckResourceAttr("ibm_brs_migration_discover.brs_migration_discover_instance", "vpc_id", vpcID),
 				),
 			},
 			resource.TestStep{
@@ -47,13 +79,28 @@ func TestAccIbmBrsMigrationDiscoverBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationDiscoverConfigBasic(migrationID string, env string) string {
+func testAccCheckIbmBrsMigrationDiscoverConfigBasic(brsInstance string, migrationID string, env string, location string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			env = "%s"
+			location = "%s"
 		}
-	`, migrationID, env)
+	`, brsInstance, migrationID, env, location)
+}
+
+func testAccCheckIbmBrsMigrationDiscoverConfig(brsInstance string, migrationID string, env string, location string, vpcID string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = "%s"
+			migration_id = "%s"
+			env = "%s"
+			location = "%s"
+			vpc_id = "%s"
+		}
+	`, brsInstance, migrationID, env, location, vpcID)
 }
 
 func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv1.DiscoverJob) resource.TestCheckFunc {
@@ -76,8 +123,8 @@ func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv1.Disc
 			return err
 		}
 
-		getDiscoverOptions.SetMigrationID(parts[0])
-		getDiscoverOptions.SetJobID(parts[1])
+		getDiscoverOptions.SetBrsInstance(parts[0])
+		getDiscoverOptions.SetMigrationID(parts[1])
 
 		discoverJob, _, err := brsMigrationClient.GetDiscover(getDiscoverOptions)
 		if err != nil {
@@ -106,8 +153,8 @@ func testAccCheckIbmBrsMigrationDiscoverDestroy(s *terraform.State) error {
 			return err
 		}
 
-		getDiscoverOptions.SetMigrationID(parts[0])
-		getDiscoverOptions.SetJobID(parts[1])
+		getDiscoverOptions.SetBrsInstance(parts[0])
+		getDiscoverOptions.SetMigrationID(parts[1])
 
 		// Try to find the key
 		_, response, err := brsMigrationClient.GetDiscover(getDiscoverOptions)
@@ -198,26 +245,6 @@ func TestResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(t *testin
 	model.Local = core.Int64Ptr(int64(0))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(t *testing.T) {
-	checkResult := func(result *brsmigrationv1.DiscoverJobPrototypeLocation) {
-		model := new(brsmigrationv1.DiscoverJobPrototypeLocation)
-		model.Datacenters = []string{"testString"}
-		model.Regions = []string{"testString"}
-		model.Zones = []string{"testString"}
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["datacenters"] = []interface{}{"testString"}
-	model["regions"] = []interface{}{"testString"}
-	model["zones"] = []interface{}{"testString"}
-
-	result, err := brsmigration.ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

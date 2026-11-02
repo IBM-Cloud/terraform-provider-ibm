@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationVolume() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationVolumeRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"volume_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -235,6 +240,7 @@ func dataSourceIbmBrsMigrationVolumeRead(context context.Context, d *schema.Reso
 
 	getVolumeOptions := &brsmigrationv1.GetVolumeOptions{}
 
+	getVolumeOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getVolumeOptions.SetMigrationID(d.Get("migration_id").(string))
 	getVolumeOptions.SetVolumeID(d.Get("volume_id").(string))
 
@@ -245,7 +251,7 @@ func dataSourceIbmBrsMigrationVolumeRead(context context.Context, d *schema.Reso
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getVolumeOptions.MigrationID, *getVolumeOptions.VolumeID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *getVolumeOptions.BrsInstance, *getVolumeOptions.MigrationID, *getVolumeOptions.VolumeID))
 
 	if err = d.Set("env", volume.Env); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting env: %s", err), "(Data) ibm_brs_migration_volume", "read", "set-env").GetDiag()

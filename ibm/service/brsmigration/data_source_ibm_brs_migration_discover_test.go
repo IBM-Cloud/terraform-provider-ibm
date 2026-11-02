@@ -16,47 +16,103 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationDiscoverDataSourceBasic(t *testing.T) {
+	discoverJobBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	discoverJobMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	discoverJobEnv := "classic"
+	discoverJobLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationDiscoverDataSourceConfigBasic(discoverJobMigrationID, discoverJobEnv),
+				Config: testAccCheckIbmBrsMigrationDiscoverDataSourceConfigBasic(discoverJobBrsInstance, discoverJobMigrationID, discoverJobEnv, discoverJobLocation),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "env"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "location"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBrsMigrationDiscoverDataSourceConfigBasic(discoverJobMigrationID string, discoverJobEnv string) string {
+func TestAccIbmBrsMigrationDiscoverDataSourceAllArgs(t *testing.T) {
+	discoverJobBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
+	discoverJobMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
+	discoverJobEnv := "classic"
+	discoverJobLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	discoverJobVpcID := fmt.Sprintf("tf_vpc_id_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBrsMigrationDiscoverDataSourceConfig(discoverJobBrsInstance, discoverJobMigrationID, discoverJobEnv, discoverJobLocation, discoverJobVpcID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "brs_instance"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "migration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "job_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "env"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "location"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "vpc_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "start_time"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "end_time"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "message"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_discover.brs_migration_discover_instance", "summary.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmBrsMigrationDiscoverDataSourceConfigBasic(discoverJobBrsInstance string, discoverJobMigrationID string, discoverJobEnv string, discoverJobLocation string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			env = "%s"
+			location = "%s"
 		}
 
 		data "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = ibm_brs_migration_discover.brs_migration_discover_instance.brs_instance
 			migration_id = ibm_brs_migration_discover.brs_migration_discover_instance.migration_id
-			job_id = ibm_brs_migration_discover.brs_migration_discover_instance.job_id
+			job_id = "job-12345678-abcd-ef01-2345-678901234567"
 		}
-	`, discoverJobMigrationID, discoverJobEnv)
+	`, discoverJobBrsInstance, discoverJobMigrationID, discoverJobEnv, discoverJobLocation)
 }
 
+func testAccCheckIbmBrsMigrationDiscoverDataSourceConfig(discoverJobBrsInstance string, discoverJobMigrationID string, discoverJobEnv string, discoverJobLocation string, discoverJobVpcID string) string {
+	return fmt.Sprintf(`
+		resource "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = "%s"
+			migration_id = "%s"
+			env = "%s"
+			location = "%s"
+			vpc_id = "%s"
+		}
+
+		data "ibm_brs_migration_discover" "brs_migration_discover_instance" {
+			brs_instance = ibm_brs_migration_discover.brs_migration_discover_instance.brs_instance
+			migration_id = ibm_brs_migration_discover.brs_migration_discover_instance.migration_id
+			job_id = "job-12345678-abcd-ef01-2345-678901234567"
+		}
+	`, discoverJobBrsInstance, discoverJobMigrationID, discoverJobEnv, discoverJobLocation, discoverJobVpcID)
+}
 
 func TestDataSourceIbmBrsMigrationDiscoverDiscoverJobSummaryToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {

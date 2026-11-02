@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_host"
 description: |-
   Manages brs_migration_host.
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_host
@@ -14,8 +14,9 @@ Create, update, and delete brs_migration_hosts with this resource.
 
 ```hcl
 resource "ibm_brs_migration_host" "brs_migration_host_instance" {
+  brs_instance = "00000000-0000-4000-8000-000000000001"
   env = "classic"
-  migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+  migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
   type = "virtual_server"
 }
 ```
@@ -24,10 +25,12 @@ resource "ibm_brs_migration_host" "brs_migration_host_instance" {
 
 You can specify the following arguments for this resource.
 
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
 * `env` - (Required, Forces new resource, String) Infrastructure environment this host belongs to.
   * Constraints: Allowable values are: `vpc`, `classic`.
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `type` - (Required, Forces new resource, String) Whether the host is a Virtual Server Instance or bare metal server.
   * Constraints: Allowable values are: `virtual_server`, `bare_metal`.
 
@@ -36,6 +39,12 @@ You can specify the following arguments for this resource.
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the brs_migration_host.
+* `agent` - (List) Live state of the connector agent installed on a host.
+Nested schema for **agent**:
+	* `message` - (String) Human-readable reason for a `disconnected` or `unknown` status.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
+	* `status` - (String) `connected` — agent is reachable. `disconnected` — agent is not reachable (not registered, or registered but not connected).`unknown` — status could not be determined.
+	  * Constraints: Allowable values are: `connected`, `disconnected`, `unknown`.
 * `compute` - (List) Enriched compute details. Schema variant matches the sibling `env` field: `classic` → `ClassicComputeDetails`, `vpc` → `VPCComputeDetails`.
 Nested schema for **compute**:
 	* `boot_volume_id` - (String) Migration service `vol-*` ID of the boot volume attachment.
@@ -105,15 +114,16 @@ Nested schema for **volume_attachments**:
 ## Import
 
 You can import the `ibm_brs_migration_host` resource by using `id`.
-The `id` property can be formed from `migration_id`, and `host_id` in the following format:
+The `id` property can be formed from `brs_instance`, `migration_id`, and `host_id` in the following format:
 
 <pre>
-&lt;migration_id&gt;/&lt;host_id&gt;
+&lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;host_id&gt;
 </pre>
-* `migration_id`: A string in the format `mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (mgr-{uuid4} format).
+* `brs_instance`: A string in the format `00000000-0000-4000-8000-000000000001`. The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+* `migration_id`: A string in the format `a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (uuid4 format).
 * `host_id`: A string in the format `host-a1b2c3d4-e5f6-7890-abcd-ef1234567890`. Migration service host ID (host-{uuid4} format).
 
 # Syntax
 <pre>
-$ terraform import ibm_brs_migration_host.brs_migration_host &lt;migration_id&gt;/&lt;host_id&gt;
+$ terraform import ibm_brs_migration_host.brs_migration_host &lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;host_id&gt;
 </pre>

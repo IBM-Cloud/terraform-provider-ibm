@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationHosts() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationHostsRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"env": &schema.Schema{
 				Type:        schema.TypeString,
@@ -236,6 +241,25 @@ func DataSourceIbmBrsMigrationHosts() *schema.Resource {
 							Computed:    true,
 							Description: "Timestamp when this host was registered in the Migration API.",
 						},
+						"agent": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Live state of the connector agent installed on a host.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"status": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "`connected` — agent is reachable. `disconnected` — agent is not reachable (not registered, or registered but not connected).`unknown` — status could not be determined.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Human-readable reason for a `disconnected` or `unknown` status.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -253,6 +277,7 @@ func dataSourceIbmBrsMigrationHostsRead(context context.Context, d *schema.Resou
 
 	listHostsOptions := &brsmigrationv1.ListHostsOptions{}
 
+	listHostsOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	listHostsOptions.SetMigrationID(d.Get("migration_id").(string))
 	if _, ok := d.GetOk("env"); ok {
 		listHostsOptions.SetEnv(d.Get("env").(string))
@@ -326,6 +351,13 @@ func DataSourceIbmBrsMigrationHostsHostToMap(model *brsmigrationv1.Host) (map[st
 		modelMap["workload_id"] = *model.WorkloadID
 	}
 	modelMap["registered_at"] = model.RegisteredAt.String()
+	if model.Agent != nil {
+		agentMap, err := DataSourceIbmBrsMigrationHostsHostAgentToMap(model.Agent)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["agent"] = []map[string]interface{}{agentMap}
+	}
 	return modelMap, nil
 }
 
@@ -504,5 +536,14 @@ func DataSourceIbmBrsMigrationHostsHostComputeVPCComputeDetailsToMap(model *brsm
 func DataSourceIbmBrsMigrationHostsVolumeAttachmentToMap(model *brsmigrationv1.VolumeAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["volume_id"] = *model.VolumeID
+	return modelMap, nil
+}
+
+func DataSourceIbmBrsMigrationHostsHostAgentToMap(model *brsmigrationv1.HostAgent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["status"] = *model.Status
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	return modelMap, nil
 }

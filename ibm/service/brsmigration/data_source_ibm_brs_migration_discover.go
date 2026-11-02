@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationDiscover() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationDiscoverRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"job_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -45,6 +50,16 @@ func DataSourceIbmBrsMigrationDiscover() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Current lifecycle state of the discovery job.",
+			},
+			"location": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Location scope used for this discovery job (datacenter or zone).",
+			},
+			"vpc_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "VPC ID used to scope discovery. Present for env=vpc only.",
 			},
 			"start_time": &schema.Schema{
 				Type:        schema.TypeString,
@@ -137,6 +152,7 @@ func dataSourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Re
 
 	getDiscoverOptions := &brsmigrationv1.GetDiscoverOptions{}
 
+	getDiscoverOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getDiscoverOptions.SetMigrationID(d.Get("migration_id").(string))
 	getDiscoverOptions.SetJobID(d.Get("job_id").(string))
 
@@ -147,7 +163,7 @@ func dataSourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getDiscoverOptions.MigrationID, *getDiscoverOptions.JobID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *getDiscoverOptions.BrsInstance, *getDiscoverOptions.MigrationID, *getDiscoverOptions.JobID))
 
 	if err = d.Set("env", discoverJob.Env); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting env: %s", err), "(Data) ibm_brs_migration_discover", "read", "set-env").GetDiag()
@@ -155,6 +171,16 @@ func dataSourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.Re
 
 	if err = d.Set("state", discoverJob.State); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting state: %s", err), "(Data) ibm_brs_migration_discover", "read", "set-state").GetDiag()
+	}
+
+	if err = d.Set("location", discoverJob.Location); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting location: %s", err), "(Data) ibm_brs_migration_discover", "read", "set-location").GetDiag()
+	}
+
+	if !core.IsNil(discoverJob.VpcID) {
+		if err = d.Set("vpc_id", discoverJob.VpcID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc_id: %s", err), "(Data) ibm_brs_migration_discover", "read", "set-vpc_id").GetDiag()
+		}
 	}
 
 	if !core.IsNil(discoverJob.StartTime) {

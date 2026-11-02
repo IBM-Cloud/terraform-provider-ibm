@@ -16,8 +16,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -34,6 +34,7 @@ func TestAccIbmBrsMigrationsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBrsMigrationsDataSourceConfigBasic(migrationName, migrationBrsCrn),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "brs_crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "migrations.#"),
 					resource.TestCheckResourceAttr("data.ibm_brs_migrations.brs_migrations_instance", "migrations.0.name", migrationName),
 					resource.TestCheckResourceAttr("data.ibm_brs_migrations.brs_migrations_instance", "migrations.0.brs_crn", migrationBrsCrn),
@@ -56,6 +57,7 @@ func TestAccIbmBrsMigrationsDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIbmBrsMigrationsDataSourceConfig(migrationName, migrationBrsCrn, migrationDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "brs_crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "migrations.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migrations.brs_migrations_instance", "migrations.0.id"),
@@ -80,6 +82,7 @@ func testAccCheckIbmBrsMigrationsDataSourceConfigBasic(migrationName string, mig
 		}
 
 		data "ibm_brs_migrations" "brs_migrations_instance" {
+			brs_crn = ibm_brs_migration.brs_migration_instance.brs_crn
 			state = ibm_brs_migration.brs_migration_instance.state
 		}
 	`, migrationName, migrationBrsCrn)
@@ -94,6 +97,7 @@ func testAccCheckIbmBrsMigrationsDataSourceConfig(migrationName string, migratio
 		}
 
 		data "ibm_brs_migrations" "brs_migrations_instance" {
+			brs_crn = ibm_brs_migration.brs_migration_instance.brs_crn
 			state = ibm_brs_migration.brs_migration_instance.state
 		}
 	`, migrationName, migrationBrsCrn, migrationDescription)
@@ -102,7 +106,7 @@ func testAccCheckIbmBrsMigrationsDataSourceConfig(migrationName string, migratio
 func TestDataSourceIbmBrsMigrationsMigrationToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["id"] = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+		model["id"] = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
 		model["name"] = "prod-classic-to-vpc"
 		model["brs_crn"] = "crn:v1:bluemix:public:backup-recovery:us-south:a/123456:abcdef01-2345-6789-abcd-ef0123456789::"
 		model["crn"] = "crn:v1:bluemix:public:brs-migration:us-south:a/123456:a1b2c3d4-e5f6-7890-abcd-ef1234567890::"
@@ -115,7 +119,7 @@ func TestDataSourceIbmBrsMigrationsMigrationToMap(t *testing.T) {
 	}
 
 	model := new(brsmigrationv1.Migration)
-	model.ID = core.StringPtr("mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab")
+	model.ID = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef12345678ab")
 	model.Name = core.StringPtr("prod-classic-to-vpc")
 	model.BrsCrn = core.StringPtr("crn:v1:bluemix:public:backup-recovery:us-south:a/123456:abcdef01-2345-6789-abcd-ef0123456789::")
 	model.Crn = core.StringPtr("crn:v1:bluemix:public:brs-migration:us-south:a/123456:a1b2c3d4-e5f6-7890-abcd-ef1234567890::")

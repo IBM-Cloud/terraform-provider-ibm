@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationWorkload() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationWorkloadRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"workload_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -632,6 +637,7 @@ func dataSourceIbmBrsMigrationWorkloadRead(context context.Context, d *schema.Re
 
 	getWorkloadOptions := &brsmigrationv1.GetWorkloadOptions{}
 
+	getWorkloadOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getWorkloadOptions.SetMigrationID(d.Get("migration_id").(string))
 	getWorkloadOptions.SetWorkloadID(d.Get("workload_id").(string))
 
@@ -642,7 +648,7 @@ func dataSourceIbmBrsMigrationWorkloadRead(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getWorkloadOptions.MigrationID, *getWorkloadOptions.WorkloadID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *getWorkloadOptions.BrsInstance, *getWorkloadOptions.MigrationID, *getWorkloadOptions.WorkloadID))
 
 	if !core.IsNil(workload.Name) {
 		if err = d.Set("name", workload.Name); err != nil {

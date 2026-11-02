@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migrations"
 description: |-
   Get information about brs_migrations
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migrations
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about brs_migrations. Y
 
 ```hcl
 data "ibm_brs_migrations" "brs_migrations" {
+	brs_crn = ibm_brs_migration.brs_migration_instance.brs_crn
 }
 ```
 
@@ -21,6 +22,7 @@ data "ibm_brs_migrations" "brs_migrations" {
 
 You can specify the following arguments for this data source.
 
+* `brs_crn` - (Required, String) The BRS service instance CRN to filter migrations by.
 * `state` - (Optional, String) Filter by migration state.
   * Constraints: Allowable values are: `active`, `completed`, `deleted`.
 
@@ -39,8 +41,8 @@ Nested schema for **migrations**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^crn:.+$/`.
 	* `description` - (String) Optional human-readable description.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
-	* `id` - (String) Migration project ID (mgr-{uuid4} format).
-	  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+	* `id` - (String) Migration project ID (uuid4 format).
+	  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 	* `name` - (String) Human-readable name for this migration project.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 	* `state` - (String) Current lifecycle state of the migration project.

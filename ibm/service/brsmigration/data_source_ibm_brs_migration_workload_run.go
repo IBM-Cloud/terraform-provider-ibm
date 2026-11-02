@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationWorkloadRun() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationWorkloadRunRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"workload_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -182,6 +187,7 @@ func dataSourceIbmBrsMigrationWorkloadRunRead(context context.Context, d *schema
 
 	getWorkloadRunOptions := &brsmigrationv1.GetWorkloadRunOptions{}
 
+	getWorkloadRunOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getWorkloadRunOptions.SetMigrationID(d.Get("migration_id").(string))
 	getWorkloadRunOptions.SetWorkloadID(d.Get("workload_id").(string))
 	getWorkloadRunOptions.SetRunID(d.Get("run_id").(string))
@@ -193,7 +199,7 @@ func dataSourceIbmBrsMigrationWorkloadRunRead(context context.Context, d *schema
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", *getWorkloadRunOptions.MigrationID, *getWorkloadRunOptions.WorkloadID, *getWorkloadRunOptions.RunID))
+	d.SetId(fmt.Sprintf("%s/%s/%s/%s", *getWorkloadRunOptions.BrsInstance, *getWorkloadRunOptions.MigrationID, *getWorkloadRunOptions.WorkloadID, *getWorkloadRunOptions.RunID))
 
 	if err = d.Set("operation_type", workloadRun.OperationType); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operation_type: %s", err), "(Data) ibm_brs_migration_workload_run", "read", "set-operation_type").GetDiag()

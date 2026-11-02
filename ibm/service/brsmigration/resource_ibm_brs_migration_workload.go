@@ -30,12 +30,19 @@ func ResourceIbmBrsMigrationWorkload() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_workload", "brs_instance"),
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_workload", "migration_id"),
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -657,13 +664,22 @@ func ResourceIbmBrsMigrationWorkloadValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "brs_instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$`,
+			MinValueLength:             1,
+			MaxValueLength:             512,
+		},
+		validate.ValidateSchema{
 			Identifier:                 "migration_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^mgr-[0-9a-f-]{36}$`,
-			MinValueLength:             40,
-			MaxValueLength:             40,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "name",
@@ -690,6 +706,7 @@ func resourceIbmBrsMigrationWorkloadCreate(context context.Context, d *schema.Re
 
 	createWorkloadOptions := &brsmigrationv1.CreateWorkloadOptions{}
 
+	createWorkloadOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	createWorkloadOptions.SetMigrationID(d.Get("migration_id").(string))
 	var payloads []brsmigrationv1.WorkloadPayloadMappingInput
 	for _, v := range d.Get("payloads").([]interface{}) {
@@ -704,6 +721,9 @@ func resourceIbmBrsMigrationWorkloadCreate(context context.Context, d *schema.Re
 	if _, ok := d.GetOk("name"); ok {
 		createWorkloadOptions.SetName(d.Get("name").(string))
 	}
+	if _, ok := d.GetOk("workload_type"); ok {
+		createWorkloadOptions.SetWorkloadType(d.Get("workload_type").(string))
+	}
 
 	workload, _, err := brsMigrationClient.CreateWorkloadWithContext(context, createWorkloadOptions)
 	if err != nil {
@@ -712,7 +732,7 @@ func resourceIbmBrsMigrationWorkloadCreate(context context.Context, d *schema.Re
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createWorkloadOptions.MigrationID, *workload.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *createWorkloadOptions.BrsInstance, *createWorkloadOptions.MigrationID, *workload.ID))
 
 	return resourceIbmBrsMigrationWorkloadRead(context, d, meta)
 }
@@ -732,8 +752,9 @@ func resourceIbmBrsMigrationWorkloadRead(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload", "read", "sep-id-parts").GetDiag()
 	}
 
-	getWorkloadOptions.SetMigrationID(parts[0])
-	getWorkloadOptions.SetWorkloadID(parts[1])
+	getWorkloadOptions.SetBrsInstance(parts[0])
+	getWorkloadOptions.SetMigrationID(parts[1])
+	getWorkloadOptions.SetWorkloadID(parts[2])
 
 	workload, response, err := brsMigrationClient.GetWorkloadWithContext(context, getWorkloadOptions)
 	if err != nil {
@@ -833,8 +854,9 @@ func resourceIbmBrsMigrationWorkloadDelete(context context.Context, d *schema.Re
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload", "delete", "sep-id-parts").GetDiag()
 	}
 
-	deleteWorkloadOptions.SetMigrationID(parts[0])
-	deleteWorkloadOptions.SetWorkloadID(parts[1])
+	deleteWorkloadOptions.SetBrsInstance(parts[0])
+	deleteWorkloadOptions.SetMigrationID(parts[1])
+	deleteWorkloadOptions.SetWorkloadID(parts[2])
 
 	_, err = brsMigrationClient.DeleteWorkloadWithContext(context, deleteWorkloadOptions)
 	if err != nil {

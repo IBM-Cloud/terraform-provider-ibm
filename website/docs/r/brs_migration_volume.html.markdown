@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_volume"
 description: |-
   Manages brs_migration_volume.
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_volume
@@ -14,8 +14,9 @@ Create, update, and delete brs_migration_volumes with this resource.
 
 ```hcl
 resource "ibm_brs_migration_volume" "brs_migration_volume_instance" {
+  brs_instance = "00000000-0000-4000-8000-000000000001"
   env = "vpc"
-  migration_id = "mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
+  migration_id = "a1b2c3d4-e5f6-7890-abcd-ef12345678ab"
   storage_type = "block"
 }
 ```
@@ -24,10 +25,12 @@ resource "ibm_brs_migration_volume" "brs_migration_volume_instance" {
 
 You can specify the following arguments for this resource.
 
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
 * `env` - (Required, String) Infrastructure environment this volume belongs to.
   * Constraints: Allowable values are: `vpc`, `classic`.
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `storage_type` - (Required, String) Storage type of the volume.
   * Constraints: Allowable values are: `block`, `file`, `san`, `local`.
 
@@ -108,15 +111,16 @@ Nested schema for **storage**:
 ## Import
 
 You can import the `ibm_brs_migration_volume` resource by using `id`.
-The `id` property can be formed from `migration_id`, and `volume_id` in the following format:
+The `id` property can be formed from `brs_instance`, `migration_id`, and `volume_id` in the following format:
 
 <pre>
-&lt;migration_id&gt;/&lt;volume_id&gt;
+&lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;volume_id&gt;
 </pre>
-* `migration_id`: A string in the format `mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (mgr-{uuid4} format).
+* `brs_instance`: A string in the format `00000000-0000-4000-8000-000000000001`. The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+* `migration_id`: A string in the format `a1b2c3d4-e5f6-7890-abcd-ef12345678ab`. The migration project ID (uuid4 format).
 * `volume_id`: A string in the format `vol-b1c2d3e4-f5a6-7890-bcde-f01234567890`. Migration service volume ID (vol-{uuid4} format).
 
 # Syntax
 <pre>
-$ terraform import ibm_brs_migration_volume.brs_migration_volume &lt;migration_id&gt;/&lt;volume_id&gt;
+$ terraform import ibm_brs_migration_volume.brs_migration_volume &lt;brs_instance&gt;/&lt;migration_id&gt;/&lt;volume_id&gt;
 </pre>

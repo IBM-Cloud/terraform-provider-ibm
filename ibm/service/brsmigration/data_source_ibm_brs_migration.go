@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigration() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -80,6 +85,7 @@ func dataSourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceDa
 
 	getMigrationOptions := &brsmigrationv1.GetMigrationOptions{}
 
+	getMigrationOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	getMigrationOptions.SetMigrationID(d.Get("migration_id").(string))
 
 	migration, _, err := brsMigrationClient.GetMigrationWithContext(context, getMigrationOptions)
@@ -89,7 +95,7 @@ func dataSourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceDa
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*getMigrationOptions.MigrationID)
+	d.SetId(fmt.Sprintf("%s/%s", *getMigrationOptions.BrsInstance, *getMigrationOptions.MigrationID))
 
 	if err = d.Set("name", migration.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_brs_migration", "read", "set-name").GetDiag()
@@ -99,10 +105,8 @@ func dataSourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceDa
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting brs_crn: %s", err), "(Data) ibm_brs_migration", "read", "set-brs_crn").GetDiag()
 	}
 
-	if !core.IsNil(migration.Crn) {
-		if err = d.Set("crn", migration.Crn); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_brs_migration", "read", "set-crn").GetDiag()
-		}
+	if err = d.Set("crn", migration.Crn); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_brs_migration", "read", "set-crn").GetDiag()
 	}
 
 	if err = d.Set("state", migration.State); err != nil {

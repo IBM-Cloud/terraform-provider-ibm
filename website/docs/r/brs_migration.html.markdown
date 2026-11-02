@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration"
 description: |-
   Manages brs_migration.
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration
@@ -46,7 +46,7 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_brs_migration` resource by using `id`. Migration project ID (mgr-{uuid4} format).
+You can import the `ibm_brs_migration` resource by using `id`. Migration project ID (uuid4 format).
 
 # Syntax
 <pre>
@@ -55,5 +55,5 @@ $ terraform import ibm_brs_migration.brs_migration &lt;id&gt;
 
 # Example
 ```
-$ terraform import ibm_brs_migration.brs_migration mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab
+$ terraform import ibm_brs_migration.brs_migration a1b2c3d4-e5f6-7890-abcd-ef12345678ab
 ```

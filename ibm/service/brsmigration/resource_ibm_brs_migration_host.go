@@ -30,12 +30,19 @@ func ResourceIbmBrsMigrationHost() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_host", "brs_instance"),
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_host", "migration_id"),
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -241,6 +248,26 @@ func ResourceIbmBrsMigrationHost() *schema.Resource {
 				Computed:    true,
 				Description: "Timestamp when this host was registered in the Migration API.",
 			},
+			"agent": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Live state of the connector agent installed on a host.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "`connected` — agent is reachable. `disconnected` — agent is not reachable (not registered, or registered but not connected).`unknown` — status could not be determined.",
+						},
+						"message": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Human-readable reason for a `disconnected` or `unknown` status.",
+						},
+					},
+				},
+			},
 			"host_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -254,13 +281,22 @@ func ResourceIbmBrsMigrationHostValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "brs_instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$`,
+			MinValueLength:             1,
+			MaxValueLength:             512,
+		},
+		validate.ValidateSchema{
 			Identifier:                 "migration_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^mgr-[0-9a-f-]{36}$`,
-			MinValueLength:             40,
-			MaxValueLength:             40,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "type",
@@ -292,6 +328,7 @@ func resourceIbmBrsMigrationHostCreate(context context.Context, d *schema.Resour
 
 	registerHostOptions := &brsmigrationv1.RegisterHostOptions{}
 
+	registerHostOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	registerHostOptions.SetMigrationID(d.Get("migration_id").(string))
 	registerHostOptions.SetType(d.Get("type").(string))
 	registerHostOptions.SetEnv(d.Get("env").(string))
@@ -313,7 +350,7 @@ func resourceIbmBrsMigrationHostCreate(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *registerHostOptions.MigrationID, *host.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *registerHostOptions.BrsInstance, *registerHostOptions.MigrationID, *host.ID))
 
 	return resourceIbmBrsMigrationHostRead(context, d, meta)
 }
@@ -333,8 +370,9 @@ func resourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resource
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "sep-id-parts").GetDiag()
 	}
 
-	getHostOptions.SetMigrationID(parts[0])
-	getHostOptions.SetHostID(parts[1])
+	getHostOptions.SetBrsInstance(parts[0])
+	getHostOptions.SetMigrationID(parts[1])
+	getHostOptions.SetHostID(parts[2])
 
 	host, response, err := brsMigrationClient.GetHostWithContext(context, getHostOptions)
 	if err != nil {
@@ -389,6 +427,16 @@ func resourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resource
 		err = fmt.Errorf("Error setting registered_at: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "set-registered_at").GetDiag()
 	}
+	if !core.IsNil(host.Agent) {
+		agentMap, err := ResourceIbmBrsMigrationHostHostAgentToMap(host.Agent)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "agent-to-map").GetDiag()
+		}
+		if err = d.Set("agent", []map[string]interface{}{agentMap}); err != nil {
+			err = fmt.Errorf("Error setting agent: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "set-agent").GetDiag()
+		}
+	}
 	if err = d.Set("host_id", host.ID); err != nil {
 		err = fmt.Errorf("Error setting host_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "set-host_id").GetDiag()
@@ -412,8 +460,9 @@ func resourceIbmBrsMigrationHostDelete(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "delete", "sep-id-parts").GetDiag()
 	}
 
-	deleteHostOptions.SetMigrationID(parts[0])
-	deleteHostOptions.SetHostID(parts[1])
+	deleteHostOptions.SetBrsInstance(parts[0])
+	deleteHostOptions.SetMigrationID(parts[1])
+	deleteHostOptions.SetHostID(parts[2])
 
 	_, err = brsMigrationClient.DeleteHostWithContext(context, deleteHostOptions)
 	if err != nil {
@@ -602,5 +651,14 @@ func ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigr
 func ResourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv1.VolumeAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["volume_id"] = *model.VolumeID
+	return modelMap, nil
+}
+
+func ResourceIbmBrsMigrationHostHostAgentToMap(model *brsmigrationv1.HostAgent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["status"] = *model.Status
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
 	return modelMap, nil
 }

@@ -15,13 +15,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationHostBasic(t *testing.T) {
 	var conf brsmigrationv1.Host
+	brsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	typeVar := "virtual_server"
 	env := "classic"
@@ -32,9 +33,10 @@ func TestAccIbmBrsMigrationHostBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBrsMigrationHostDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationHostConfigBasic(migrationID, typeVar, env),
+				Config: testAccCheckIbmBrsMigrationHostConfigBasic(brsInstance, migrationID, typeVar, env),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBrsMigrationHostExists("ibm_brs_migration_host.brs_migration_host_instance", conf),
+					resource.TestCheckResourceAttr("ibm_brs_migration_host.brs_migration_host_instance", "brs_instance", brsInstance),
 					resource.TestCheckResourceAttr("ibm_brs_migration_host.brs_migration_host_instance", "migration_id", migrationID),
 					resource.TestCheckResourceAttr("ibm_brs_migration_host.brs_migration_host_instance", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_brs_migration_host.brs_migration_host_instance", "env", env),
@@ -49,14 +51,15 @@ func TestAccIbmBrsMigrationHostBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationHostConfigBasic(migrationID string, typeVar string, env string) string {
+func testAccCheckIbmBrsMigrationHostConfigBasic(brsInstance string, migrationID string, typeVar string, env string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_host" "brs_migration_host_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			type = "%s"
 			env = "%s"
 		}
-	`, migrationID, typeVar, env)
+	`, brsInstance, migrationID, typeVar, env)
 }
 
 func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv1.Host) resource.TestCheckFunc {
@@ -79,8 +82,9 @@ func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv1.Host) re
 			return err
 		}
 
-		getHostOptions.SetMigrationID(parts[0])
-		getHostOptions.SetHostID(parts[1])
+		getHostOptions.SetBrsInstance(parts[0])
+		getHostOptions.SetMigrationID(parts[1])
+		getHostOptions.SetHostID(parts[2])
 
 		host, _, err := brsMigrationClient.GetHost(getHostOptions)
 		if err != nil {
@@ -109,8 +113,9 @@ func testAccCheckIbmBrsMigrationHostDestroy(s *terraform.State) error {
 			return err
 		}
 
-		getHostOptions.SetMigrationID(parts[0])
-		getHostOptions.SetHostID(parts[1])
+		getHostOptions.SetBrsInstance(parts[0])
+		getHostOptions.SetMigrationID(parts[1])
+		getHostOptions.SetHostID(parts[2])
 
 		// Try to find the key
 		_, response, err := brsMigrationClient.GetHost(getHostOptions)
@@ -303,6 +308,24 @@ func TestResourceIbmBrsMigrationHostVolumeAttachmentToMap(t *testing.T) {
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
 	result, err := brsmigration.ResourceIbmBrsMigrationHostVolumeAttachmentToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmBrsMigrationHostHostAgentToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["status"] = "disconnected"
+		model["message"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(brsmigrationv1.HostAgent)
+	model.Status = core.StringPtr("disconnected")
+	model.Message = core.StringPtr("testString")
+
+	result, err := brsmigration.ResourceIbmBrsMigrationHostHostAgentToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

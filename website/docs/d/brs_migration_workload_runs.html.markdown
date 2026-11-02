@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_workload_runs"
 description: |-
   Get information about brs_migration_workload_runs
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_workload_runs
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about brs_migration_wor
 
 ```hcl
 data "ibm_brs_migration_workload_runs" "brs_migration_workload_runs" {
+	brs_instance = ibm_brs_migration_workload_run.brs_migration_workload_run_instance.brs_instance
 	migration_id = ibm_brs_migration_workload_run.brs_migration_workload_run_instance.migration_id
 	workload_id = ibm_brs_migration_workload_run.brs_migration_workload_run_instance.workload_id
 }
@@ -23,8 +24,10 @@ data "ibm_brs_migration_workload_runs" "brs_migration_workload_runs" {
 
 You can specify the following arguments for this data source.
 
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `run_type` - (Optional, String) Filter by run type (scheduled or on-demand).
   * Constraints: Allowable values are: `scheduled`, `on_demand`.
 * `status` - (Optional, List) Filter by run status.

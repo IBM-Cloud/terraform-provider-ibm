@@ -31,12 +31,19 @@ func ResourceIbmBrsMigrationVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_volume", "brs_instance"),
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_brs_migration_volume", "migration_id"),
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"env": &schema.Schema{
 				Type:        schema.TypeString,
@@ -260,13 +267,22 @@ func ResourceIbmBrsMigrationVolumeValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "brs_instance",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$`,
+			MinValueLength:             1,
+			MaxValueLength:             512,
+		},
+		validate.ValidateSchema{
 			Identifier:                 "migration_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^mgr-[0-9a-f-]{36}$`,
-			MinValueLength:             40,
-			MaxValueLength:             40,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "env",
@@ -298,6 +314,7 @@ func resourceIbmBrsMigrationVolumeCreate(context context.Context, d *schema.Reso
 
 	registerVolumeOptions := &brsmigrationv1.RegisterVolumeOptions{}
 
+	registerVolumeOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	registerVolumeOptions.SetMigrationID(d.Get("migration_id").(string))
 	registerVolumeOptions.SetEnv(d.Get("env").(string))
 	registerVolumeOptions.SetStorageType(d.Get("storage_type").(string))
@@ -319,7 +336,7 @@ func resourceIbmBrsMigrationVolumeCreate(context context.Context, d *schema.Reso
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *registerVolumeOptions.MigrationID, *volume.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *registerVolumeOptions.BrsInstance, *registerVolumeOptions.MigrationID, *volume.ID))
 
 	return resourceIbmBrsMigrationVolumeRead(context, d, meta)
 }
@@ -339,8 +356,9 @@ func resourceIbmBrsMigrationVolumeRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_volume", "read", "sep-id-parts").GetDiag()
 	}
 
-	getVolumeOptions.SetMigrationID(parts[0])
-	getVolumeOptions.SetVolumeID(parts[1])
+	getVolumeOptions.SetBrsInstance(parts[0])
+	getVolumeOptions.SetMigrationID(parts[1])
+	getVolumeOptions.SetVolumeID(parts[2])
 
 	volume, response, err := brsMigrationClient.GetVolumeWithContext(context, getVolumeOptions)
 	if err != nil {
@@ -422,11 +440,17 @@ func resourceIbmBrsMigrationVolumeUpdate(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_volume", "update", "sep-id-parts").GetDiag()
 	}
 
-	updateVolumeOptions.SetMigrationID(parts[0])
-	updateVolumeOptions.SetVolumeID(parts[1])
+	updateVolumeOptions.SetBrsInstance(parts[0])
+	updateVolumeOptions.SetMigrationID(parts[1])
+	updateVolumeOptions.SetVolumeID(parts[2])
 
 	hasChange := false
 
+	if d.HasChange("brs_instance") {
+		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation." +
+			" The resource must be re-created to update this property.", "brs_instance")
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_brs_migration_volume", "update", "brs_instance-forces-new").GetDiag()
+	}
 	if d.HasChange("migration_id") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation." +
 			" The resource must be re-created to update this property.", "migration_id")
@@ -473,8 +497,9 @@ func resourceIbmBrsMigrationVolumeDelete(context context.Context, d *schema.Reso
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_volume", "delete", "sep-id-parts").GetDiag()
 	}
 
-	deleteVolumeOptions.SetMigrationID(parts[0])
-	deleteVolumeOptions.SetVolumeID(parts[1])
+	deleteVolumeOptions.SetBrsInstance(parts[0])
+	deleteVolumeOptions.SetMigrationID(parts[1])
+	deleteVolumeOptions.SetVolumeID(parts[2])
 
 	_, err = brsMigrationClient.DeleteVolumeWithContext(context, deleteVolumeOptions)
 	if err != nil {

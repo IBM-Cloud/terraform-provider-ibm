@@ -16,13 +16,14 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
+	"github.com/stretchr/testify/assert"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationHostsDataSourceBasic(t *testing.T) {
+	hostBrsInstance := fmt.Sprintf("tf_brs_instance_%d", acctest.RandIntRange(10, 100))
 	hostMigrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	hostType := "virtual_server"
 	hostEnv := "classic"
@@ -32,9 +33,10 @@ func TestAccIbmBrsMigrationHostsDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBrsMigrationHostsDataSourceConfigBasic(hostMigrationID, hostType, hostEnv),
+				Config: testAccCheckIbmBrsMigrationHostsDataSourceConfigBasic(hostBrsInstance, hostMigrationID, hostType, hostEnv),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_hosts.brs_migration_hosts_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_hosts.brs_migration_hosts_instance", "brs_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_hosts.brs_migration_hosts_instance", "migration_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_brs_migration_hosts.brs_migration_hosts_instance", "hosts.#"),
 					resource.TestCheckResourceAttr("data.ibm_brs_migration_hosts.brs_migration_hosts_instance", "hosts.0.type", hostType),
@@ -45,21 +47,23 @@ func TestAccIbmBrsMigrationHostsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBrsMigrationHostsDataSourceConfigBasic(hostMigrationID string, hostType string, hostEnv string) string {
+func testAccCheckIbmBrsMigrationHostsDataSourceConfigBasic(hostBrsInstance string, hostMigrationID string, hostType string, hostEnv string) string {
 	return fmt.Sprintf(`
 		resource "ibm_brs_migration_host" "brs_migration_host_instance" {
+			brs_instance = "%s"
 			migration_id = "%s"
 			type = "%s"
 			env = "%s"
 		}
 
 		data "ibm_brs_migration_hosts" "brs_migration_hosts_instance" {
+			brs_instance = ibm_brs_migration_host.brs_migration_host_instance.brs_instance
 			migration_id = ibm_brs_migration_host.brs_migration_host_instance.migration_id
 			env = ibm_brs_migration_host.brs_migration_host_instance.env
 			type = ibm_brs_migration_host.brs_migration_host_instance.type
 			migrated = ibm_brs_migration_host.brs_migration_host_instance.migrated
 		}
-	`, hostMigrationID, hostType, hostEnv)
+	`, hostBrsInstance, hostMigrationID, hostType, hostEnv)
 }
 
 
@@ -83,6 +87,10 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 		volumeAttachmentModel := make(map[string]interface{})
 		volumeAttachmentModel["volume_id"] = "vol-b1c2d3e4-f5a6-7890-bcde-f01234567890"
 
+		hostAgentModel := make(map[string]interface{})
+		hostAgentModel["status"] = "disconnected"
+		hostAgentModel["message"] = "testString"
+
 		model := make(map[string]interface{})
 		model["id"] = "host-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 		model["type"] = "virtual_server"
@@ -92,6 +100,7 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 		model["migrated"] = false
 		model["workload_id"] = "wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 		model["registered_at"] = "2024-06-01T09:00:00.000Z"
+		model["agent"] = []map[string]interface{}{hostAgentModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -114,6 +123,10 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 	volumeAttachmentModel := new(brsmigrationv1.VolumeAttachment)
 	volumeAttachmentModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
+	hostAgentModel := new(brsmigrationv1.HostAgent)
+	hostAgentModel.Status = core.StringPtr("disconnected")
+	hostAgentModel.Message = core.StringPtr("testString")
+
 	model := new(brsmigrationv1.Host)
 	model.ID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.Type = core.StringPtr("virtual_server")
@@ -123,6 +136,7 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 	model.Migrated = core.BoolPtr(false)
 	model.WorkloadID = core.StringPtr("wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.RegisteredAt = CreateMockDateTime("2024-06-01T09:00:00.000Z")
+	model.Agent = hostAgentModel
 
 	result, err := brsmigration.DataSourceIbmBrsMigrationHostsHostToMap(model)
 	assert.Nil(t, err)
@@ -307,6 +321,24 @@ func TestDataSourceIbmBrsMigrationHostsVolumeAttachmentToMap(t *testing.T) {
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
 	result, err := brsmigration.DataSourceIbmBrsMigrationHostsVolumeAttachmentToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIbmBrsMigrationHostsHostAgentToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["status"] = "disconnected"
+		model["message"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(brsmigrationv1.HostAgent)
+	model.Status = core.StringPtr("disconnected")
+	model.Message = core.StringPtr("testString")
+
+	result, err := brsmigration.DataSourceIbmBrsMigrationHostsHostAgentToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

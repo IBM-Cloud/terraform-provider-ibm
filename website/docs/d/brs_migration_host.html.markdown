@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_brs_migration_host"
 description: |-
   Get information about brs_migration_host
-subcategory: "IBM Cloud Backup and Recovery Migration API"
+subcategory: "IBM Backup Recovery API"
 ---
 
 # ibm_brs_migration_host
@@ -14,6 +14,7 @@ Provides a read-only data source to retrieve information about a brs_migration_h
 
 ```hcl
 data "ibm_brs_migration_host" "brs_migration_host" {
+	brs_instance = ibm_brs_migration_host.brs_migration_host_instance.brs_instance
 	host_id = ibm_brs_migration_host.brs_migration_host_instance.host_id
 	migration_id = ibm_brs_migration_host.brs_migration_host_instance.migration_id
 }
@@ -23,16 +24,24 @@ data "ibm_brs_migration_host" "brs_migration_host" {
 
 You can specify the following arguments for this data source.
 
+* `brs_instance` - (Required, Forces new resource, String) The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|crn:v1:bluemix:public:backup-recovery:[a-z0-9-]+:a\/[a-zA-Z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}::)$/`.
 * `host_id` - (Required, Forces new resource, String) The migration service host ID (host-{uuid4} format).
   * Constraints: Length must be `41` characters. The value must match regular expression `/^host-[0-9a-f-]{36}$/`.
-* `migration_id` - (Required, Forces new resource, String) The migration project ID (mgr-{uuid4} format).
-  * Constraints: Length must be `40` characters. The value must match regular expression `/^mgr-[0-9a-f-]{36}$/`.
+* `migration_id` - (Required, Forces new resource, String) The migration project ID (uuid4 format).
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the brs_migration_host.
+* `agent` - (List) Live state of the connector agent installed on a host.
+Nested schema for **agent**:
+	* `message` - (String) Human-readable reason for a `disconnected` or `unknown` status.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
+	* `status` - (String) `connected` — agent is reachable. `disconnected` — agent is not reachable (not registered, or registered but not connected).`unknown` — status could not be determined.
+	  * Constraints: Allowable values are: `connected`, `disconnected`, `unknown`.
 * `compute` - (List) Enriched compute details. Schema variant matches the sibling `env` field: `classic` → `ClassicComputeDetails`, `vpc` → `VPCComputeDetails`.
 Nested schema for **compute**:
 	* `boot_volume_id` - (String) Migration service `vol-*` ID of the boot volume attachment.

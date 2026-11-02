@@ -26,10 +26,15 @@ func DataSourceIbmBrsMigrationWorkloads() *schema.Resource {
 		ReadContext: dataSourceIbmBrsMigrationWorkloadsRead,
 
 		Schema: map[string]*schema.Schema{
+			"brs_instance": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The BRS service instance identifier — either a bare UUID (instance ID) or a full BRS service instance CRN (percent-encoded when supplied in a URL, since CRNs contain colons and forward-slashes).",
+			},
 			"migration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The migration project ID (mgr-{uuid4} format).",
+				Description: "The migration project ID (uuid4 format).",
 			},
 			"workloads": &schema.Schema{
 				Type:        schema.TypeList,
@@ -641,6 +646,7 @@ func dataSourceIbmBrsMigrationWorkloadsRead(context context.Context, d *schema.R
 
 	listWorkloadsOptions := &brsmigrationv1.ListWorkloadsOptions{}
 
+	listWorkloadsOptions.SetBrsInstance(d.Get("brs_instance").(string))
 	listWorkloadsOptions.SetMigrationID(d.Get("migration_id").(string))
 
 	var pager *brsmigrationv1.WorkloadsPager
