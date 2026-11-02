@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.117.2-f568b7d6-20261016-181021
-*/
+ */
 
 package secretsmanagerinstancemanagement_test
 
@@ -13,12 +13,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
 	"github.com/stretchr/testify/assert"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSmDestinationsDataSourceBasic(t *testing.T) {
@@ -47,7 +47,6 @@ func testAccCheckIbmSmDestinationsDataSourceConfigBasic() string {
 		}
 	`)
 }
-
 
 func TestDataSourceIbmSmDestinationsDestinationToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {

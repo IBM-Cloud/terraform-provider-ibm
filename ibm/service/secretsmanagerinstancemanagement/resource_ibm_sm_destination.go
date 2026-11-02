@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.117.2-f568b7d6-20261016-181021
-*/
+ */
 
 package secretsmanagerinstancemanagement
 
@@ -26,44 +26,44 @@ import (
 
 func ResourceIbmSmDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmSmDestinationCreate,
-		ReadContext:     resourceIbmSmDestinationRead,
-		UpdateContext:   resourceIbmSmDestinationUpdate,
-		DeleteContext:   resourceIbmSmDestinationDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmSmDestinationCreate,
+		ReadContext:   resourceIbmSmDestinationRead,
+		UpdateContext: resourceIbmSmDestinationUpdate,
+		DeleteContext: resourceIbmSmDestinationDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "instance_id"),
-				Description: "Secrets Manager instance ID.",
+				Description:  "Secrets Manager instance ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "name"),
-				Description: "Destination name.",
+				Description:  "Destination name.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "type"),
-				Description: "Destination type.",
+				Description:  "Destination type.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "description"),
-				Description: "Optional description.",
+				Description:  "Optional description.",
 			},
 			"crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "crn"),
-				Description: "IBM Cloud Database service instance CRN.",
+				Description:  "IBM Cloud Database service instance CRN.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -346,7 +346,7 @@ func resourceIbmSmDestinationUpdate(context context.Context, d *schema.ResourceD
 
 	patchVals := &secretsmanagerinstancemanagementv2.DestinationPatch{}
 	if d.HasChange("instance_id") {
-		errMsg := fmt.Sprintf("cannot update resource property \"%s\" with the ForceNew annotation." +
+		errMsg := fmt.Sprintf("cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "instance_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_sm_destination", "update", "instance_id-forces-new").GetDiag()
 	}
