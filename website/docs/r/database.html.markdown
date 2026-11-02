@@ -956,6 +956,11 @@ Review the argument reference that you can specify for your resource.
         Nested scheme for `target`:
         - `region` - (Required, String) The region to create the automatic backup copy in, for example `ca-mon`.
 
+        **Customer use cases for CRC from eu-fr2 to eu-de:**
+        - Customers can manually copy both automatic and on-demand backups from `eu-fr2` to `eu-de` only.
+        - Customers cannot configure automatic backup copying between `eu-fr2` and `eu-de` DB instances.
+        - Customers cannot copy automatic or on-demand backups from `eu-de` to any region.
+
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
