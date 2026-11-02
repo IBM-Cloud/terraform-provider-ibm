@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
-*/
+ */
 
 package secretsmanagerinstancemanagement
 
