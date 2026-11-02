@@ -1,3 +1,10 @@
+# 2.8.3 (November 2, 2026)
+
+## Bug Fixes
+
+### Configuration Aggregator
+* added regions support in config_aggregator_settings datasource ([7087](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7087))
+
 # 2.8.2 (October 30, 2026)
 
 ## Bug Fixes
