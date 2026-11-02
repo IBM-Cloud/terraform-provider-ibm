@@ -24,6 +24,7 @@ You can specify the following arguments for this resource.
 
 * `instance_id` - (Required, Forces new resource, String) The service instance ID.
   * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+* `response_wrapping` - (Optional, Forces new resource, Boolean) If `true`, the admin token is returned as a Vault response-wrapped token in `wrapped_token` instead of `token`.
 
 ## Attribute Reference
 
@@ -31,6 +32,7 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the sm_admin_token.
 * `created_at` - (String) The date that the admin token was created. The date format follows RFC 3339.
-* # `token` - (String) The token value.
+* `token` - (String) The token value. Set when `response_wrapping` is not `true`.
   * Constraints: The maximum length is `4096` characters. The minimum length is `16` characters. The value must match regular expression `/^hvs.[\\s\\S]+$/`.
+* `wrapped_token` - (String) A Vault response-wrapped token. Set only when `response_wrapping` is `true`.
 
