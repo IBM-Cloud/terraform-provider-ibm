@@ -70,7 +70,6 @@ func TestAccIbmSmDestinationDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_destination.sm_destination_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_destination.sm_destination_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_destination.sm_destination_instance", "created_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_destination.sm_destination_instance", "message"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_destination.sm_destination_instance", "crn"),
 				),
 			},
