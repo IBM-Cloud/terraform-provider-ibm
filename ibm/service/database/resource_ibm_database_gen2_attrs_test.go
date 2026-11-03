@@ -592,3 +592,20 @@ func TestIsShardAttrConfigured(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateFlexFlavorForClassic_NanoProfiles(t *testing.T) {
+	for _, id := range []string{"nxf-1x1", "nxf-1x2", "nxf-1x4", "nxf-1x8", "bxf-2x8", "mxf-2x16"} {
+		requireErrContains(t, validateFlexFlavorForClassic("member", id), "Nano profiles (nxf-*, bxf-*, mxf-*)")
+	}
+	if err := validateFlexFlavorForClassic("member", "b3c.4x16.encrypted"); err != nil {
+		t.Fatalf("expected no error for classic flavor, got %v", err)
+	}
+}
+
+func TestDbConfigToMap_NanoHostFlavor(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	result := g.dbConfigToMap(DBConfig{Members: 1, StorageGB: 5, HostFlavor: "nxf-1x2"}, "postgresql")
+	if result["host_flavor"] != "nxf-1x2" {
+		t.Fatalf("expected host_flavor=nxf-1x2, got %v", result["host_flavor"])
+	}
+}
