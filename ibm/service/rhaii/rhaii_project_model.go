@@ -5,15 +5,9 @@ package rhaii
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"sort"
-	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -22,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // rhaiiProjectComputedModel holds the computed attributes of a project that the
@@ -236,120 +229,10 @@ func flattenRhaiiProject(ctx context.Context, meta conns.ClientSession, instance
 	return values, diags
 }
 
-// rhaiiReadTags reads the user tags and the access tags of a CRN as framework sets.
-// Read errors are warnings and give an empty set, as in the other resources of the provider.
+// rhaiiReadTags reads the user tags and the access tags of a CRN for the state.
 func rhaiiReadTags(ctx context.Context, meta conns.ClientSession, crn string) (types.Set, types.Set, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	toSet := func(tags *schema.Set) types.Set {
-		out := []string{}
-		if tags != nil {
-			for _, t := range tags.List() {
-				out = append(out, fmt.Sprint(t))
-			}
-		}
-		sort.Strings(out)
-		s, d := types.SetValueFrom(ctx, types.StringType, out)
-		diags.Append(d...)
-		return s
-	}
-
-	userTags, err := flex.GetGlobalTagsUsingCRN(meta, crn, "", rhaiiUserTagType)
-	if err != nil {
-		diags.AddWarning("Error reading the tags of the Red Hat AI Inference project", err.Error())
-	}
-	accessTags, err := flex.GetGlobalTagsUsingCRN(meta, crn, "", rhaiiAccessTagType)
-	if err != nil {
-		diags.AddWarning("Error reading the access tags of the Red Hat AI Inference project", err.Error())
-	}
-	return toSet(userTags), toSet(accessTags), diags
-}
-
-// rhaiiSetToStrings returns the strings of a known framework set, or nil.
-func rhaiiSetToStrings(ctx context.Context, s types.Set) ([]string, diag.Diagnostics) {
-	if s.IsNull() || s.IsUnknown() {
-		return nil, nil
-	}
-	out := []string{}
-	d := s.ElementsAs(ctx, &out, false)
-	return out, d
-}
-
-// rhaiiUpdateTags attaches and detaches tags of a type ("user" or "access") so
-// that the CRN ends up with newTags. It uses the Global Tagging attach and
-// detach calls only, as the VPC resources do. flex.UpdateTagsUsingCRN is not
-// used: after a detach it also deletes the tag from the account. The flex
-// helper works on SDK sets, which are only containers for the two lists here.
-func rhaiiUpdateTags(meta conns.ClientSession, crn, tagType string, oldTags, newTags []string) error {
-	oldSet := flex.NewStringSet(flex.ResourceIBMVPCHash, oldTags)
-	newSet := flex.NewStringSet(flex.ResourceIBMVPCHash, newTags)
-	return flex.UpdateGlobalTagsUsingCRN(oldSet, newSet, meta, crn, "", tagType)
-}
-
-// rhaiiEnvTags returns the tags that Schematics adds through IC_ENV_TAGS. The
-// flex tag helpers attach them to every resource, so they are part of the plan.
-func rhaiiEnvTags() []string {
-	v := os.Getenv("IC_ENV_TAGS")
-	if v == "" {
-		return nil
-	}
-	return strings.Split(v, ",")
-}
-
-// rhaiiMergeTags returns the sorted union of two tag lists.
-func rhaiiMergeTags(a, b []string) []string {
-	seen := map[string]struct{}{}
-	out := []string{}
-	for _, list := range [][]string{a, b} {
-		for _, t := range list {
-			if _, ok := seen[t]; !ok {
-				seen[t] = struct{}{}
-				out = append(out, t)
-			}
-		}
-	}
-	sort.Strings(out)
-	return out
-}
-
-// rhaiiMissingAccessTags returns the access tags of the list that do not exist
-// in the account. It is the framework equivalent of flex.ResourceValidateAccessTags.
-func rhaiiMissingAccessTags(ctx context.Context, meta conns.ClientSession, tags []string) ([]string, error) {
-	if len(tags) == 0 {
-		return nil, nil
-	}
-	gtClient, err := meta.GlobalTaggingAPIv1()
-	if err != nil {
-		return nil, fmt.Errorf("error getting the Global Tagging client: %s", err)
-	}
-
-	existing := map[string]struct{}{}
-	var offset int64
-	const limit int64 = 1000
-	for {
-		result, _, err := gtClient.ListTagsWithContext(ctx, &globaltaggingv1.ListTagsOptions{
-			TagType: ptr(rhaiiAccessTagType),
-			Offset:  &offset,
-			Limit:   core.Int64Ptr(limit),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error listing access tags: %s", err)
-		}
-		for _, item := range result.Items {
-			if item.Name != nil {
-				existing[*item.Name] = struct{}{}
-			}
-		}
-		if int64(len(result.Items)) < limit {
-			break
-		}
-		offset += limit
-	}
-
-	missing := []string{}
-	for _, t := range tags {
-		if _, ok := existing[t]; !ok {
-			missing = append(missing, t)
-		}
-	}
-	return missing, nil
+	tags, diags := flex.FrameworkReadTagsUsingCRN(ctx, meta, crn, "", rhaiiUserTagType)
+	accessTags, d := flex.FrameworkReadTagsUsingCRN(ctx, meta, crn, "", rhaiiAccessTagType)
+	diags.Append(d...)
+	return tags, accessTags, diags
 }

@@ -47,31 +47,32 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-mongodb"
   resource_group_id = data.ibm_resource_group.group.id
+  service_endpoints = "public"
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12345678"
+  adminpassword     = "Password12345678"
 
   group {
     group_id = "member"
+
+    host_flavor {
+      id = "multitenant"
+    }
 
     memory {
       allocation_mb = 14336
     }
 
     disk {
-      allocation_mb = 20480
-    }
-
-    cpu {
-      allocation_count = 3
+      allocation_mb = 10240
     }
   }
 
   users {
     name     = "user123"
-    password = "password12345678"
+    password = "Password12345678"
     type     = "database"
   }
 
@@ -81,10 +82,19 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value  = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "mongo_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
 }
 
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.mongo_conn.mongodb.0.composed.0
+  sensitive = true
+}
 ```
 
 ### Gen2 database instance example
@@ -187,7 +197,7 @@ output "valkey_connection" {
 ```
 
 ### Sample database instance by using `group` attributes
-An example to configure and deploy database by using `group` attributes.
+An example to configure and deploy a Classic (`standard` plan) database by using `group` attributes with multitenant hosting.
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -198,14 +208,19 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-postgresql"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
+  service_endpoints = "public"
 
-  adminpassword                = "password12345678"
+  adminpassword = "Password12345678"
 
   group {
     group_id = "member"
+
+    host_flavor {
+      id = "multitenant"
+    }
 
     memory {
       allocation_mb = 10240
@@ -214,15 +229,11 @@ resource "ibm_database" "<your_database>" {
     disk {
       allocation_mb = 256000
     }
-
-    cpu {
-      allocation_count = 3
-    }
   }
 
   users {
     name     = "user123"
-    password = "password12345678"
+    password = "Password12345678"
   }
 
   allowlist {
@@ -231,10 +242,19 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "psql_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
 }
 
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.psql_conn.postgres.0.composed.0
+  sensitive = true
+}
 ```
 
 ### Sample database instance by using `host_flavor` attribute
@@ -249,11 +269,12 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-postgresql"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
+  service_endpoints = "public"
 
-  adminpassword                = "password12"
+  adminpassword = "Password12345678"
 
   group {
     group_id = "member"
@@ -269,7 +290,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "Password12345678"
   }
 
   allowlist {
@@ -278,8 +299,18 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "psql_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
+}
+
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.psql_conn.postgres.0.composed.0
+  sensitive = true
 }
 
 ```
@@ -884,10 +915,10 @@ Review the argument reference that you can specify for your resource.
    - Nested scheme for `auto_scaling`:
      - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
         - Nested scheme for `disk`:
-          - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
+          - `capacity_enabled` - (Optional, Boolean) Auto scaling scalar enables or disables the scalar capacity.
           - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
           - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-          - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+          - `io_enabled` - (Optional, Boolean) Auto scaling scalar I/O utilization enabled.`
           - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
           - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
           - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
@@ -986,6 +1017,18 @@ Review the argument reference that you can specify for your resource.
           - `bxf.4x16`
           - `bxf.8x32`
 
+- `maintenance` - (Optional, List) Maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
+  - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
+  - Supported regions: `eu-de`, `eu-fr2`.
+
+  Nested scheme for `maintenance`:
+  - `window` - (Optional, List) Maintenance window schedule.
+
+    Nested scheme for `window`:
+    - `start_time` - (Optional, String) Earliest time at which maintenance can be initiated, in ISO 8601 UTC format (`hh:mmZ`). Example: `"05:00Z"`.
+    - `days` - (Optional, Set of String) Day(s) of the week on which maintenance can be initiated. Example: `["Wednesday", "Thursday"]`.
+    - `system_assigned` - (Optional, Boolean) When `true`, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set to `true` with `start_time` or `days`.
+
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
 
@@ -1025,7 +1068,7 @@ Review the argument reference that you can specify for your resource.
   > ⚠️ **Warning:** Reducing the shard count is not allowed and will result in a plan-time error.
   > Shard scale-out is an irreversible operation.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
@@ -1112,6 +1155,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
 | In-place version upgrades | ✅ Supported | ❌ Updates fail with error |
 | Deletion protection | ✅ Supported | ✅ Supported |
+| Maintenance window (`maintenance`) | ❌ Plan fails if set | ✅ Supported |
 
 ### Gen2 Validation Behavior
 
