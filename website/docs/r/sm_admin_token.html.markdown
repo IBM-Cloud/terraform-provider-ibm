@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_admin_token"
 description: |-
   Manages Vault admin token for an SM dedicated instance.
-subcategory: "IBM Cloud Secrets Manager Instance Management API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_admin_token
