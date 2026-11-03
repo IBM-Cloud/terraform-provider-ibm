@@ -47,31 +47,32 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-mongodb"
   resource_group_id = data.ibm_resource_group.group.id
+  service_endpoints = "public"
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12345678"
+  adminpassword     = "Password12345678"
 
   group {
     group_id = "member"
+
+    host_flavor {
+      id = "multitenant"
+    }
 
     memory {
       allocation_mb = 14336
     }
 
     disk {
-      allocation_mb = 20480
-    }
-
-    cpu {
-      allocation_count = 3
+      allocation_mb = 10240
     }
   }
 
   users {
     name     = "user123"
-    password = "password12345678"
+    password = "Password12345678"
     type     = "database"
   }
 
@@ -81,10 +82,19 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value  = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "mongo_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
 }
 
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.mongo_conn.mongodb.0.composed.0
+  sensitive = true
+}
 ```
 
 ### Gen2 database instance example
@@ -187,7 +197,7 @@ output "valkey_connection" {
 ```
 
 ### Sample database instance by using `group` attributes
-An example to configure and deploy database by using `group` attributes.
+An example to configure and deploy a Classic (`standard` plan) database by using `group` attributes with multitenant hosting.
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -198,14 +208,19 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-postgresql"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
+  service_endpoints = "public"
 
-  adminpassword                = "password12345678"
+  adminpassword = "Password12345678"
 
   group {
     group_id = "member"
+
+    host_flavor {
+      id = "multitenant"
+    }
 
     memory {
       allocation_mb = 10240
@@ -214,15 +229,11 @@ resource "ibm_database" "<your_database>" {
     disk {
       allocation_mb = 256000
     }
-
-    cpu {
-      allocation_count = 3
-    }
   }
 
   users {
     name     = "user123"
-    password = "password12345678"
+    password = "Password12345678"
   }
 
   allowlist {
@@ -231,10 +242,19 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "psql_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
 }
 
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.psql_conn.postgres.0.composed.0
+  sensitive = true
+}
 ```
 
 ### Sample database instance by using `host_flavor` attribute
@@ -249,11 +269,12 @@ resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
   plan              = "standard"
   location          = "eu-gb"
-  service           = "databases-for-etcd"
+  service           = "databases-for-postgresql"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
+  service_endpoints = "public"
 
-  adminpassword                = "password12"
+  adminpassword = "Password12345678"
 
   group {
     group_id = "member"
@@ -269,7 +290,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "Password12345678"
   }
 
   allowlist {
@@ -278,8 +299,18 @@ resource "ibm_database" "<your_database>" {
   }
 }
 
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+data "ibm_database_connection" "psql_conn" {
+  deployment_id = ibm_database.test_acc.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+
+  depends_on = [ibm_database.test_acc]
+}
+
+output "ICD_connection_string" {
+  value     = data.ibm_database_connection.psql_conn.postgres.0.composed.0
+  sensitive = true
 }
 
 ```
@@ -998,7 +1029,7 @@ Review the argument reference that you can specify for your resource.
   > ⚠️ **Warning:** Reducing the shard count is not allowed and will result in a plan-time error.
   > Shard scale-out is an irreversible operation.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
