@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_destination"
 description: |-
   Get information about sm_destination
-subcategory: "IBM Cloud Secrets Manager Instance Management API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_destination
