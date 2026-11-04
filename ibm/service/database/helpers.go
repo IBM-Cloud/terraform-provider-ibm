@@ -47,7 +47,7 @@ const (
 	databaseInstanceRemovedStatus      = "removed"
 
 	// Gen2 independent backups retention bounds (days)
-	backupsRetentionMinDays = 30
+	backupsRetentionMinDays = 7
 	backupsRetentionMaxDays = 60
 
 	// Gen2 database operation keys

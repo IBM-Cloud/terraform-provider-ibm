@@ -1243,6 +1243,8 @@ func (g *resourceIBMDatabaseGen2Backend) applyBackupsWithDiagnostics(d *schema.R
 	}
 
 	return nil
+}
+
 // buildPromoteParameters builds the PATCH parameters that promote a read replica, or commit a MongoSync migration for mongodbees.
 func buildPromoteParameters(dbType string) map[string]interface{} {
 	dbParams := map[string]interface{}{
