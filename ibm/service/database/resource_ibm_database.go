@@ -606,8 +606,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 											"bxf.48x192",
 											"bxf.4x16",
 											"bxf.8x32",
-											"nxf-1x1",
-											"nxf-1x2",
 											"nxf-1x4",
 											"nxf-1x8",
 											"bxf-2x8",

@@ -427,6 +427,99 @@ func TestAccIBMDatabaseInstancePostgresGen2FlexFlavor(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresNanoFlavorValidation(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+
+	steps := []resource.TestStep{}
+	// Nano profiles are Gen2 only, so Classic/Gen1 must reject all of them
+	for _, flavor := range []string{"nxf-1x4", "nxf-1x8", "bxf-2x8", "mxf-2x16"} {
+		steps = append(steps, resource.TestStep{
+			Config:      testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard", acc.Region(), "public", flavor, 20480),
+			ExpectError: regexp.MustCompile("Nano profiles \\(nxf-\\*, bxf-\\*, mxf-\\*\\) are not supported for Classic/Gen1 databases"),
+		})
+	}
+	// Nano profiles that are not supported at all must fail schema validation
+	for _, flavor := range []string{"nxf-1x1", "nxf-1x2"} {
+		steps = append(steps, resource.TestStep{
+			Config:      testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", flavor, 10240),
+			ExpectError: regexp.MustCompile("expected .*host_flavor.*\\.id to be one of"),
+		})
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps:        steps,
+	})
+}
+
+func TestAccIBMDatabaseInstancePostgresGen2NanoFlavor(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf-1x4", 10240),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf-1x4"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf-1x8", 10240),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf-1x8"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup string, name string, plan string, location string, endpoints string, hostFlavor string, diskMB int) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "%[3]s"
+		location          = "%[4]s"
+		service_endpoints = "%[5]s"
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "%[6]s"
+			}
+			disk {
+				allocation_mb = %[7]d
+			}
+		}
+
+		tags = ["one:two"]
+	}
+	`, databaseResourceGroup, name, plan, location, endpoints, hostFlavor, diskMB)
+}
+
 func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
