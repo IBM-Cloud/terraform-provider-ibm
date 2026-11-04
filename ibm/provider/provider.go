@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudmonitoring"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -437,6 +438,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings":                      iamidentity.DataSourceIBMIamAccountSettings(),
 			"ibm_iam_effective_account_settings":            iamidentity.DataSourceIBMIamEffectiveAccountSettings(),
 			"ibm_iam_auth_token":                            iamidentity.DataSourceIBMIAMAuthToken(),
+			"ibm_cloud_monitoring_api_token":                cloudmonitoring.DataSourceIBMCloudMonitoringAPIToken(),
 			"ibm_iam_role_actions":                          iampolicy.DataSourceIBMIAMRoleAction(),
 			"ibm_iam_users":                                 iamidentity.DataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                                 iampolicy.DataSourceIBMIAMRole(),
@@ -671,6 +673,8 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc_address_prefix":          vpc.DataSourceIBMIsVPCAddressPrefix(),
 			"ibm_is_vpn_gateway_connection":      vpc.DataSourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_connections":     vpc.DataSourceIBMISVPNGatewayConnections(),
+			"ibm_is_vpn_gateway_member":          vpc.DataSourceIBMIsVPNGatewayMember(),
+			"ibm_is_vpn_gateway_members":         vpc.DataSourceIBMIsVPNGatewayMembers(),
 
 			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
 			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
@@ -933,7 +937,9 @@ func Provider() *schema.Provider {
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
-			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_instance":     secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_destination":  secretsmanagerinstancemanagement.DataSourceIbmSmDestination(),
+			"ibm_sm_destinations": secretsmanagerinstancemanagement.DataSourceIbmSmDestinations(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1513,6 +1519,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_advertised_cidr":           vpc.ResourceIBMISVPNGatewayAdvertisedCidr(),
+			"ibm_is_vpn_gateway_member_replace":            vpc.ResourceIBMISVpnGatewayMemberReplace(),
 			"ibm_is_vpc":                                   vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                    vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_dns_resolution_binding":            vpc.ResourceIBMIsVPCDnsResolutionBinding(),
@@ -1726,6 +1733,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
 
 			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
+			"ibm_sm_destination": secretsmanagerinstancemanagement.ResourceIbmSmDestination(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
@@ -2408,6 +2416,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
+				"ibm_sm_destination":                                                 secretsmanagerinstancemanagement.ResourceIbmSmDestinationValidator(),
 
 				// // Added for Code Engine
 				"ibm_code_engine_allowed_outbound_destination": codeengine.ResourceIbmCodeEngineAllowedOutboundDestinationValidator(),
