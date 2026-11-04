@@ -393,12 +393,13 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 		}
 
 		group := map[string]interface{}{
-			"group_id":    groupID,
-			"count":       count,
-			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
-			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
-			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
-			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+			"group_id":     groupID,
+			"count":        count,
+			"memory":       buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":          buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":         buildDiskConfig(resourceMap, allocations.storageGB),
+			"host_flavor":  buildHostFlavorConfig(allocations.hostFlavorID),
+			"member_zones": allocations.memberZones,
 		}
 		groups = append(groups, group)
 	}
@@ -413,6 +414,7 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	memberZones  []string
 	shards       int64
 	hostFlavorID string
 }
@@ -459,6 +461,9 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
+	}
+	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+		alloc.memberZones = stringsFromInterfaceSlice(zonesRaw)
 	}
 
 	return alloc
@@ -1056,6 +1061,98 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 		backupType = v
 	}
 	return
+}
+
+// validateMemberZones checks that member_zones has allocation_count=1 and exactly one zone.
+func validateMemberZones(zones []string, memberCount int) error {
+	if memberCount != 1 {
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+				"To deploy a single member in a specific availability zone, set:\n"+
+				"  members {\n"+
+				"    allocation_count = 1\n"+
+				"    member_zones     = [\"<zone>\"]\n"+
+				"  }",
+			memberCount,
+		)
+	}
+	if len(zones) != 1 {
+		quoted := make([]string, 0, len(zones))
+		for _, z := range zones {
+			quoted = append(quoted, fmt.Sprintf("%q", z))
+		}
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
+				"Please specify a single availability zone.",
+			len(zones),
+			strings.Join(quoted, ", "),
+		)
+	}
+	return nil
+}
+
+// stringsFromInterfaceSlice converts []interface{} to []string, skipping non-string elements.
+func stringsFromInterfaceSlice(in []interface{}) []string {
+	out := make([]string, 0, len(in))
+	for _, v := range in {
+		if s, ok := v.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// memberZonesInRawConfig calls fn for each group that has member_zones set in the raw config.
+func memberZonesInRawConfig(d *schema.ResourceDiff, fn func(zones []string, allocationCount int) error) error {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil
+	}
+	groupsVal := raw.GetAttr("group")
+	if groupsVal.IsNull() || !groupsVal.IsKnown() {
+		return nil
+	}
+	it := groupsVal.ElementIterator()
+	for it.Next() {
+		_, groupVal := it.Element()
+		if groupVal.IsNull() || !groupVal.IsKnown() {
+			continue
+		}
+		membersVal := groupVal.GetAttr("members")
+		if membersVal.IsNull() || !membersVal.IsKnown() || membersVal.LengthInt() == 0 {
+			continue
+		}
+		mit := membersVal.ElementIterator()
+		if !mit.Next() {
+			continue
+		}
+		_, memberVal := mit.Element() // first (only) element
+		if memberVal.IsNull() || !memberVal.IsKnown() {
+			continue
+		}
+		zonesVal := memberVal.GetAttr("member_zones")
+		if zonesVal.IsNull() || !zonesVal.IsKnown() || zonesVal.LengthInt() == 0 {
+			continue
+		}
+		var zones []string
+		zit := zonesVal.ElementIterator()
+		for zit.Next() {
+			_, zv := zit.Element()
+			if !zv.IsNull() && zv.IsKnown() {
+				zones = append(zones, zv.AsString())
+			}
+		}
+		allocationCount := 0
+		allocVal := memberVal.GetAttr("allocation_count")
+		if !allocVal.IsNull() && allocVal.IsKnown() {
+			n, _ := allocVal.AsBigFloat().Int64()
+			allocationCount = int(n)
+		}
+		if err := fn(zones, allocationCount); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // gen2GetOperationDescription extracts a human-readable description from the instance's last operation or state.

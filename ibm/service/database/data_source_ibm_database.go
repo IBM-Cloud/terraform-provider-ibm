@@ -308,6 +308,14 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"member_zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Availability zones for a single-member deployment. Gen2 only.",
+						},
 						"host_flavor": {
 							Type:     schema.TypeList,
 							Computed: true,
