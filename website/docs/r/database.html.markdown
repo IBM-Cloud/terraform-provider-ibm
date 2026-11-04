@@ -636,59 +636,6 @@ resource "ibm_database" "mongo_sharded" {
 }
 ```
 
-### Sample EDB instance
-EDB takes more time than expected. It is always advisible to extend timeouts using timeouts block
-
-```terraform
-data "ibm_resource_group" "test_acc" {
-  is_default = true
-}
-
-resource "ibm_database" "edb" {
-  resource_group_id            = data.ibm_resource_group.test_acc.id
-  name                         = "test"
-  service                      = "databases-for-enterprisedb"
-  plan                         = "standard"
-  location                     = "us-south"
-  adminpassword                = "password12345678"
-
-  group {
-    group_id = "member"
-
-    memory {
-      allocation_mb = 12288
-    }
-
-    disk {
-      allocation_mb = 131072
-    }
-
-    cpu {
-      allocation_count = 3
-    }
-  }
-
-  tags                         = ["one:two"]
-
-  users {
-    name      = "user123"
-    password  = "password12345678"
-    type      = "database"
-  }
-
-  allowlist {
-    address     = "172.168.1.2/32"
-    description = "desc1"
-  }
-
-  timeouts {
-    create = "120m"
-    update = "120m"
-    delete = "15m"
-  }
-}
-```
-
 ### Sample Elasticsearch Enterprise instance
 
 ```terraform
@@ -944,7 +891,7 @@ Review the argument reference that you can specify for your resource.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
   **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
-- `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
+- `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`, and `messages-for-rabbitmq`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
 
@@ -1068,7 +1015,7 @@ Review the argument reference that you can specify for your resource.
   > ⚠️ **Warning:** Reducing the shard count is not allowed and will result in a plan-time error.
   > Shard scale-out is an irreversible operation.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`, and `databases-for-mysql`.
 
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
