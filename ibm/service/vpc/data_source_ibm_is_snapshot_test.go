@@ -47,6 +47,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.instance"),
 					resource.TestCheckResourceAttrSet(snpName, "allowed_use.0.api_version"),
 					// resource.TestCheckResourceAttrSet(snpName, "captured_at"), // Commented as the attribute is optional.
+					resource.TestCheckResourceAttr(snpName, "software_attachments.#", "0"),
 				),
 			},
 		},
@@ -150,8 +151,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
-	planCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
-	versionCrn := "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+	planCrn := acc.ISCatalogImagePlanCRN
+	versionCrn := acc.ISCatalogImageOfferingCRN
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -166,6 +167,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.#"),
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(snpName, "catalog_offering.0.plan_crn"),
+					// lookup by name
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.#"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.href"),
+					resource.TestCheckResourceAttrSet(snpName, "software_attachments.0.name"),
+					resource.TestCheckResourceAttr(snpName, "software_attachments.0.resource_type", "snapshot_software_attachment"),
+					// lookup by identifier must return the same software attachments
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.ds_snapshot_id", "software_attachments.#", snpName, "software_attachments.#"),
+					resource.TestCheckResourceAttrPair("data.ibm_is_snapshot.ds_snapshot_id", "software_attachments.0.id", snpName, "software_attachments.0.id"),
 				),
 			},
 		},
@@ -214,6 +224,9 @@ func testDSCheckIBMISSnapshotConfigWithCatalogOffering(vpcname, subnetname, sshn
 	data "ibm_is_snapshot" "ds_snapshot" {
 		depends_on 	= [ibm_is_snapshot.testacc_snapshot]
 		name 		= "%s"
+	}
+	data "ibm_is_snapshot" "ds_snapshot_id" {
+		identifier 	= ibm_is_snapshot.testacc_snapshot.id
 	}
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, versionCrn, planCrn, sname, sname)
 }

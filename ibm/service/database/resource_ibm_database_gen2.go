@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,7 +31,6 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
-	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
 }
@@ -123,9 +123,6 @@ var gen2AttrGuidance = map[string]string{
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"backup_encryption_key_crn": "Gen2 databases do not support backup_encryption_key_crn at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
-
-	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"logical_replication_slot":    "logical replication slot creation is currently ignored",
@@ -342,16 +339,12 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 // Includes database configuration, encryption settings, and backup_id for restore.
 // Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
-	// Get the database type for the dataservices key
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	// Get the database type for the dataservices key.
+	// getDatabaseTypeFromResourceID handles the enterprise-sharding-gen2 → "mongodbees" override.
+	plan := d.Get("plan").(string)
+	dbType := getDatabaseTypeFromResourceID(serviceName, plan)
 	if dbType == "" {
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
-	}
-
-	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
 	}
 
 	// Build database configuration using typed struct
@@ -368,10 +361,44 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Handle maintenance window
+	g.addMaintenanceConfig(d, dataservices)
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		dataservices["restore_backup_id"] = backupID.(string)
+	}
+
+	// For mongodbees, remote_leader_id starts a MongoSync migration: add the migrate block at creation only.
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok && dbType == "mongodbees" && d.IsNewResource() {
+		migrate, err := g.buildMongoSyncMigrate(sourceCRN.(string), meta)
+		if err != nil {
+			return nil, err
+		}
+		dbConfig["migrate"] = migrate
+	}
+
+	// Add read_replica block if remote_leader_id is set (for read replica creation).
+	// The dbConfig map already exists as dataservices[dbType]; inject read_replica into it.
+	// source_type is derived by looking up the source instance's plan: Gen2 plans contain
+	// "-gen2-"; anything else is treated as "gen1" (Classic).
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok && dbType != "mongodbees" {
+		if dbCfg, ok := dataservices[dbType].(map[string]interface{}); ok {
+			sourceType := "gen1"
+			if rsConClient, err := g.getResourceControllerClient(meta); err == nil {
+				srcCRNStr := sourceCRN.(string)
+				if srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &srcCRNStr}); err == nil {
+					if srcInst.ResourcePlanID != nil && isGen2Plan(*srcInst.ResourcePlanID) {
+						sourceType = "gen2"
+					}
+				}
+			}
+			dbCfg["read_replica"] = map[string]interface{}{
+				"source_crn":  sourceCRN.(string),
+				"source_type": sourceType,
+			}
+		}
 	}
 
 	// Build final parameters structure
@@ -380,6 +407,58 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	}
 
 	return parameters, nil
+}
+
+// buildMongoSyncMigrate validates the Gen1 source instance and builds the migrate block that
+// starts a MongoSync migration. commit is false: synchronization runs until remote_leader_id is cleared.
+func (g *resourceIBMDatabaseGen2Backend) buildMongoSyncMigrate(sourceCRN string, meta interface{}) (map[string]interface{}, error) {
+	rsConClient, err := g.getResourceControllerClient(meta)
+	if err != nil {
+		return nil, err
+	}
+	srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &sourceCRN})
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving %s source instance %s: %w", remoteLeaderIDKey, sourceCRN, err)
+	}
+	if srcInst.ResourcePlanID == nil {
+		return nil, fmt.Errorf("%s source instance %s has no resource plan ID", remoteLeaderIDKey, sourceCRN)
+	}
+
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize resource catalog client: %w", err)
+	}
+	planName, err := rsCatClient.ResourceCatalog().GetServicePlanName(*srcInst.ResourcePlanID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving plan of %s source instance %s: %w", remoteLeaderIDKey, sourceCRN, err)
+	}
+	if err := validateMongoSyncSource(sourceCRN, planName); err != nil {
+		return nil, err
+	}
+
+	sourceType := "gen1"
+	if isGen2Plan(*srcInst.ResourcePlanID) {
+		sourceType = "gen2"
+	}
+	return map[string]interface{}{
+		"source_crn":  sourceCRN,
+		"source_type": sourceType,
+		"commit":      false,
+	}, nil
+}
+
+// validateMongoSyncSource checks that the source is a Gen1 databases-for-mongodb Enterprise instance.
+func validateMongoSyncSource(sourceCRN, sourcePlanName string) error {
+	if parts := strings.Split(sourceCRN, ":"); len(parts) < 5 || parts[4] != "databases-for-mongodb" {
+		return fmt.Errorf("%s must be the CRN of a databases-for-mongodb instance, got %q", remoteLeaderIDKey, sourceCRN)
+	}
+	if isGen2Plan(sourcePlanName) {
+		return fmt.Errorf("%s: a Gen2 MongoDB instance (plan %s) is not yet supported as a MongoSync source", remoteLeaderIDKey, sourcePlanName)
+	}
+	if sourcePlanName != "enterprise" {
+		return fmt.Errorf("%s: only a Gen1 databases-for-mongodb Enterprise instance is supported as a MongoSync source, got plan %q", remoteLeaderIDKey, sourcePlanName)
+	}
+	return nil
 }
 
 // buildDBConfig creates database configuration with member group and storage settings.
@@ -508,6 +587,103 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	}
 }
 
+// addMaintenanceConfig adds maintenance window configuration to dataservices.
+// Supports custom window (start_time/days) or reset to system-assigned default (system_assigned).
+//
+// All three window fields are read exclusively from the raw HCL config, never from state.
+// d.GetOk returns state values for Computed fields even when those fields are absent from
+// the new config — without the raw-config guard, switching from a custom window to
+// system_assigned=true would send start_time+days+system_assigned to the API, which
+// rejects the combination.
+func (g *resourceIBMDatabaseGen2Backend) addMaintenanceConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
+	saVal, saInCfg, startTimeVal, startTimeInCfg, daysInCfg :=
+		maintenanceWindowFieldsFromRawConfig(d.GetRawConfig())
+
+	// Nothing in config — nothing to send.
+	if !saInCfg && !startTimeInCfg && !daysInCfg {
+		return
+	}
+
+	window := map[string]interface{}{}
+
+	if saInCfg {
+		window["system_assigned"] = saVal
+	}
+	if startTimeInCfg && startTimeVal != "" {
+		window["start_time"] = startTimeVal
+	}
+	if daysInCfg {
+		// Days must be read from d (schema.Set), but only when in config.
+		raw, _ := d.GetOk("maintenance")
+		list, _ := raw.([]interface{})
+		if len(list) > 0 && list[0] != nil {
+			outer := list[0].(map[string]interface{})
+			if windowList, _ := outer["window"].([]interface{}); len(windowList) > 0 && windowList[0] != nil {
+				wMap := windowList[0].(map[string]interface{})
+				if daysSet, ok := wMap["days"].(*schema.Set); ok && daysSet.Len() > 0 {
+					days := make([]string, 0, daysSet.Len())
+					for _, day := range daysSet.List() {
+						days = append(days, day.(string))
+					}
+					window["days"] = days
+				}
+			}
+		}
+	}
+
+	if len(window) > 0 {
+		dataservices["maintenance"] = map[string]interface{}{
+			"window": window,
+		}
+	}
+}
+
+// flattenMaintenance converts the maintenance map from instance.Extensions into the
+// []map[string]interface{} shape required by Terraform for TypeList/MaxItems:1 blocks.
+//
+// The RC API always returns days as []interface{} (one string element per day).
+// Mutual-exclusion rule: if start_time or days are present, this is a custom window —
+// system_assigned is suppressed. If neither is present, system_assigned is used.
+func flattenMaintenance(ext map[string]interface{}) []map[string]interface{} {
+	// The API response nests maintenance under extensions["dataservices"]["maintenance"].
+	dataservices, ok := ext["dataservices"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	maintenanceRaw, ok := dataservices["maintenance"]
+	if !ok {
+		return nil
+	}
+	mMap, ok := maintenanceRaw.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	wRaw, ok := mMap["window"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	window := map[string]interface{}{}
+
+	if v, ok := wRaw["start_time"].(string); ok && v != "" {
+		window["start_time"] = v
+	}
+	if v, ok := wRaw["days"].([]interface{}); ok && len(v) > 0 {
+		window["days"] = v
+	}
+	_, hasStartTime := window["start_time"]
+	_, hasDays := window["days"]
+	if !hasStartTime && !hasDays {
+		if v, ok := wRaw["system_assigned"].(bool); ok {
+			window["system_assigned"] = v
+		}
+	}
+
+	return []map[string]interface{}{
+		{"window": []map[string]interface{}{window}},
+	}
+}
+
 // createInstanceWithRetry creates an instance.
 // Note: Retry logic can be added in the future if needed.
 func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
@@ -606,11 +782,15 @@ func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
 	return nil
 }
 
-// applyGroupScaling applies scaling configuration to instance groups using Resource Controller.
+// applyGroupAndMaintenanceUpdate applies scaling and maintenance window configuration to an instance using Resource Controller.
+// Since buildGen2Parameters encodes both group and maintenance into the same parameters payload,
+// a single UpdateResourceInstance call handles both when either has changed.
 // Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
 // This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
-	if _, ok := configCtx.d.GetOk("group"); !ok && !isShardAttrConfigured(configCtx.d) {
+func (g *resourceIBMDatabaseGen2Backend) applyGroupAndMaintenanceUpdate(configCtx *instanceConfigContext) error {
+	_, hasGroup := configCtx.d.GetOk("group")
+	hasMaintenance := configCtx.d.HasChange("maintenance")
+	if !hasGroup && !isShardAttrConfigured(configCtx.d) && !hasMaintenance {
 		return nil
 	}
 
@@ -814,6 +994,15 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	// Set maintenance window from instance extensions.
+	if ext := instance.Extensions; ext != nil {
+		if flat := flattenMaintenance(ext); flat != nil {
+			if err := d.Set("maintenance", flat); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting maintenance: %w", err))
+			}
+		}
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -913,7 +1102,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	_, err = waitForDatabaseInstanceUpdate(d, meta, false)
 	if err != nil {
 		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}
@@ -957,10 +1146,10 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	return nil
 }
 
-// applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
-// Wraps applyGroupScaling to provide consistent diagnostic handling.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") && !d.HasChange("shards") {
+// applyGroupAndMaintenanceWithDiagnostics applies group scaling and maintenance window updates in one RC call.
+// Wraps applyGroupAndMaintenanceUpdate to provide consistent diagnostic handling.
+func (g *resourceIBMDatabaseGen2Backend) applyGroupAndMaintenanceWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("group") && !d.HasChange("shards") && !d.HasChange("maintenance") {
 		return nil
 	}
 
@@ -979,7 +1168,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx co
 		instance:   instance,
 	}
 
-	if err := g.applyGroupScaling(configCtx); err != nil {
+	if err := g.applyGroupAndMaintenanceUpdate(configCtx); err != nil {
 		return diagError("error applying group scaling: %s", err)
 	}
 
@@ -1015,8 +1204,80 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// buildPromoteParameters builds the PATCH parameters that promote a read replica, or commit a MongoSync migration for mongodbees.
+func buildPromoteParameters(dbType string) map[string]interface{} {
+	dbParams := map[string]interface{}{
+		"read_replica": map[string]interface{}{
+			"promoted": true,
+		},
+	}
+	if dbType == "mongodbees" {
+		dbParams = map[string]interface{}{
+			"migrate": map[string]interface{}{
+				"commit": true,
+			},
+		}
+	}
+	return map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			dbType: dbParams,
+		},
+	}
+}
+
+// promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
+// Triggered when remote_leader_id is cleared (set to "") on an existing replica.
+// Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
+// For mongodbees (MongoSync) the migration is committed instead, with migrate.commit=true.
+func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange(remoteLeaderIDKey) {
+		return nil
+	}
+
+	newVal := d.Get(remoteLeaderIDKey).(string)
+	if newVal != "" {
+		// remote_leader_id is being set on an existing instance — not supported as an update.
+		return diagError("remote_leader_id cannot be changed after creation; it can only be cleared to promote the replica to a standalone instance")
+	}
+
+	instanceID := d.Id()
+
+	// Retrieve the instance to extract service name for the dataservices key.
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance for promotion: %s", err)
+	}
+
+	serviceName := ""
+	if instance.ResourcePlanID != nil {
+		// Extract service name from resource plan ID (e.g. "databases-for-postgresql-gen2-standard" → "databases-for-postgresql")
+		parts := strings.SplitN(*instance.ResourcePlanID, "-gen2", 2)
+		serviceName = parts[0]
+	}
+
+	dbType := getDatabaseTypeFromResourceID(serviceName, d.Get("plan").(string))
+	if dbType == "" {
+		return diagError("unable to determine database type from resource plan ID for promotion")
+	}
+
+	parameters := buildPromoteParameters(dbType)
+
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
+		return diagError("error promoting read replica: %s", err)
+	}
+
+	_, err = g.waitForGen2InstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("error waiting for read replica promotion to complete: %s", err)
+	}
+
+	return nil
+}
+
 // Update modifies an existing IBM Cloud Database Gen2 instance.
-// Supports updates to name, tags, and group scaling.
+// Supports updates to name, tags, group scaling, maintenance, and configuration.
 // Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	warnings := g.WarnIgnoredAttrs(d)
@@ -1032,6 +1293,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
+	if diags := g.promoteReadReplicaWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
 	if diags := g.applyBasicAttributeUpdates(d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
@@ -1040,7 +1305,7 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+	if diags := g.applyGroupAndMaintenanceWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
@@ -1236,6 +1501,116 @@ func normalizeShardValue(v interface{}) int {
 		return val
 	}
 	return 0
+}
+
+// ValidateMaintenanceWindowDiff enforces the following rules for the maintenance.window block:
+//  1. system_assigned = true cannot be set together with start_time or days.
+//  2. system_assigned = false alone (without start_time and days) is not a valid configuration.
+//  3. start_time and days must both be set together; specifying only one is not accepted.
+//
+// All three fields are read from the raw config (not state) to avoid false conflicts.
+// diff.GetOk returns state values for Computed fields even when the user has not written
+// them in HCL — this causes two problems without the raw-config guard:
+//   - switching from a custom window to system_assigned=true: old start_time/days still in
+//     state would make the validator think they are set alongside system_assigned=true.
+//   - switching from backend-default (system_assigned=true in state) to a custom window:
+//     the validator would see system_assigned=true and reject the new start_time/days.
+func (g *resourceIBMDatabaseGen2Backend) ValidateMaintenanceWindowDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	// Read all three window fields from raw config only.
+	systemAssignedVal, systemAssignedInConfig, startTimeVal, startTimeInConfig, daysInConfig :=
+		maintenanceWindowFieldsFromRawConfig(diff.GetRawConfig())
+
+	startTimeSet := startTimeInConfig && startTimeVal != ""
+	hasDays := daysInConfig
+
+	if systemAssignedInConfig && systemAssignedVal {
+		// system_assigned = true is mutually exclusive with start_time and days.
+		if startTimeSet || hasDays {
+			return fmt.Errorf("[ERROR] maintenance.window.system_assigned cannot be set together with start_time or days")
+		}
+		return nil
+	}
+
+	if systemAssignedInConfig && !systemAssignedVal {
+		// system_assigned = false alone is not a valid configuration — it neither
+		// resets to the system default nor specifies a custom window.
+		if !startTimeSet && !hasDays {
+			return fmt.Errorf("[ERROR] maintenance.window.system_assigned = false requires start_time and days to be set")
+		}
+	}
+
+	// Enforce that start_time and days must both be specified together.
+	if startTimeSet && !hasDays {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
+	if hasDays && !startTimeSet {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
+	return nil
+}
+
+// maintenanceWindowFieldsFromRawConfig reads all three window fields from the raw cty
+// config, returning:
+//
+//	systemAssignedVal      – value of system_assigned (false if absent)
+//	systemAssignedInConfig – true when system_assigned was explicitly written in HCL
+//	startTimeVal           – value of start_time ("" if absent)
+//	startTimeInConfig      – true when start_time was explicitly written in HCL
+//	daysInConfig           – true when days was explicitly written and non-empty in HCL
+//
+// Reading from raw config (not state) is critical for Computed fields: diff.GetOk /
+// d.GetOk return the prior state value even when the field is absent from the new HCL
+// config, which would cause the validator to see stale start_time/days when switching
+// to system_assigned=true, or a stale system_assigned=true when switching to a custom
+// window.
+func maintenanceWindowFieldsFromRawConfig(raw cty.Value) (
+	systemAssignedVal bool, systemAssignedInConfig bool,
+	startTimeVal string, startTimeInConfig bool,
+	daysInConfig bool,
+) {
+	if raw.IsNull() || !raw.IsKnown() {
+		return
+	}
+	maintenanceVal, ok := raw.AsValueMap()["maintenance"]
+	if !ok || maintenanceVal.IsNull() || !maintenanceVal.IsKnown() {
+		return
+	}
+	it := maintenanceVal.ElementIterator()
+	if !it.Next() {
+		return
+	}
+	_, outerVal := it.Element()
+	if outerVal.IsNull() || !outerVal.IsKnown() {
+		return
+	}
+	windowVal, ok := outerVal.AsValueMap()["window"]
+	if !ok || windowVal.IsNull() || !windowVal.IsKnown() {
+		return
+	}
+	it = windowVal.ElementIterator()
+	if !it.Next() {
+		return
+	}
+	_, wVal := it.Element()
+	if wVal.IsNull() || !wVal.IsKnown() {
+		return
+	}
+	wMap := wVal.AsValueMap()
+
+	if saVal, ok := wMap["system_assigned"]; ok && !saVal.IsNull() && saVal.IsKnown() {
+		systemAssignedInConfig = true
+		systemAssignedVal = saVal.True()
+	}
+	if stVal, ok := wMap["start_time"]; ok && !stVal.IsNull() && stVal.IsKnown() {
+		startTimeInConfig = true
+		startTimeVal = stVal.AsString()
+	}
+	if dVal, ok := wMap["days"]; ok && !dVal.IsNull() && dVal.IsKnown() {
+		// days is a TypeSet — represented as a set in cty. Non-empty means at least one element.
+		it := dVal.ElementIterator()
+		daysInConfig = it.Next()
+	}
+	return
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {

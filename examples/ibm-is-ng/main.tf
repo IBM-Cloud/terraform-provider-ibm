@@ -1373,6 +1373,86 @@ resource "ibm_is_backup_policy_plan" "backup-policy-plan-clone" {
 }
 
 # =====================================================================================
+# Software Attachments
+# =====================================================================================
+
+// Software attachments cannot be created or deleted through the API. They are
+// created automatically when an instance is provisioned from a software-licensed
+// catalog offering, and they are carried over to the boot volume of that instance
+// and to snapshots of that boot volume. The ibm_is_volume_software_attachment and
+// ibm_is_snapshot_software_attachment resources adopt an existing attachment and
+// manage only its name. Destroying them only removes them from Terraform state.
+
+// Instance provisioned from a software-licensed catalog offering
+resource "ibm_is_instance" "vsi-software-licensed" {
+  name    = "vsi-software-licensed"
+  profile = var.profile
+  catalog_offering {
+    version_crn = var.software_catalog_offering_version_crn
+    plan_crn    = var.software_catalog_offering_plan_crn
+  }
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
+  zone = ibm_is_subnet.subnet-secondary-1.zone
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+
+  primary_network_attachment {
+    name = "software-licensed-attachment"
+    virtual_network_interface {
+      subnet = ibm_is_subnet.subnet-secondary-1.id
+    }
+  }
+}
+
+// Snapshot of the boot volume, which carries the software attachments of the volume
+resource "ibm_is_snapshot" "snapshot-software-licensed" {
+  name          = "snapshot-software-licensed"
+  source_volume = ibm_is_instance.vsi-software-licensed.boot_volume[0].volume_id
+}
+
+// The volume and snapshot data sources return the software attachments
+data "ibm_is_volume" "volume-software-licensed" {
+  identifier = ibm_is_instance.vsi-software-licensed.boot_volume[0].volume_id
+}
+
+data "ibm_is_snapshot" "snapshot-software-licensed" {
+  identifier = ibm_is_snapshot.snapshot-software-licensed.id
+}
+
+// Manage the name of the volume software attachment
+resource "ibm_is_volume_software_attachment" "volume-software-attachment" {
+  volume_id                     = ibm_is_instance.vsi-software-licensed.boot_volume[0].volume_id
+  volume_software_attachment_id = data.ibm_is_volume.volume-software-licensed.software_attachments[0].id
+  name                          = "my-volume-software-attachment"
+}
+
+// Manage the name of the snapshot software attachment
+resource "ibm_is_snapshot_software_attachment" "snapshot-software-attachment" {
+  snapshot_id                     = ibm_is_snapshot.snapshot-software-licensed.id
+  snapshot_software_attachment_id = data.ibm_is_snapshot.snapshot-software-licensed.software_attachments[0].id
+  name                            = "my-snapshot-software-attachment"
+}
+
+// Volume software attachment data sources
+data "ibm_is_volume_software_attachments" "volume-software-attachments" {
+  volume_id = ibm_is_volume_software_attachment.volume-software-attachment.volume_id
+}
+
+data "ibm_is_volume_software_attachment" "volume-software-attachment" {
+  volume_id                     = ibm_is_volume_software_attachment.volume-software-attachment.volume_id
+  volume_software_attachment_id = ibm_is_volume_software_attachment.volume-software-attachment.volume_software_attachment_id
+}
+
+// Snapshot software attachment data sources
+data "ibm_is_snapshot_software_attachments" "snapshot-software-attachments" {
+  snapshot_id = ibm_is_snapshot_software_attachment.snapshot-software-attachment.snapshot_id
+}
+
+data "ibm_is_snapshot_software_attachment" "snapshot-software-attachment" {
+  snapshot_id                     = ibm_is_snapshot_software_attachment.snapshot-software-attachment.snapshot_id
+  snapshot_software_attachment_id = ibm_is_snapshot_software_attachment.snapshot-software-attachment.snapshot_software_attachment_id
+}
+
+# =====================================================================================
 # Data Sources for Storage & Backup
 # =====================================================================================
 

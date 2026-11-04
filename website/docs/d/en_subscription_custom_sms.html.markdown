@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_subscription_custom_sms'
 description: |-
-  Get information about a custom sms subscription
+  Get information about a Custom SMS subscription
 ---
 
 # ibm_en_subscription_custom_sms
@@ -41,12 +41,26 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_id` - (String) Topic ID.
 
-- `additional_properties` - (Required, List)
+- `attributes` - (List) The additional attributes.
 
-  - `susbscribed`- (Map) The phone number who have subscribed for topic.
+  - `subscribed` - (List) The phone numbers that are subscribed to the topic.
 
-  - `unsubscribed`- (List) The phone number which has opted for unsusbscribtion from that topic.
+    - `phone_number` - (String) The subscribed phone number.
 
-  - `invited`- (List) The phone number for invitation.
+    - `updated_at` - (String) The updated date of subscription.
+
+  - `unsubscribed` - (List) The phone numbers that have opted out of subscription from the topic.
+
+    - `phone_number` - (String) The unsubscribed phone number.
+
+    - `updated_at` - (String) The updated date of unsubscription.
+
+  - `invited` - (List) The phone numbers for invitation.
+
+    - `phone_number` - (String) The invited phone number.
+
+    - `updated_at` - (String) The updated date of invitation.
+
+    - `expires_at` - (String) The expiry date of the invitation.
 
 - `updated_at` - (String) Last updated time.

@@ -5,6 +5,8 @@ package iamidentity_test
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -87,6 +89,27 @@ func TestAccIBMIamAPIKeyAllArgs(t *testing.T) {
 	})
 }
 
+func TestAccIBMIamAPIKeyFile(t *testing.T) {
+	var conf iamidentityv1.APIKey
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	file := filepath.Join(t.TempDir(), "apikey.json")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIamAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIamAPIKeyConfigFile(name, file),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIamAPIKeyExists("ibm_iam_api_key.iam_api_key_instance", conf),
+					testAccCheckIBMIamAPIKeyFileMode(file),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIamAPIKeyConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_api_key" "iam_api_key_instance" {
@@ -103,6 +126,30 @@ func testAccCheckIBMIamAPIKeyConfig(name string, description string, storeValue 
 			store_value = %s
 		}
 	`, name, description, storeValue)
+}
+
+func testAccCheckIBMIamAPIKeyConfigFile(name string, file string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_api_key" "iam_api_key_instance" {
+			name = "%s"
+			file = "%s"
+		}
+	`, name, file)
+}
+
+// testAccCheckIBMIamAPIKeyFileMode checks that the API key file written by the
+// file argument is readable only by its owner (0600).
+func testAccCheckIBMIamAPIKeyFileMode(file string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		info, err := os.Stat(file)
+		if err != nil {
+			return err
+		}
+		if mode := info.Mode().Perm(); mode != 0600 {
+			return fmt.Errorf("API key file %s has mode %04o, expected 0600", file, mode)
+		}
+		return nil
+	}
 }
 
 func testAccCheckIBMIamAPIKeyExists(n string, obj iamidentityv1.APIKey) resource.TestCheckFunc {

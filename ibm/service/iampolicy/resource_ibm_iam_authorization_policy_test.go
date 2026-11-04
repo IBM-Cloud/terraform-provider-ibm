@@ -4,17 +4,25 @@
 package iampolicy_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"sync"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
@@ -335,6 +343,132 @@ func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupIdWithStringExistsInSub
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicy_Description(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyDescription("Updated authorization policy description"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Updated authorization policy description"),
+				),
+			},
+		},
+	})
+}
+
+// authorizationPolicyIAMSession is a conns.ClientSession that serves only the
+// IAM Policy Management client; any other client panics.
+type authorizationPolicyIAMSession struct {
+	conns.ClientSession
+	iam *iampolicymanagementv1.IamPolicyManagementV1
+}
+
+func (s authorizationPolicyIAMSession) IAMPolicyManagementV1API() (*iampolicymanagementv1.IamPolicyManagementV1, error) {
+	return s.iam, nil
+}
+
+func (s authorizationPolicyIAMSession) BluemixUserDetails() (*conns.UserConfig, error) {
+	return &conns.UserConfig{UserAccount: "acc"}, nil
+}
+
+// newAuthorizationPolicyIAMServer serves one cloud-object-storage to kms
+// Reader authorization policy and records the body of every PUT to it.
+func newAuthorizationPolicyIAMServer(t *testing.T, description string) (authorizationPolicyIAMSession, func() []map[string]interface{}) {
+	t.Helper()
+	var mu sync.Mutex
+	var puts []map[string]interface{}
+	policy := func() map[string]interface{} {
+		return map[string]interface{}{
+			"id":          "policy-id",
+			"type":        "authorization",
+			"state":       "active",
+			"description": description,
+			"subject": map[string]interface{}{"attributes": []map[string]interface{}{
+				{"key": "serviceName", "operator": "stringEquals", "value": "cloud-object-storage"},
+				{"key": "accountId", "operator": "stringEquals", "value": "acc"},
+			}},
+			"resource": map[string]interface{}{"attributes": []map[string]interface{}{
+				{"key": "serviceName", "operator": "stringEquals", "value": "kms"},
+				{"key": "accountId", "operator": "stringEquals", "value": "acc"},
+			}},
+			"control": map[string]interface{}{"grant": map[string]interface{}{"roles": []map[string]interface{}{
+				{"role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader"},
+			}}},
+		}
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case r.URL.Path == "/v2/roles":
+			fmt.Fprint(w, `{"service_roles":[{"display_name":"Reader","crn":"crn:v1:bluemix:public:iam::::serviceRole:Reader"}]}`)
+		case r.URL.Path == "/v2/policies/policy-id" && r.Method == http.MethodGet:
+			w.Header().Set("ETag", "etag")
+			json.NewEncoder(w).Encode(policy())
+		case r.URL.Path == "/v2/policies/policy-id" && r.Method == http.MethodPut:
+			assert.Equal(t, "etag", r.Header.Get("If-Match"))
+			var body map[string]interface{}
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			mu.Lock()
+			puts = append(puts, body)
+			if d, ok := body["description"].(string); ok {
+				description = d
+			}
+			mu.Unlock()
+			json.NewEncoder(w).Encode(policy())
+		default:
+			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	iam, err := iampolicymanagementv1.NewIamPolicyManagementV1(&iampolicymanagementv1.IamPolicyManagementV1Options{
+		URL:           server.URL,
+		Authenticator: &core.NoAuthAuthenticator{},
+	})
+	require.NoError(t, err)
+	return authorizationPolicyIAMSession{iam: iam}, func() []map[string]interface{} {
+		mu.Lock()
+		defer mu.Unlock()
+		return puts
+	}
+}
+
+func TestIBMIAMAuthorizationPolicyUpdate(t *testing.T) {
+	t.Run("description change replaces the policy in place", func(t *testing.T) {
+		meta, puts := newAuthorizationPolicyIAMServer(t, "old description")
+		r := iampolicy.ResourceIBMIAMAuthorizationPolicy()
+
+		d := r.Data(&terraform.InstanceState{ID: "policy-id"})
+		require.NoError(t, r.Read(d, meta))
+		state := d.State()
+		require.Equal(t, "old description", state.Attributes["description"])
+
+		diff := &terraform.InstanceDiff{Attributes: map[string]*terraform.ResourceAttrDiff{
+			"description": {Old: "old description", New: "new description"},
+		}}
+		newState, diags := r.Apply(t.Context(), state, diff, meta)
+		require.False(t, diags.HasError(), "%v", diags)
+
+		require.Len(t, puts(), 1)
+		assert.Equal(t, "new description", puts()[0]["description"])
+		assert.Equal(t, "new description", newState.Attributes["description"])
+	})
+}
+
 func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -399,6 +533,17 @@ func testAccCheckIBMIAMAuthorizationPolicyBasic() string {
 		description = "Authorization Policy for test scenario"
 	  }
 	`
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyDescription(description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name = "cloud-object-storage"
+		target_service_name = "kms"
+		roles               = ["Reader"]
+		description = "%s"
+	  }
+	`, description)
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyUpdate(accountId string) string {

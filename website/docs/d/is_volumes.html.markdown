@@ -143,6 +143,15 @@ In addition to all argument references listed, you can access the following attr
 		- `code` - (String) A snake case string succinctly identifying the status reason.
 		- `message` - (String) An explanation of the status reason.
 		- `more_info` - (Optional, String) Link to documentation about this status reason.
+	- `software_attachments` - (List) The software attachments for this volume.
+		Nested schema for **software_attachments**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) A link to documentation about deleted resources.
+		- `href` - (String) The URL for this volume software attachment.
+		- `id` - (String) The unique identifier for this volume software attachment.
+		- `name` - (String) The name for this volume software attachment. The name is unique across all software attachments for the volume.
+		- `resource_type` - (String) The resource type.
 	- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 	- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 	- `volume_attachments` - (List) The volume attachments for this volume.

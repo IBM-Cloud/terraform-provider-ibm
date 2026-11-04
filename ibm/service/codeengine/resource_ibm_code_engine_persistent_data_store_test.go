@@ -33,7 +33,7 @@ func TestAccIbmCodeEnginePersistentDataStoreBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEnginePersistentDataStoreDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEnginePersistentDataStoreConfigBasic(projectID, secretName, cosAccessKeyID, cosSecretAccessKey, pdsName, cosBucketName, cosBucketLocation, appName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEnginePersistentDataStoreExists("ibm_code_engine_persistent_data_store.code_engine_persistent_data_store_instance", conf),
@@ -52,7 +52,7 @@ func TestAccIbmCodeEnginePersistentDataStoreBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_volume_mounts.0.read_only", "true"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_persistent_data_store.code_engine_persistent_data_store_instance",
 				ImportState:       true,
 				ImportStateVerify: true,

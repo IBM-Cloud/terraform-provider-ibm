@@ -26,7 +26,7 @@ func TestAccIbmCodeEngineBindingDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineBindingDataSourceConfigBasic(projectID, appName, secretName, resourceKeyId, serviceInstanceId, prefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_binding.code_engine_binding_instance", "status"),

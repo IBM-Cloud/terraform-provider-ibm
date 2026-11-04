@@ -30,6 +30,7 @@ code_engine_domain_mapping provides the following [Timeouts](https://www.terrafo
 
 * `create` - (Default 10 minutes) Used for creating a code_engine_domain_mapping.
 * `update` - (Default 10 minutes) Used for updating a code_engine_domain_mapping.
+* `delete` - (Default 10 minutes) Used for deleting a code_engine_domain_mapping.
 
 ## Argument Reference
 
@@ -53,8 +54,6 @@ Nested schema for **component**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_domain_mapping.
-* `domain_mapping_id` - (String) The identifier of the resource.
-    * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `cname_target` - (String) The value of the CNAME record that must be configured in the DNS settings of the domain, to route traffic properly to the target Code Engine region.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `created_at` - (String) The timestamp when the resource was created.
@@ -62,6 +61,8 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new domain mapping, a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `domain_mapping_id` - (String) The identifier of the resource.
+    * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the Code Engine resource.
   * Constraints: Allowable values are: `domain_mapping_v2`.

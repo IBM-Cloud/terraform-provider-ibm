@@ -32,7 +32,7 @@ func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineBuildDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineBuildConfigBasic(projectID, name, outputImage, outputSecret, sourceURL, strategyType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineBuildExists("ibm_code_engine_build.code_engine_build_instance", conf),

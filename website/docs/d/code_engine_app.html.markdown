@@ -77,8 +77,8 @@ Nested schema for **probe_liveness**:
 	  * Constraints: The default value is `10`. The maximum value is `60`. The minimum value is `1`.
 	* `path` - (String) The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^\/(([a-zA-Z0-9-._~!$&'()*+,;=:@]|%[a-fA-F0-9]{2})+(\/([a-zA-Z0-9-._~!$&'()*+,;=:@]|%[a-fA-F0-9]{2})*)*)?(\\?([a-zA-Z0-9-._~!$&'()*+,;=:@\/?]|%[a-fA-F0-9]{2})*)?$/`.
-	* `port` - (Integer) The port on which to probe the resource.
-	  * Constraints: The maximum value is `65535`. The minimum value is `1`.
+	* `port` - (Integer) The port on which to probe the resource, or 0 to probe the default app port 8080.
+	  * Constraints: The maximum value is `65535`. The minimum value is `0`.
 	* `timeout` - (Integer) The amount of time in seconds that the probe waits for a response from the application before it times out and fails.
 	  * Constraints: The default value is `1`. The maximum value is `3600`. The minimum value is `1`.
 	* `type` - (String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.
@@ -93,8 +93,8 @@ Nested schema for **probe_readiness**:
 	  * Constraints: The default value is `10`. The maximum value is `60`. The minimum value is `1`.
 	* `path` - (String) The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^\/(([a-zA-Z0-9-._~!$&'()*+,;=:@]|%[a-fA-F0-9]{2})+(\/([a-zA-Z0-9-._~!$&'()*+,;=:@]|%[a-fA-F0-9]{2})*)*)?(\\?([a-zA-Z0-9-._~!$&'()*+,;=:@\/?]|%[a-fA-F0-9]{2})*)?$/`.
-	* `port` - (Integer) The port on which to probe the resource.
-	  * Constraints: The maximum value is `65535`. The minimum value is `1`.
+	* `port` - (Integer) The port on which to probe the resource, or 0 to probe the default app port 8080.
+	  * Constraints: The maximum value is `65535`. The minimum value is `0`.
 	* `timeout` - (Integer) The amount of time in seconds that the probe waits for a response from the application before it times out and fails.
 	  * Constraints: The default value is `1`. The maximum value is `3600`. The minimum value is `1`.
 	* `type` - (String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.

@@ -388,6 +388,14 @@ The following attributes are exported:
 - `tags`  - (String) User tags associated for to the share.
 
 
+## Deleting a replica share and its source
+
+When a replica share and its source share are destroyed in the same run, Terraform deletes the replica first. The source share can still list the replica for a short time after the replica is gone. Terraform waits for that link to clear before it deletes the source share, so the source delete does not fail with `shares_with_replica_cannot_be_deleted`. This wait uses the default delete timeout of the resource.
+
+While the replica is being deleted, the API can return `301 share_moved_permanently` instead of `404` for the replica share. Terraform treats both responses as "replica deleted".
+
+If the source share still has a live replica that is not being deleted (for example, a replica that is not managed in the same configuration), Terraform does not wait. The delete fails right away with the API error, and you must delete the replica first.
+
 ## Import
 
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_share` resource by using `id`.

@@ -270,6 +270,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeBool,
 			},
+			Arg_IBMiPHAFSMCount: {
+				Description: "Number of IBM i PHA Full System Manager (FSM) managed servers. Set to 0 to disable the FSM license.",
+				Optional:    true,
+				Type:        schema.TypeInt,
+			},
 			Arg_IBMiRDSUsers: {
 				Description: "IBM i Rational Dev Studio Number of User Licenses",
 				Optional:    true,
@@ -316,10 +321,17 @@ func ResourceIBMPIInstance() *schema.Resource {
 							Type:        schema.TypeBool,
 						},
 						Attr_ForceDisable: {
-							Default:     false,
-							Description: "when true, allow the metadata service to be disabled while the VM is active.",
-							Optional:    true,
-							Type:        schema.TypeBool,
+							ConflictsWith: []string{Arg_MetadataService + ".0." + Attr_ForceEnable},
+							Default:       false,
+							Description:   "when true, allow the metadata service to be disabled while the VM is active.",
+							Optional:      true,
+							Type:          schema.TypeBool,
+						},
+						Attr_ForceEnable: {
+							ConflictsWith: []string{Arg_MetadataService + ".0." + Attr_ForceDisable},
+							Description:   "when true, allow the metadata service to be enabled while the VM is active. The user is responsible for manually configuring networking on the VSI after the update. Only supported on Linux VSIs.",
+							Optional:      true,
+							Type:          schema.TypeBool,
 						},
 					},
 				},
@@ -586,6 +598,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
+
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
@@ -612,11 +625,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "PI Instance health status",
 				Type:        schema.TypeString,
 			},
+			Attr_IBMiPHAFSM: {
+				Computed:    true,
+				Description: "IBM PHA Full System Manager (FSM) software license associated with the instance.",
+				Type:        schema.TypeBool,
+			},
 			Attr_IBMiRDS: {
 				Computed:    true,
 				Description: "IBM i Rational Dev Studio",
-				Optional:    false,
-				Required:    false,
 				Type:        schema.TypeBool,
 			},
 			Attr_InstanceID: {
@@ -781,14 +797,15 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-	// Enabling is handled via the create; force is only valid for disabling.
+	// Enabling is handled via the create; force_disable and force_enable are only valid for live-instance updates.
 	if ms, ok := d.GetOk(Arg_MetadataService); ok {
 		msData := ms.([]any)
 		if len(msData) > 0 && msData[0] != nil {
 			data := msData[0].(map[string]any)
 			enabled, _ := data[Attr_Enabled].(bool)
-			force, _ := data[Attr_ForceDisable].(bool)
-			if !enabled && force {
+			forceDisable, _ := data[Attr_ForceDisable].(bool)
+			forceEnable, _ := data[Attr_ForceEnable].(bool)
+			if (!enabled && forceDisable) || (enabled && forceEnable) {
 				for _, s := range *pvmList {
 					body := &models.PVMInstanceUpdate{
 						MetadataService: expandUpdateMetadataService(ms),
@@ -908,7 +925,16 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		} else {
 			d.Set(Arg_IBMiRDSUsers, 0)
 		}
+		// FSM: boolean is computed attribute; count is optional in response when false.
+		// If FSM is false (or missing), set the count to 0 explicitly.
+		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
+		if powervmdata.SoftwareLicenses.IbmiPHAFSM != nil && *powervmdata.SoftwareLicenses.IbmiPHAFSM {
+			d.Set(Arg_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
+		} else {
+			d.Set(Arg_IBMiPHAFSMCount, 0)
+		}
 	}
+
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
 	} else {
@@ -980,6 +1006,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		// preserve the current state value to prevent false drift.
 		if len(ms) > 0 {
 			ms[0][Attr_ForceDisable] = d.Get(Arg_MetadataService + ".0." + Attr_ForceDisable).(bool)
+			ms[0][Attr_ForceEnable] = d.Get(Arg_MetadataService + ".0." + Attr_ForceEnable).(bool)
 		}
 		d.Set(Arg_MetadataService, ms)
 	}
@@ -1255,7 +1282,8 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	if d.HasChanges(Arg_IBMiCSS, Arg_IBMiPHA, Arg_IBMiRDSUsers) {
+	// === LICENSE UPDATE (includes new FSM) ===
+	if d.HasChanges(Arg_IBMiCSS, Arg_IBMiPHA, Arg_IBMiPHAFSMCount, Arg_IBMiRDSUsers) {
 		status := d.Get(Attr_Status).(string)
 		if strings.ToLower(status) == State_Active {
 			log.Printf("the lpar is in the Active state, continuing with update")
@@ -1269,9 +1297,19 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl := &models.SoftwareLicenses{}
 		sl.IbmiCSS = flex.PtrToBool(d.Get(Arg_IBMiCSS).(bool))
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
+
+		// FSM: only set if count is provided; otherwise omit (leave unchanged)
+		ibmiphafsmCount := d.Get(Arg_IBMiPHAFSMCount).(int)
+		if ibmiphafsmCount < 0 {
+			return diag.Errorf("please set %v to 0 to disable the IBMiPHAFSM license or set it to a value greater than 0 to enable it", Arg_IBMiPHAFSMCount)
+		}
+		sl.IbmiPHAFSM = flex.PtrToBool(ibmiphafsmCount > 0)
+		sl.IbmiPHAFSMCount = int64(ibmiphafsmCount)
+
+		// RDS: true/x or false/0
 		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
-			return diag.Errorf("request with  IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
+			return diag.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 		}
 		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
 		sl.IbmiRDSUsers = int64(ibmrdsUsers)
@@ -1485,8 +1523,10 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				if osType == OS_AIX && body.MetadataService.ForceDisable && !*body.MetadataService.Enabled && strings.EqualFold(status.(string), State_Active) {
 					return diag.Errorf("force-disabling the metadata service is not supported on AIX instances.")
 				}
+				if osType == OS_AIX && body.MetadataService.ForceEnable && *body.MetadataService.Enabled && strings.EqualFold(status.(string), State_Active) {
+					return diag.Errorf("force-enabling the metadata service is not supported on AIX instances.")
+				}
 			}
-
 		}
 		if body.MetadataService != nil {
 			_, err = client.Update(instanceID, body)
@@ -1760,6 +1800,18 @@ func isPIInstanceSoftwareLicensesRefreshFunc(client *instance.IBMPIInstanceClien
 
 		if softwareLicenses.IbmiPHA != nil {
 			if *softwareLicenses.IbmiPHA != *pvm.SoftwareLicenses.IbmiPHA {
+				return pvm, State_InProgress, nil
+			}
+		}
+
+		// FSM: compare boolean, and only compare count when target FSM is true.
+		// When target FSM=false, the server may omit the count, so ignore it (like RDS).
+		if softwareLicenses.IbmiPHAFSM != nil {
+			if !*softwareLicenses.IbmiPHAFSM {
+				if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
+					return pvm, State_InProgress, nil
+				}
+			} else if (*softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM) || (softwareLicenses.IbmiPHAFSMCount != pvm.SoftwareLicenses.IbmiPHAFSMCount) {
 				return pvm, State_InProgress, nil
 			}
 		}
@@ -2311,10 +2363,12 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		// Default value
 		falseBool := false
 		sl := &models.SoftwareLicenses{
-			IbmiCSS:      &falseBool,
-			IbmiPHA:      &falseBool,
-			IbmiRDS:      &falseBool,
-			IbmiRDSUsers: 0,
+			IbmiCSS:         &falseBool,
+			IbmiPHA:         &falseBool,
+			IbmiPHAFSM:      &falseBool,
+			IbmiRDS:         &falseBool,
+			IbmiRDSUsers:    0,
+			IbmiPHAFSMCount: 0,
 		}
 		if ibmiCSS, ok := d.GetOk(Arg_IBMiCSS); ok {
 			sl.IbmiCSS = flex.PtrToBool(ibmiCSS.(bool))
@@ -2322,12 +2376,21 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		if ibmiPHA, ok := d.GetOk(Arg_IBMiPHA); ok {
 			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
 		}
-		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
-			if ibmrdsUsers.(int) < 0 {
+		if v, ok := d.GetOk(Arg_IBMiPHAFSMCount); ok {
+			ibmiphafsmCount := v.(int)
+			if ibmiphafsmCount < 0 {
+				return nil, fmt.Errorf("please set %v to 0 to disable the IBMiPHAFSM license or set it to a value greater than 0 to enable it", Arg_IBMiPHAFSMCount)
+			}
+			sl.IbmiPHAFSM = flex.PtrToBool(ibmiphafsmCount > 0)
+			sl.IbmiPHAFSMCount = int64(ibmiphafsmCount)
+		}
+		if v, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
+			ibmrdsUsers := v.(int)
+			if ibmrdsUsers < 0 {
 				return nil, fmt.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 			}
-			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
-			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
+			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
+			sl.IbmiRDSUsers = int64(ibmrdsUsers)
 		}
 		body.SoftwareLicenses = sl
 	}
@@ -2686,8 +2749,12 @@ func expandUpdateMetadataService(input any) *models.UpdateMetadataService {
 	if v, ok := data[Attr_ForceDisable]; ok {
 		ms.ForceDisable = v.(bool)
 	}
+	if v, ok := data[Attr_ForceEnable]; ok {
+		ms.ForceEnable = v.(bool)
+	}
 	return ms
 }
+
 func isWaitForPIInstanceMetadataService(ctx context.Context, client *instance.IBMPIInstanceClient, id string, ms *models.UpdateMetadataService, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) metadata service to be updated", id)
 

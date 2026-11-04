@@ -76,6 +76,8 @@ In addition to all argument reference list, you can access the following attribu
 
 - `ibmi_css` - (Boolean) IBM i Cloud Storage Solution.
 - `ibmi_pha` - (Boolean) IBM i Power High Availability.
+- `ibmi_pha_fsm` - (Boolean) IBM i Power High Availability Full System Manager (FSM) license is enabled.
+- `ibmi_pha_fsm_count` - (Integer) Number of IBM i PHA Full System Manager (FSM) managed servers. A value `> 0` indicates the license is enabled.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
@@ -100,7 +102,7 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_interface_id` - (String) ID of the network interface.
   - `network_name` - (String) The network name of the instance.
-  - `network_security_group_ids` - (List) IDs of the network necurity groups that the network interface is a member of.
+  - `network_security_group_ids` - (List) IDs of the network security groups that the network interface is a member of.
   - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
   - `type` - (String) The type of the network.
 

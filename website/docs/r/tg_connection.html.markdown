@@ -69,7 +69,7 @@ Review the argument references that you can specify for your resource.
 - `network_account_id` - (Optional, Forces new resource, String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
 - `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`,  `vpc`, `vpn_gateway`, and `power_virtual_server`.
 - `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network type `vpc` and `directlink`, the CRN of the VPC or direct link gateway to be connected. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
-- `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+- `remote_bgp_asn` - (Optional, Computed, Forces new resource, Integer) The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `zone` - (Optional, Forces new resource, String) - The location of connections. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections and optional for network type `vpn_gateway` connections.
@@ -92,7 +92,7 @@ In addition to all argument reference list, you can access the following attribu
 - `connection_id` - (String) The unique identifier for transit gateway connection to network.
 - `created_at` -  (Timestamp) The date and time the connection was created. 
 - `id` - (String) The unique identifier of the gateway ID or connection ID resource.
-- `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type `gre_tunnel` connections.
+- `local_bgp_asn` - (Computed, Integer) The local network BGP ASN. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type `gre_tunnel` connections.
 - `status` - (String) The configuration status of the connection, such as **attached**, **failed**, **pending**, **deleting**.
 - `updated_at` - (Timestamp) Last updated date and time of the connection.

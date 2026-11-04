@@ -80,8 +80,6 @@ Nested schema for **service_operator**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_secret.
-* `secret_id` - (String) The identifier of the resource.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the secret instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
@@ -89,6 +87,8 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: Allowable values are: `user`, `system`.
 * `href` - (String) When you provision a new secret,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `secret_id` - (String) The identifier of the resource.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the secret.
   * Constraints: Allowable values are: `secret_v2`, `secret_auth_ssh_v2`, `secret_basic_auth_v2`, `secret_generic_v2`, `secret_operator_v2`, `secret_other_v2`, `secret_registry_v2`, `secret_service_access_v2`, `secret_tls_v2`, `secret_hmac_auth_v2`.
