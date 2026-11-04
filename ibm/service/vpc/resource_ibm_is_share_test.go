@@ -206,6 +206,43 @@ func TestAccIbmIsShareReplicaMain(t *testing.T) {
 	})
 }
 
+// TestAccIbmIsShareReplicaRemoveThenDestroy removes the replica share first (the
+// replica delete wait must accept 301 share_moved_permanently), then destroys the
+// source share (the source delete must wait for the replica link to clear instead of
+// failing with shares_with_replica_cannot_be_deleted).
+func TestAccIbmIsShareReplicaRemoveThenDestroy(t *testing.T) {
+	var conf vpcv1.Share
+
+	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	replicaName := fmt.Sprintf("tf-fsrp-name-%d", acctest.RandIntRange(10, 100))
+	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
+	shareTargetName1 := fmt.Sprintf("tf-fs-tg-name1-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	vpcname1 := fmt.Sprintf("tf-vpc-name1-%d", acctest.RandIntRange(10, 100))
+	size := acctest.RandIntRange(10, 50)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareConfigReplica(vpcname, vpcname1, name, size, shareTargetName, shareTargetName1, replicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.replica", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.replica", "replication_role", "replica"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareConfigReplicaSourceOnly(vpcname, vpcname1, name, size, shareTargetName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareReplicaInline(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -734,6 +771,33 @@ func testAccCheckIbmIsShareConfigReplica(vpcName, vpcName1, name string, size in
 	`, vpcName, vpcName1, name, acc.ShareProfileName, size, shareTergetName, replicaName, acc.ShareProfileName, shareTergetName1)
 }
 
+func testAccCheckIbmIsShareConfigReplicaSourceOnly(vpcName, vpcName1, name string, size int, shareTergetName string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+	}
+	resource "ibm_is_share" "is_share" {
+		name = "%s"
+		profile = "%s"
+		resource_group = data.ibm_resource_group.group.id
+		size = %d
+		mount_targets {
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc.id
+		}
+		zone = "us-south-1"
+		tags = ["sr01", "sr02"]
+	}
+	`, vpcName, vpcName1, name, acc.ShareProfileName, size, shareTergetName)
+}
+
 func testAccCheckIbmIsShareConfigReplicaInline(vpcName, name string, size int, shareTergetName, replicaName string) string {
 	return fmt.Sprintf(`
 
@@ -810,7 +874,8 @@ func testAccCheckIbmIsShareDestroy(s *terraform.State) error {
 
 		if err == nil {
 			return fmt.Errorf("Share still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
+		} else if response.StatusCode != 404 && response.StatusCode != 301 {
+			// 301 (share_moved_permanently) is returned for a deleted replica share.
 			return fmt.Errorf("Error checking for Share (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}

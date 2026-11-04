@@ -23,7 +23,7 @@ func TestAccIbmCodeEngineJobDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineJobDataSourceConfigBasic(projectID, jobImageReference, jobName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_job.code_engine_job_instance", "job_id"),
@@ -62,7 +62,7 @@ func TestAccIbmCodeEngineJobDataSourceExtended(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineJobDataSourceConfig(projectID, jobImageReference, jobName, jobRunMode, jobRunServiceAccount, jobScaleCPULimit, jobScaleEphemeralStorageLimit, jobScaleMaxExecutionTime, jobScaleMemoryLimit, jobScaleRetryLimit),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_job.code_engine_job_instance", "job_id"),

@@ -28,35 +28,43 @@ resource "ibm_tg_connection_rgre_tunnel" "test_ibm_tg_connection_tunnel" {
 ```
 ---
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
  
   - `gateway` - (Required, Forces new resource, String) Enter the transit gateway identifier.
-  - `connection_id` - (Required, String) The unique identifier of the gateway connection
-  - `name` - (Required, String) The user-defined name for this tunnel connection.
-  - `local_gateway_ip` - (Required, String)  The local gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
-  - `local_tunnel_ip` - (Required, String) The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
-  - `remote_gateway_ip` - (Required, String) The remote gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
-  - `remote_tunnel_ip` - (Required, String) The remote tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
-  - `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
-  - `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type`gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `connection_id` - (Required, Forces new resource, String) The unique identifier of the gateway connection.
+  - `name` - (Required, String) The user-defined name for this tunnel connection. This is the only attribute that can be updated after creation.
+  - `local_gateway_ip` - (Required, Forces new resource, String) The local gateway IP address.
+  - `local_tunnel_ip` - (Required, Forces new resource, String) The local tunnel IP address.
+  - `remote_gateway_ip` - (Required, Forces new resource, String) The remote gateway IP address.
+  - `remote_tunnel_ip` - (Required, Forces new resource, String) The remote tunnel IP address.
+  - `zone` - (Required, Forces new resource, String) The location of the GRE tunnel.
+  - `local_bgp_asn` - (Optional, Computed, Integer) The local network BGP ASN (will be generated for the connection if not specified).
+  - `remote_bgp_asn` - (Optional, Computed, Integer) The remote network BGP ASN (will be generated for the connection if not specified).
+  - `base_network_type` - (Optional, Computed, String) The type of the base network for the tunnel. For example, `classic` or `vpc`.
+  - `network_account_id` - (Optional, Computed, Forces new resource, String) The ID of the account that owns the network being connected.
+  - `network_id` - (Optional, Computed, Forces new resource, String) The ID of the network being connected via this tunnel.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-
-   - `created_at` -  (Timestamp) The date and time the connection  tunnel was created. 
-   - `id` - (String) The unique identifier of the connection tunnel ID resource.
+   - `created_at` - (Timestamp) The date and time the connection tunnel was created.
+   - `id` - (String) The unique identifier of the connection tunnel resource.
    - `mtu` - (Integer) GRE tunnel MTU.
-   - `status` - (String) The configuration status of the connection tunnel, such as **attached**, **failed**,
+   - `status` - (String) The configuration status of the connection tunnel, such as **attached**, **failed**, **pending**, **deleting**, **detaching**, **detached**.
+   - `tunnel_id` - (String) The Transit Gateway tunnel identifier.
    - `updated_at` - (Timestamp) Last updated date and time of the connection tunnel.
-   - `local_bgp_asn` - (Integer) The local network BGP ASN.
- 
 
 **Note**
 
-The resource do not wait for the available status, if you are provisioning the cross account gateway or connection. You need to complete the manual approval process for provisioning.
+The resource does not wait for the available status if you are provisioning a cross-account gateway or connection. You must complete the manual approval process for provisioning.
 
+## Timeouts
+The following timeouts are available for `ibm_tg_connection_rgre_tunnel`:
+
+- **Create**: Default 10 minutes
+- **Delete**: Default 10 minutes
+- **Update**: Default 10 minutes
 
 ## Import
 The `ibm_tg_connection_rgre_tunnel` resource can be imported by using transit gateway ID and connection ID and tunnel ID.

@@ -16,6 +16,11 @@ func DataSourceIBMTransitGateways() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMTransitGatewaysRead,
 		Schema: map[string]*schema.Schema{
+			tgRedundancyGroup: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter transit gateways by redundancy group name",
+			},
 			tgGateways: {
 				Type:        schema.TypeList,
 				Description: "Collection of transit gateways",
@@ -50,6 +55,26 @@ func DataSourceIBMTransitGateways() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						tgRedundancyGroup: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The redundancy group name for this global transit gateway",
+						},
+						tgRedundancyGroupID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier of the redundancy group for this global transit gateway",
+						},
+						tgConnectionCount: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of connections associated with this Transit Gateway",
+						},
+						tgConnectionNeedsAttention: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates if this Transit Gateway has a connection that needs attention (such as cross account approval)",
+						},
 						tgStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -77,6 +102,10 @@ func dataSourceIBMTransitGatewaysRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	listTransitGatewaysOptionsModel := &transitgatewayapisv1.ListTransitGatewaysOptions{}
+	if rg, ok := d.GetOk(tgRedundancyGroup); ok {
+		rgStr := rg.(string)
+		listTransitGatewaysOptionsModel.RedundancyGroup = &rgStr
+	}
 	listTransitGateways, response, err := client.ListTransitGateways(listTransitGatewaysOptionsModel)
 	if err != nil {
 		return flex.FmtErrorf("[ERROR] Error while listing transit gateways %s\n%s", err, response)
@@ -98,6 +127,16 @@ func dataSourceIBMTransitGatewaysRead(d *schema.ResourceData, meta interface{}) 
 		transitgateway[tgGlobal] = instance.Global
 		transitgateway[tgGreEnhancedRoutePropagation] = instance.GreEnhancedRoutePropagation
 		transitgateway[tgCrn] = instance.Crn
+		if instance.RedundancyGroup != nil {
+			transitgateway[tgRedundancyGroup] = *instance.RedundancyGroup
+		}
+		if instance.RedundancyGroupID != nil {
+			transitgateway[tgRedundancyGroupID] = *instance.RedundancyGroupID
+		}
+		if instance.ConnectionCount != nil {
+			transitgateway[tgConnectionCount] = int(*instance.ConnectionCount)
+		}
+		transitgateway[tgConnectionNeedsAttention] = instance.ConnectionNeedsAttention
 
 		if instance.ResourceGroup != nil {
 			rg := instance.ResourceGroup

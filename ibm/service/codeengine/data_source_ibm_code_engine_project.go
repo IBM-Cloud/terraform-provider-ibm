@@ -26,52 +26,52 @@ func DataSourceIbmCodeEngineProject() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineProjectRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "An alphanumeric value identifying the account ID.",
+				Description: "The ID of the account of the project, e.g. 4329073d16d2f3663f74bfa955259139.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the project was created.",
 			},
-			"crn": &schema.Schema{
+			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN of the project.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new resource, a URL is created identifying the location of the instance.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the project.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region for your project deployment. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_group_id": &schema.Schema{
+			"resource_group_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the resource group.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the project.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current state of the project. For example, when the project is created and is ready for use, the status of the project is active.",

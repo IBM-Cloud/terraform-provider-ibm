@@ -8,8 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// classicUnsupportedAttrs are attributes only available on Gen2 plans.
+// Setting any of these on a Classic plan produces a plan-time error.
 var classicUnsupportedAttrs = []string{
 	"shards",
+	"maintenance",
 }
 
 type resourceIBMDatabaseClassicBackend struct{}
@@ -63,6 +66,10 @@ func (c *resourceIBMDatabaseClassicBackend) ValidateMemberZonesDiff(_ context.Co
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return validateServiceEndpointsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateMaintenanceWindowDiff(_ context.Context, _ *schema.ResourceDiff, _ interface{}) error {
+	return nil
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {

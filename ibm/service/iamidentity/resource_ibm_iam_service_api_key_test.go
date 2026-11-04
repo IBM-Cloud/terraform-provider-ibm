@@ -5,6 +5,7 @@ package iamidentity_test
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -111,6 +112,28 @@ func TestAccIBMIAMServiceAPIKey_import(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"store_value",
 				},
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMServiceAPIKey_file(t *testing.T) {
+	var apiKey string
+	serviceName := fmt.Sprintf("terraform_iam_ser_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
+	file := filepath.Join(t.TempDir(), "apikey.json")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServiceAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServiceAPIKeyFile(serviceName, name, file),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, true),
+					testAccCheckIBMIamAPIKeyFileMode(file),
+				),
 			},
 		},
 	})
@@ -238,4 +261,18 @@ func testAccCheckIBMIAMServiceAPIKeyImport(serviceName, name string) string {
 			iam_service_id = ibm_iam_service_id.serviceID.iam_id
 	  	}
 	`, serviceName, name)
+}
+
+func testAccCheckIBMIAMServiceAPIKeyFile(serviceName, name, file string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+		}
+		resource "ibm_iam_service_api_key" "testacc_apiKey" {
+			name           = "%s"
+			iam_service_id = ibm_iam_service_id.serviceID.iam_id
+			store_value    = true
+			file           = "%s"
+		}
+	`, serviceName, name, file)
 }

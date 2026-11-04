@@ -55,7 +55,7 @@ func TestNetworkACLResourceGroupUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_network_acl.isExampleACL", "rules.#", "5"),
+						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -71,7 +71,7 @@ func TestNetworkACLResourceGroupUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_network_acl.isExampleACL", "rules.#", "5"),
+						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 					resource.TestCheckResourceAttrWith("ibm_is_network_acl.isExampleACL", "resource_group_name", func(v string) error {
@@ -989,6 +989,202 @@ resource "ibm_is_network_acl" "legacy_acl" {
     destination = "0.0.0.0/0"
     direction   = "inbound"
     protocol    = "any"
+  }
+}
+`
+}
+
+// ---------------------------------------------------------------------------
+// TestNetworkACL_IncrementalRuleUpdateForcedApplyTimeReplan is the precise,
+// deterministic regression test for
+// https://github.com/IBM-Cloud/terraform-provider-ibm/issues/7012.
+//
+// TestNetworkACL_IncrementalRuleUpdateSchemaUpgrade (above) only proves that
+// switching provider versions on existing state doesn't crash — but a bare
+// version bump doesn't reliably force the actual trigger condition. The
+// real crash needs the resource's `rules` to be genuinely deferred to apply
+// time (a value that depends on a not-yet-resolved data source), at the
+// same time state still has no value for incremental_rule_update. This
+// test forces that condition on purpose, every single apply, using a
+// null_resource whose timestamp() trigger guarantees
+// data.ibm_is_vpc_address_prefixes can never resolve at plan time.
+// ---------------------------------------------------------------------------
+
+func TestNetworkACL_IncrementalRuleUpdateForcedApplyTimeReplan(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Old provider, genuinely lacking incremental_rule_update.
+				// Plain literal rules only — no protocol/port_min/etc at
+				// top level, since this version may predate those flat
+				// fields too. This step's only job is to produce real
+				// legacy state with no key for the attribute at all.
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"ibm": {
+						VersionConstraint: "2.4.0",
+						Source:            "IBM-Cloud/ibm",
+					},
+					"null": {Source: "hashicorp/null"},
+				},
+				Config:             testAccNACLForcedReplan_Legacy(),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.default_rules_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.default_rules_acl", "rules.#", "2"),
+				),
+			},
+			{
+				// Provider under test. Switches the whole config over to
+				// the null_resource/data-source shape in one step —
+				// incremental_rule_update explicitly false, rules rebuilt
+				// from a data source whose upstream (null_resource.kick)
+				// is guaranteed to have a pending change on every single
+				// apply from here on. This is the exact minimal repro
+				// isolated earlier in the investigation, not a simplified
+				// stand-in for it.
+				//
+				// null_resource comes from a completely separate provider
+				// (hashicorp/null) — it must be declared here explicitly,
+				// alongside the local "ibm" build, or Terraform has no
+				// schema for it and the pre-apply refresh fails with
+				// "Inconsistent dependency lock file" / "unavailable
+				// provider".
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"null": {Source: "hashicorp/null"},
+				},
+				ProviderFactories:  acc.TestAccProviderFactories(),
+				Config:             testAccNACLForcedReplan_Current(),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.default_rules_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.default_rules_acl", "incremental_rule_update", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.default_rules_acl", "rules.#", "2"),
+				),
+			},
+			{
+				// Re-apply the SAME config again, unchanged, still on the
+				// current provider. null_resource.kick's timestamp() means
+				// this forces the identical apply-time re-plan condition a
+				// second time — proving the fix holds on every apply, not
+				// just the one immediately following the version switch.
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"null": {Source: "hashicorp/null"},
+				},
+				ProviderFactories:  acc.TestAccProviderFactories(),
+				Config:             testAccNACLForcedReplan_Current(),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.default_rules_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.default_rules_acl", "incremental_rule_update", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.default_rules_acl", "rules.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func testAccNACLForcedReplan_Legacy() string {
+	return `
+resource "ibm_is_vpc" "vpc" {
+  name = "tf-nacl-forced-replan-vpc"
+}
+
+resource "null_resource" "kick" {
+  triggers = {
+    always = timestamp()
+  }
+}
+
+data "ibm_is_vpc_address_prefixes" "prefixes" {
+  vpc        = ibm_is_vpc.vpc.id
+  depends_on = [null_resource.kick]
+}
+
+locals {
+  vpc_cidr = data.ibm_is_vpc_address_prefixes.prefixes.address_prefixes[0].cidr
+  default_rules = [
+    { name = "ibmflow-iaas-inbound", action = "allow", source = "161.26.0.0/16", destination = local.vpc_cidr, direction = "inbound" },
+    { name = "ibmflow-deny-all-outbound", action = "deny", source = "0.0.0.0/0", destination = "0.0.0.0/0", direction = "outbound" },
+  ]
+}
+
+resource "ibm_is_network_acl" "default_rules_acl" {
+  name = "tf-nacl-forced-replan"
+  vpc  = ibm_is_vpc.vpc.id
+  dynamic "rules" {
+    for_each = local.default_rules
+    content {
+      name            = rules.value.name
+      action          = rules.value.action
+      source          = rules.value.source
+      destination     = rules.value.destination
+      direction       = rules.value.direction
+      protocol        = null
+      port_min        = null
+      port_max        = null
+      source_port_min = null
+      source_port_max = null
+      type            = null
+      code            = null
+    }
+  }
+}
+`
+}
+
+func testAccNACLForcedReplan_Current() string {
+	return `
+resource "ibm_is_vpc" "vpc" {
+  name = "tf-nacl-forced-replan-vpc"
+}
+
+resource "null_resource" "kick" {
+  triggers = {
+    always = timestamp()
+  }
+}
+
+data "ibm_is_vpc_address_prefixes" "prefixes" {
+  vpc        = ibm_is_vpc.vpc.id
+  depends_on = [null_resource.kick]
+}
+
+locals {
+  vpc_cidr = data.ibm_is_vpc_address_prefixes.prefixes.address_prefixes[0].cidr
+  default_rules = [
+    { name = "ibmflow-iaas-inbound", action = "allow", source = "161.26.0.0/16", destination = local.vpc_cidr, direction = "inbound" },
+    { name = "ibmflow-deny-all-outbound", action = "deny", source = "0.0.0.0/0", destination = "0.0.0.0/0", direction = "outbound" },
+  ]
+}
+
+resource "ibm_is_network_acl" "default_rules_acl" {
+  name = "tf-nacl-forced-replan"
+  vpc  = ibm_is_vpc.vpc.id
+  incremental_rule_update = false
+  dynamic "rules" {
+    for_each = local.default_rules
+    content {
+      name            = rules.value.name
+      action          = rules.value.action
+      source          = rules.value.source
+      destination     = rules.value.destination
+      direction       = rules.value.direction
+      protocol        = null
+      port_min        = null
+      port_max        = null
+      source_port_min = null
+      source_port_max = null
+      type            = null
+      code            = null
+    }
   }
 }
 `

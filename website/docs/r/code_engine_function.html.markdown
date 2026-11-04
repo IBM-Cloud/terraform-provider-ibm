@@ -16,7 +16,7 @@ Create, update, and delete code_engine_functions with this resource.
 resource "ibm_code_engine_function" "code_engine_function_instance" {
 	project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
 	name            = "my-function"
-	runtime         = "nodejs-20"
+	runtime         = "nodejs-24"
 	code_reference  = "icr.io/codeengine/samples/function-nodejs-codebundle"
 }
 ```
@@ -27,6 +27,7 @@ code_engine_function provides the following [Timeouts](https://www.terraform.io/
 
 * `create` - (Default 10 minutes) Used for creating a code_engine_function.
 * `update` - (Default 10 minutes) Used for updating a code_engine_function.
+* `delete` - (Default 10 minutes) Used for deleting a code_engine_function.
 
 ## Argument Reference
 
@@ -80,8 +81,6 @@ Nested schema for **run_env_variables**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_function.
-* `function_id` - (String) The identifier of the resource.
-	* Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `computed_env_variables` - (List) References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **computed_env_variables**:
@@ -106,6 +105,8 @@ Nested schema for **computed_env_variables**:
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new function, a relative URL path is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `function_id` - (String) The identifier of the resource.
+	* Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the function.
   * Constraints: Allowable values are: `function_v2`.

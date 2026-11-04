@@ -63,6 +63,37 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISSubnet_updateRoutingTable(t *testing.T) {
+	var subnet string
+	vpcname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	rtname := fmt.Sprintf("tfsubnet-rt-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfsubnet-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSubnetConfig(vpcname, name, acc.ISZoneName, acc.ISCIDR),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSubnetExists("ibm_is_subnet.testacc_subnet", subnet),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMISSubnetConfigUpdateRoutingTable(vpcname, name, acc.ISZoneName, acc.ISCIDR, rtname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSubnetExists("ibm_is_subnet.testacc_subnet", subnet),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet.testacc_subnet", "routing_table"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISSubnetDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -144,4 +175,24 @@ func testAccCheckIBMISSubnetConfigUpdate(vpcname, name, zone, cidr, gwname strin
 		public_gateway = ibm_is_public_gateway.testacc_gw.id
 		tags = ["tag1"]
 	}`, vpcname, gwname, zone, name, zone, cidr)
+}
+
+func testAccCheckIBMISSubnetConfigUpdateRoutingTable(vpcname, name, zone, cidr, rtname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_vpc_routing_table" "testacc_rt" {
+		name = "%s"
+		vpc  = ibm_is_vpc.testacc_vpc.id
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name          = "%s"
+		vpc           = ibm_is_vpc.testacc_vpc.id
+		zone          = "%s"
+		ipv4_cidr_block = "%s"
+		routing_table = ibm_is_vpc_routing_table.testacc_rt.routing_table
+	}`, vpcname, rtname, name, zone, cidr)
 }

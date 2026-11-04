@@ -30,7 +30,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineConfigMapDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineConfigMapExists("ibm_code_engine_config_map.code_engine_config_map_instance", conf),
@@ -41,7 +41,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "resource_type", "config_map_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, nameUpdate, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map_instance", "config_map_id"),
@@ -51,7 +51,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "resource_type", "config_map_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_config_map.code_engine_config_map_instance",
 				ImportState:       true,
 				ImportStateVerify: true,

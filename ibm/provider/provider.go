@@ -7,12 +7,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"log"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudmonitoring"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -436,6 +438,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings":                      iamidentity.DataSourceIBMIamAccountSettings(),
 			"ibm_iam_effective_account_settings":            iamidentity.DataSourceIBMIamEffectiveAccountSettings(),
 			"ibm_iam_auth_token":                            iamidentity.DataSourceIBMIAMAuthToken(),
+			"ibm_cloud_monitoring_api_token":                cloudmonitoring.DataSourceIBMCloudMonitoringAPIToken(),
 			"ibm_iam_role_actions":                          iampolicy.DataSourceIBMIAMRoleAction(),
 			"ibm_iam_users":                                 iamidentity.DataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                                 iampolicy.DataSourceIBMIAMRole(),
@@ -602,44 +605,46 @@ func Provider() *schema.Provider {
 			"ibm_is_private_path_service_gateways":                 vpc.DataSourceIBMIsPrivatePathServiceGateways(),
 			"ibm_is_private_path_service_gateway_endpoint_gateway_binding":  vpc.DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBinding(),
 			"ibm_is_private_path_service_gateway_endpoint_gateway_bindings": vpc.DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindings(),
-			"ibm_is_public_gateway":              vpc.DataSourceIBMISPublicGateway(),
-			"ibm_is_public_gateways":             vpc.DataSourceIBMISPublicGateways(),
-			"ibm_is_region":                      vpc.DataSourceIBMISRegion(),
-			"ibm_is_regions":                     vpc.DataSourceIBMISRegions(),
-			"ibm_is_reservation":                 vpc.DataSourceIBMIsReservation(),
-			"ibm_is_reservations":                vpc.DataSourceIBMIsReservations(),
-			"ibm_is_ssh_key":                     vpc.DataSourceIBMISSSHKey(),
-			"ibm_is_ssh_keys":                    vpc.DataSourceIBMIsSshKeys(),
-			"ibm_is_subnet":                      vpc.DataSourceIBMISSubnet(),
-			"ibm_is_subnets":                     vpc.DataSourceIBMISSubnets(),
-			"ibm_is_subnet_reserved_ip":          vpc.DataSourceIBMISReservedIP(),
-			"ibm_is_subnet_reserved_ips":         vpc.DataSourceIBMISReservedIPs(),
-			"ibm_is_security_group":              vpc.DataSourceIBMISSecurityGroup(),
-			"ibm_is_security_groups":             vpc.DataSourceIBMIsSecurityGroups(),
-			"ibm_is_security_group_rule":         vpc.DataSourceIBMIsSecurityGroupRule(),
-			"ibm_is_security_group_rules":        vpc.DataSourceIBMIsSecurityGroupRules(),
-			"ibm_is_security_group_target":       vpc.DataSourceIBMISSecurityGroupTarget(),
-			"ibm_is_security_group_targets":      vpc.DataSourceIBMISSecurityGroupTargets(),
-			"ibm_is_snapshot_clone":              vpc.DataSourceSnapshotClone(),
-			"ibm_is_snapshot_clones":             vpc.DataSourceSnapshotClones(),
-			"ibm_is_snapshot":                    vpc.DataSourceSnapshot(),
-			"ibm_is_snapshot_consistency_group":  vpc.DataSourceIBMIsSnapshotConsistencyGroup(),
-			"ibm_is_snapshot_consistency_groups": vpc.DataSourceIBMIsSnapshotConsistencyGroups(),
-			"ibm_is_snapshots":                   vpc.DataSourceSnapshots(),
-			"ibm_is_snapshot_instance_profiles":  vpc.DataSourceIBMIsSnapshotInstanceProfiles(),
-			"ibm_is_share":                       vpc.DataSourceIbmIsShare(),
-			"ibm_is_source_share":                vpc.DataSourceIbmIsSourceShare(),
-			"ibm_is_shares":                      vpc.DataSourceIbmIsShares(),
-			"ibm_is_share_profile":               vpc.DataSourceIbmIsShareProfile(),
-			"ibm_is_share_profiles":              vpc.DataSourceIbmIsShareProfiles(),
-			"ibm_is_share_accessor_bindings":     vpc.DataSourceIBMIsShareAccessorBindings(),
-			"ibm_is_share_accessor_binding":      vpc.DataSourceIBMIsShareAccessorBinding(),
-			"ibm_is_share_snapshot":              vpc.DataSourceIBMIsShareSnapshot(),
-			"ibm_is_share_snapshots":             vpc.DataSourceIBMIsShareSnapshots(),
-			"ibm_is_virtual_network_interface":   vpc.DataSourceIBMIsVirtualNetworkInterface(),
-			"ibm_is_virtual_network_interfaces":  vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
-			"ibm_is_public_address_range":        vpc.DataSourceIBMIsPublicAddressRange(),
-			"ibm_is_public_address_ranges":       vpc.DataSourceIBMIsPublicAddressRanges(),
+			"ibm_is_public_gateway":                vpc.DataSourceIBMISPublicGateway(),
+			"ibm_is_public_gateways":               vpc.DataSourceIBMISPublicGateways(),
+			"ibm_is_region":                        vpc.DataSourceIBMISRegion(),
+			"ibm_is_regions":                       vpc.DataSourceIBMISRegions(),
+			"ibm_is_reservation":                   vpc.DataSourceIBMIsReservation(),
+			"ibm_is_reservations":                  vpc.DataSourceIBMIsReservations(),
+			"ibm_is_ssh_key":                       vpc.DataSourceIBMISSSHKey(),
+			"ibm_is_ssh_keys":                      vpc.DataSourceIBMIsSshKeys(),
+			"ibm_is_subnet":                        vpc.DataSourceIBMISSubnet(),
+			"ibm_is_subnets":                       vpc.DataSourceIBMISSubnets(),
+			"ibm_is_subnet_reserved_ip":            vpc.DataSourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ips":           vpc.DataSourceIBMISReservedIPs(),
+			"ibm_is_security_group":                vpc.DataSourceIBMISSecurityGroup(),
+			"ibm_is_security_groups":               vpc.DataSourceIBMIsSecurityGroups(),
+			"ibm_is_security_group_rule":           vpc.DataSourceIBMIsSecurityGroupRule(),
+			"ibm_is_security_group_rules":          vpc.DataSourceIBMIsSecurityGroupRules(),
+			"ibm_is_security_group_target":         vpc.DataSourceIBMISSecurityGroupTarget(),
+			"ibm_is_security_group_targets":        vpc.DataSourceIBMISSecurityGroupTargets(),
+			"ibm_is_snapshot_clone":                vpc.DataSourceSnapshotClone(),
+			"ibm_is_snapshot_clones":               vpc.DataSourceSnapshotClones(),
+			"ibm_is_snapshot":                      vpc.DataSourceSnapshot(),
+			"ibm_is_snapshot_consistency_group":    vpc.DataSourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_snapshot_consistency_groups":   vpc.DataSourceIBMIsSnapshotConsistencyGroups(),
+			"ibm_is_snapshots":                     vpc.DataSourceSnapshots(),
+			"ibm_is_snapshot_instance_profiles":    vpc.DataSourceIBMIsSnapshotInstanceProfiles(),
+			"ibm_is_snapshot_software_attachment":  vpc.DataSourceIBMIsSnapshotSoftwareAttachment(),
+			"ibm_is_snapshot_software_attachments": vpc.DataSourceIBMIsSnapshotSoftwareAttachments(),
+			"ibm_is_share":                         vpc.DataSourceIbmIsShare(),
+			"ibm_is_source_share":                  vpc.DataSourceIbmIsSourceShare(),
+			"ibm_is_shares":                        vpc.DataSourceIbmIsShares(),
+			"ibm_is_share_profile":                 vpc.DataSourceIbmIsShareProfile(),
+			"ibm_is_share_profiles":                vpc.DataSourceIbmIsShareProfiles(),
+			"ibm_is_share_accessor_bindings":       vpc.DataSourceIBMIsShareAccessorBindings(),
+			"ibm_is_share_accessor_binding":        vpc.DataSourceIBMIsShareAccessorBinding(),
+			"ibm_is_share_snapshot":                vpc.DataSourceIBMIsShareSnapshot(),
+			"ibm_is_share_snapshots":               vpc.DataSourceIBMIsShareSnapshots(),
+			"ibm_is_virtual_network_interface":     vpc.DataSourceIBMIsVirtualNetworkInterface(),
+			"ibm_is_virtual_network_interfaces":    vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
+			"ibm_is_public_address_range":          vpc.DataSourceIBMIsPublicAddressRange(),
+			"ibm_is_public_address_ranges":         vpc.DataSourceIBMIsPublicAddressRanges(),
 			// vni
 
 			"ibm_is_virtual_network_interface_floating_ip":  vpc.DataSourceIBMIsVirtualNetworkInterfaceFloatingIP(),
@@ -653,6 +658,8 @@ func Provider() *schema.Provider {
 			"ibm_is_volume_jobs":                 vpc.DataSourceIBMIsVolumeJobs(),
 			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
 			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
+			"ibm_is_volume_software_attachment":  vpc.DataSourceIBMIsVolumeSoftwareAttachment(),
+			"ibm_is_volume_software_attachments": vpc.DataSourceIBMIsVolumeSoftwareAttachments(),
 			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
 			"ibm_is_volume_profiles":             vpc.DataSourceIBMISVolumeProfiles(),
 			"ibm_is_volume_instance_profiles":    vpc.DataSourceIBMIsVolumeInstanceProfiles(),
@@ -666,6 +673,8 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc_address_prefix":          vpc.DataSourceIBMIsVPCAddressPrefix(),
 			"ibm_is_vpn_gateway_connection":      vpc.DataSourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_connections":     vpc.DataSourceIBMISVPNGatewayConnections(),
+			"ibm_is_vpn_gateway_member":          vpc.DataSourceIBMIsVPNGatewayMember(),
+			"ibm_is_vpn_gateway_members":         vpc.DataSourceIBMIsVPNGatewayMembers(),
 
 			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
 			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
@@ -884,6 +893,8 @@ func Provider() *schema.Provider {
 			"ibm_tg_location":                  transitgateway.DataSourceIBMTransitGatewaysLocation(),
 			"ibm_tg_route_report":              transitgateway.DataSourceIBMTransitGatewayRouteReport(),
 			"ibm_tg_route_reports":             transitgateway.DataSourceIBMTransitGatewayRouteReports(),
+			"ibm_tg_redundancy_group":          transitgateway.DataSourceIBMTransitGatewayRedundancyGroup(),
+			"ibm_tg_redundancy_groups":         transitgateway.DataSourceIBMTransitGatewayRedundancyGroups(),
 
 			// Added for BSS Enterprise
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
@@ -926,7 +937,9 @@ func Provider() *schema.Provider {
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
-			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_instance":     secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_destination":  secretsmanagerinstancemanagement.DataSourceIbmSmDestination(),
+			"ibm_sm_destinations": secretsmanagerinstancemanagement.DataSourceIbmSmDestinations(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1498,12 +1511,15 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interface_floating_ip": vpc.ResourceIBMIsVirtualNetworkInterfaceFloatingIP(),
 			"ibm_is_virtual_network_interface_ip":          vpc.ResourceIBMIsVirtualNetworkInterfaceIP(),
 			"ibm_is_snapshot_consistency_group":            vpc.ResourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_snapshot_software_attachment":          vpc.ResourceIBMIsSnapshotSoftwareAttachment(),
 			"ibm_is_volume_job_cancel":                     vpc.ResourceIBMIsVolumeJobCancel(),
 			"ibm_is_volume_job":                            vpc.ResourceIBMIsVolumeJob(),
 			"ibm_is_volume":                                vpc.ResourceIBMISVolume(),
+			"ibm_is_volume_software_attachment":            vpc.ResourceIBMIsVolumeSoftwareAttachment(),
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpn_gateway_advertised_cidr":           vpc.ResourceIBMISVPNGatewayAdvertisedCidr(),
+			"ibm_is_vpn_gateway_member_replace":            vpc.ResourceIBMISVpnGatewayMemberReplace(),
 			"ibm_is_vpc":                                   vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                    vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_dns_resolution_binding":            vpc.ResourceIBMIsVPCDnsResolutionBinding(),
@@ -1717,6 +1733,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
 
 			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
+			"ibm_sm_destination": secretsmanagerinstancemanagement.ResourceIbmSmDestination(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
@@ -2259,6 +2276,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_share_snapshot":                              vpc.ResourceIBMIsShareSnapshotValidator(),
 				"ibm_is_snapshot":                                    vpc.ResourceIBMISSnapshotValidator(),
 				"ibm_is_snapshot_consistency_group":                  vpc.ResourceIBMIsSnapshotConsistencyGroupValidator(),
+				"ibm_is_snapshot_software_attachment":                vpc.ResourceIBMIsSnapshotSoftwareAttachmentValidator(),
 				"ibm_is_ssh_key":                                     vpc.ResourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                                      vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISSubnetReservedIPValidator(),
@@ -2266,6 +2284,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_volume_job_cancel":                           vpc.ResourceIBMIsVolumeJobCancelValidator(),
 				"ibm_is_volume_job":                                  vpc.ResourceIBMIsVolumeJobValidator(),
 				"ibm_is_volume":                                      vpc.ResourceIBMISVolumeValidator(),
+				"ibm_is_volume_software_attachment":                  vpc.ResourceIBMIsVolumeSoftwareAttachmentValidator(),
 				"ibm_is_virtual_network_interface":                   vpc.ResourceIBMIsVirtualNetworkInterfaceValidator(),
 				"ibm_is_address_prefix":                              vpc.ResourceIBMISAddressPrefixValidator(),
 				"ibm_is_vpc":                                         vpc.ResourceIBMISVPCValidator(),
@@ -2397,6 +2416,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
+				"ibm_sm_destination":                                                 secretsmanagerinstancemanagement.ResourceIbmSmDestinationValidator(),
 
 				// // Added for Code Engine
 				"ibm_code_engine_allowed_outbound_destination": codeengine.ResourceIbmCodeEngineAllowedOutboundDestinationValidator(),

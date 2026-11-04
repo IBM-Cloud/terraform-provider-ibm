@@ -44,14 +44,15 @@ func TestAccIBMEnSMSSubscriptionAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_type"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "subscription_id"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.invited"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.invited.#"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnSMSSubscriptionConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnSMSSubscriptionUpdatedConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.invited.#", "3"),
 				),
 			},
 			{
@@ -71,22 +72,49 @@ func testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description stri
 		plan     = "standard"
 		service  = "event-notifications"
 	}
-	
+
 	resource "ibm_en_topic" "en_topic_resource_2" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
-		name        = "tf_topic_name_0234"
-		description = "tf_topic_description_0235"
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
 	}
-	
-	
+
 	resource "ibm_en_subscription_sms" "en_subscription_resource_1" {
 		name           = "%s"
-		description 	 = "%s"
-		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
 		destination_id = "set sms destination id"
 		attributes {
 			invited = ["+16382922821", "+18976569023"]
+		}
+	}
+	`, instanceName, name, description)
+}
+
+func testAccCheckIBMEnSMSSubscriptionUpdatedConfig(instanceName, name, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_subscription_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+
+	resource "ibm_en_topic" "en_topic_resource_2" {
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
+	}
+
+	resource "ibm_en_subscription_sms" "en_subscription_resource_1" {
+		name           = "%s"
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
+		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
+		destination_id = "set sms destination id"
+		attributes {
+			invited = ["+16382922821", "+18976569023", "+12025551234"]
 		}
 	}
 	`, instanceName, name, description)
@@ -132,7 +160,7 @@ func testAccCheckIBMEnSMSSubscriptionDestroy(s *terraform.State) error {
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_subscription_resource_1" {
+		if rs.Type != "ibm_en_subscription_sms" {
 			continue
 		}
 
