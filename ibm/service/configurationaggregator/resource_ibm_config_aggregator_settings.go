@@ -26,6 +26,7 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmConfigAggregatorSettingsCreate,
 		ReadContext:   resourceIbmConfigAggregatorSettingsRead,
+		UpdateContext: resourceIbmConfigAggregatorSettingsUpdate,
 		DeleteContext: resourceIbmConfigAggregatorSettingsDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -37,10 +38,10 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 				Description: "The field denoting if the resource collection is enabled.",
 			},
 			"realtime_config_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true,
 				Description: "The field denoting if the realtime collection is enabled. Defaults to false. If omitted, the service treats realtime collection as disabled.",
 			},
 			"trusted_profile_id": &schema.Schema{
@@ -156,6 +157,32 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		}
 		replaceSettingsOptions.SetAdditionalScope(additionalScope)
 	}
+	_, _, err = configurationAggregatorClient.ReplaceSettings(replaceSettingsOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	aggregatorID := fmt.Sprintf("%s/%s", region, instanceId)
+	d.SetId(aggregatorID)
+
+	return resourceIbmConfigAggregatorSettingsRead(context, d, meta)
+}
+func resourceIbmConfigAggregatorSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	instanceId := d.Get("instance_id").(string)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
+	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
+	replaceSettingsOptions.SetRealtimeConfigEnabled(d.Get("realtime_config_enabled").(bool))
+
 	_, _, err = configurationAggregatorClient.ReplaceSettings(replaceSettingsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
