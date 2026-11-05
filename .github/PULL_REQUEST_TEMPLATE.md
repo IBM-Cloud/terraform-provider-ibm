@@ -19,6 +19,7 @@ Before submitting this PR, please ensure you have completed the following:
 - [ ] Run `go mod tidy` (if you modified `go.mod`)
 - [ ] Run `go fmt ./...` to format all code
 - [ ] Run `go vet ./...` to check for common errors
+- [ ] No secrets are committed (CI runs `make detect-secrets`)
 - [ ] All acceptance tests pass locally
 
 Output from acceptance testing:

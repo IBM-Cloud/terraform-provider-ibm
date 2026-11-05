@@ -71,6 +71,9 @@ fmt:
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
+detect-secrets:
+	@sh -c "'$(CURDIR)/scripts/detect_secrets.sh'"
+
 errcheck:
 	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
 
@@ -85,4 +88,4 @@ test-compile: fmtcheck
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
-.PHONY: build build-local bin dev test testacc testrace cover vet fmt fmtcheck errcheck vendor-status test-compile
+.PHONY: build build-local bin dev test testacc testrace cover vet fmt fmtcheck detect-secrets errcheck vendor-status test-compile
