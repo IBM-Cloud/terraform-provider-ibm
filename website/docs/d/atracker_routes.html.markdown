@@ -28,6 +28,8 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
+~> **Note:** The Activity Tracker API may omit some fields for a route, for example `managed_by`, `message`, or `version`. Attributes that are not returned by the API are left empty (an empty string, `0`, or an empty list) instead of failing the data source read.
+
 * `id` - The unique identifier of the atracker_routes.
 * `routes` - (List) A list of route resources.
   * Constraints: The maximum length is `30` items. The minimum length is `0` items.

@@ -358,3 +358,66 @@ func TestResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(t *testing.T) 
 	assert.Nil(t, err)
 	checkResult(result)
 }
+
+// The Activity Tracker API can return a target with endpoint fields missing, for
+// example a Cloud Object Storage target created with an API key has no
+// service_to_service_enabled value. Refreshing such a target must not crash the provider.
+func TestResourceIBMAtrackerTargetCosEndpointToMapMissingServiceToService(t *testing.T) {
+	model := new(atrackerv2.CosEndpoint)
+	model.Endpoint = core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud")
+	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+	model.Bucket = core.StringPtr("my-atracker-bucket")
+
+	result, err := atracker.ResourceIBMAtrackerTargetCosEndpointToMap(model)
+	assert.Nil(t, err)
+	assert.Equal(t, "my-atracker-bucket", result["bucket"])
+	assert.Equal(t, "REDACTED", result["api_key"])
+	assert.NotContains(t, result, "service_to_service_enabled")
+
+	result, err = atracker.ResourceIBMAtrackerTargetCosEndpointToMap(new(atrackerv2.CosEndpoint))
+	assert.Nil(t, err)
+	assert.Equal(t, "", result["endpoint"])
+	assert.Equal(t, "", result["target_crn"])
+	assert.Equal(t, "", result["bucket"])
+
+	result, err = atracker.ResourceIBMAtrackerTargetCosEndpointToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, result)
+}
+
+func TestResourceIBMAtrackerTargetEndpointsToMapNilSafe(t *testing.T) {
+	esResult, err := atracker.ResourceIBMAtrackerTargetEventstreamsEndpointToMap(new(atrackerv2.EventstreamsEndpoint))
+	assert.Nil(t, err)
+	assert.Equal(t, "", esResult["target_crn"])
+	assert.Equal(t, "", esResult["topic"])
+	assert.NotContains(t, esResult, "service_to_service_enabled")
+	esResult, err = atracker.ResourceIBMAtrackerTargetEventstreamsEndpointToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, esResult)
+
+	clResult, err := atracker.ResourceIBMAtrackerTargetCloudLogsEndpointToMap(new(atrackerv2.CloudLogsEndpoint))
+	assert.Nil(t, err)
+	assert.Equal(t, "", clResult["target_crn"])
+	clResult, err = atracker.ResourceIBMAtrackerTargetCloudLogsEndpointToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, clResult)
+
+	acResult, err := atracker.ResourceIBMAtrackerTargetAppconfigEndpointToMap(new(atrackerv2.AppconfigEndpoint))
+	assert.Nil(t, err)
+	assert.Equal(t, "", acResult["target_crn"])
+	acResult, err = atracker.ResourceIBMAtrackerTargetAppconfigEndpointToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, acResult)
+}
+
+func TestResourceIBMAtrackerTargetWriteStatusToMapNilSafe(t *testing.T) {
+	result, err := atracker.ResourceIBMAtrackerTargetWriteStatusToMap(new(atrackerv2.WriteStatus))
+	assert.Nil(t, err)
+	assert.Equal(t, "", result["status"])
+	assert.NotContains(t, result, "last_failure")
+	assert.NotContains(t, result, "reason_for_last_failure")
+
+	result, err = atracker.ResourceIBMAtrackerTargetWriteStatusToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, result)
+}

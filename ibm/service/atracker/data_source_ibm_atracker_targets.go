@@ -247,7 +247,7 @@ func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.Resourc
 		name = v.(string)
 		suppliedFilter = true
 		for _, data := range targetList.Targets {
-			if *data.Name == name {
+			if data.Name != nil && *data.Name == name {
 				matchTargets = append(matchTargets, data)
 			}
 		}
@@ -287,10 +287,13 @@ func dataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
 
 func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["crn"] = *model.CRN
-	modelMap["target_type"] = *model.TargetType
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["id"] = flex.StringValue(model.ID)
+	modelMap["name"] = flex.StringValue(model.Name)
+	modelMap["crn"] = flex.StringValue(model.CRN)
+	modelMap["target_type"] = flex.StringValue(model.TargetType)
 	if model.Region != nil {
 		modelMap["region"] = *model.Region
 	}
@@ -322,35 +325,51 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["appconfig_endpoint"] = []map[string]interface{}{appconfigEndpointMap}
 	}
-	writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
-	if err != nil {
-		return modelMap, err
+	if model.WriteStatus != nil {
+		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
 	}
-	modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
-	modelMap["created_at"] = model.CreatedAt.String()
-	modelMap["updated_at"] = model.UpdatedAt.String()
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = flex.DateTimeToString(model.CreatedAt)
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = flex.DateTimeToString(model.UpdatedAt)
+	}
 	if model.Message != nil {
 		modelMap["message"] = *model.Message
 	}
 	modelMap["api_version"] = flex.IntValue(model.APIVersion)
-	modelMap["managed_by"] = *model.ManagedBy
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["endpoint"] = *model.Endpoint
-	modelMap["target_crn"] = *model.TargetCRN
-	modelMap["bucket"] = *model.Bucket
-	modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["endpoint"] = flex.StringValue(model.Endpoint)
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
+	modelMap["bucket"] = flex.StringValue(model.Bucket)
+	if model.ServiceToServiceEnabled != nil {
+		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	}
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.EventstreamsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	modelMap["brokers"] = model.Brokers
-	modelMap["topic"] = *model.Topic
+	modelMap["topic"] = flex.StringValue(model.Topic)
 	if model.APIKey != nil {
 		modelMap["api_key"] = *model.APIKey
 	}
@@ -362,21 +381,30 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 
 func DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsAppconfigEndpointToMap(model *atrackerv2.AppconfigEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsWriteStatusToMap(model *atrackerv2.WriteStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["status"] = *model.Status
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["status"] = flex.StringValue(model.Status)
 	if model.LastFailure != nil {
-		modelMap["last_failure"] = model.LastFailure.String()
+		modelMap["last_failure"] = flex.DateTimeToString(model.LastFailure)
 	}
 	if model.ReasonForLastFailure != nil {
 		modelMap["reason_for_last_failure"] = *model.ReasonForLastFailure

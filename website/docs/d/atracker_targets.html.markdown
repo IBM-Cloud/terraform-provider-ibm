@@ -30,6 +30,8 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
+~> **Note:** The Activity Tracker API may omit some fields for a target, for example `service_to_service_enabled` on a Cloud Object Storage target that was created with an API key, or `managed_by` and `write_status` on some targets. Attributes that are not returned by the API are left empty (an empty string, `0`, `false`, or an empty list) instead of failing the data source read.
+
 * `id` - The unique identifier of the atracker_targets.
 * `targets` - (List) A list of target resources.
 Nested schema for **targets**:
