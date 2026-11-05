@@ -1,3 +1,70 @@
+# 2.9.0 (November 5, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Fix unit tests related to remote_leader_id and shards ([7059](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7059))
+* Doc Update: Fixed classic db examples and replaced etcd database ([7045](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7045))
+
+### DNS Services
+* added support for new enum combination in GLB monitoring expected codes ([6926](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6926))
+
+### Global Tagging
+* Remove deletion of tags after detaching tags operation ([7075](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7075))
+
+### IAM
+* apply authorization policy description ([7067](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7067))
+
+### Power Systems
+* Ibmi pha fsm license ([7084](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7084))
+
+## Enhancements
+
+### Activity Tracker
+* make targets and routes data sources tolerate missing API fields ([7094](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7094))
+
+### Cloud Databases
+* support point-in-time restore and retention for Gen2 ibm_database ([7031](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7031))
+* Revert "feat(database): support point-in-time restore and retention for Gen2 ibm_database (#7031)" ([7088](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7088))
+* Adding support for Customer maintenance window for Gen2 instances ([7016](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7016))
+* support MongoSync migration to Gen2 via remote_leader_id ([7080](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7080))
+* Feat 3709: [Terraform] Support for single member databases ([6985](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6985))
+
+### Configuration Aggregator
+* added regions support in config_aggregator_settings datasource ([7087](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7087))
+* Config Aggregator: add Update support for realtime_config_enabled ([7093](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7093))
+
+### Context Based Restrictions
+* added a cbr rule etag refresh acceptance test ([7021](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7021))
+
+### Direct Link
+* support BGP MD5 authentication keys ([7076](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7076))
+
+### General
+* bump github.com/go-jose/go-jose/v4 from 4.1.4 to 4.1.6 ([7082](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7082))
+* bump github/issue-labeler from 3.4 to 3.5 ([6983](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6983))
+
+### Kubernetes
+* reload action fro VSIs and Baremetals reload ([7072](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7072))
+
+### Secrets Manager
+* Update Admin token ([7085](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7085))
+* add destinations feature ([7089](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7089))
+
+### Transit Gateway
+* tgw188 - drsaas changes ([6946](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6946))
+
+## Documentation
+
+### Cloud Databases
+* Remove enterprisedb reference from Terraform doc ([7092](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7092))
+
+## Build System
+
+### General
+* run IBM detect-secrets on pull requests and master builds ([7037](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7037))
+
+
 # 2.8.2 (October 30, 2026)
 
 ## Bug Fixes
