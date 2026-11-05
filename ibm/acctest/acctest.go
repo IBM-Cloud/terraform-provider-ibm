@@ -54,6 +54,7 @@ var (
 	CloudShellAccountID             string
 	CosBackupPolicyID               string
 	CosCRN                          string
+	CloudMonitoringInstanceID       string
 	CosName                         string
 	CsRegion                        string
 	Customerpeerip                  string
@@ -680,6 +681,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
 	}
 
+	CloudMonitoringInstanceID = os.Getenv("IBM_CLOUD_MONITORING_INSTANCE_ID")
+	if CloudMonitoringInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLOUD_MONITORING_INSTANCE_ID with the GUID or CRN of an IBM Cloud Monitoring instance for testing ibm_cloud_monitoring_api_token")
+	}
+
 	CosCRN = os.Getenv("IBM_COS_CRN")
 	if CosCRN == "" {
 		CosCRN = ""
@@ -1247,10 +1253,13 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
 	}
 
-	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
+	IcdDbDeploymentId = os.Getenv("ICD_DB_CRN")
+	if IcdDbDeploymentId == "" {
+		IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
+	}
 	if IcdDbDeploymentId == "" {
 		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
-		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+		fmt.Println("[INFO] Set the environment variable ICD_DB_CRN or ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
 	}
 
 	// ICD_DB_GEN2_DEPLOYMENT_ID is used for testing Gen2 database data sources (ibm_database_tasks with Gen2 backend)
@@ -2675,6 +2684,13 @@ func TestAccPreCheckIAMIdpAccountSetting(t *testing.T) {
 	TestAccPreCheckIAMIdp(t)
 	if IAMIdpConsumerAccountId == "" {
 		t.Fatal("IBM_IAM_IDP_CONSUMER_ACCOUNT_ID must be set for IDP account-setting acceptance tests")
+	}
+}
+
+func TestAccPreCheckCloudMonitoring(t *testing.T) {
+	TestAccPreCheck(t)
+	if CloudMonitoringInstanceID == "" {
+		t.Fatal("IBM_CLOUD_MONITORING_INSTANCE_ID must be set for ibm_cloud_monitoring_api_token acceptance tests")
 	}
 }
 

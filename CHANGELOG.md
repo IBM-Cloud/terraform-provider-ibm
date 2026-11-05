@@ -1,3 +1,56 @@
+# 2.8.2 (October 30, 2026)
+
+## Bug Fixes
+
+### General
+* ignore case when dropping IC_ENV_TAGS tags on read ([7079](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7079))
+
+## Enhancements
+
+### Configuration Aggregator
+* configuration aggregator update for settings and resource_collection_status apis ([7081](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7081))
+
+
+
+# 2.8.1 (October 28, 2026)
+
+## Bug Fixes
+
+### Red Hat AI Inference
+* do not add IC_ENV_TAGS tags to the plan of ibm_rhaii_project ([7077](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7077))
+
+### VPC Infrastructure
+* fix is_share source delete failing after replica delete ([7064](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7064))
+
+## Enhancements
+
+### Cloud Monitoring
+* added ibm_cloud_monitoring_api_token data source ([7065](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7065))
+
+## Documentation
+
+### General
+* update service endpoint environment variables ([7068](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7068))
+
+
+
+# 2.8.0 (October 15, 2026)
+
+## Bug Fixes
+
+### IAM
+* IAM Identity: create IAM key files with 0600 permissions ([7053](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7053))
+
+## Enhancements
+
+### Red Hat AI Inference
+* added support for Red Hat AI Inference ([7051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7051))
+
+### VPC Infrastructure
+* added id in vpc vpn gateways data source ([7056](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7056))
+* added support for vpc regional vpn ([6940](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6940))
+
+
 # 2.7.0 (October 7, 2026)
 
 ## Bug Fixes

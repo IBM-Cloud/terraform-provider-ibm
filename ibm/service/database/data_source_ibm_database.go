@@ -308,6 +308,14 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"member_zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Availability zones for a single-member deployment. Gen2 only.",
+						},
 						"host_flavor": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -327,6 +335,41 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The host flavor size",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"maintenance": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Maintenance window configuration. Applicable to Gen2 plans only.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"window": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"start_time": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Earliest time at which maintenance can begin (hh:mmZ).",
+									},
+									"days": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Description: "Day(s) of the week on which maintenance can run.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"system_assigned": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "True when IBM Cloud controls the maintenance schedule.",
 									},
 								},
 							},

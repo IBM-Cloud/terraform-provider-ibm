@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -88,14 +89,12 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
-			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
-		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("supported attr configuration does not return error", func(t *testing.T) {
@@ -473,7 +472,7 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 	resourceSchema := ResourceIBMDatabaseInstance().Schema
 
-	t.Run("includes shards and omits members for mongodbees", func(t *testing.T) {
+	t.Run("includes both members and shards for mongodbees", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -501,8 +500,8 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if _, ok := config["members"]; ok {
-			t.Fatal("expected 'members' absent for mongodbees, but it was present")
+		if config["members"] != 3 {
+			t.Fatalf("expected members=3, got %v", config["members"])
 		}
 		if config["shards"] != 2 {
 			t.Fatalf("expected shards=2, got %v", config["shards"])
@@ -515,7 +514,7 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults shards to 1 when not explicitly set", func(t *testing.T) {
+	t.Run("omits shards from payload when not explicitly set (API defaults it)", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -533,8 +532,8 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if config["shards"] != 1 {
-			t.Fatalf("expected shards defaulted to 1, got %v", config["shards"])
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent from payload when not set (API defaults it), got %v", config["shards"])
 		}
 	})
 
@@ -591,4 +590,305 @@ func TestIsShardAttrConfigured(t *testing.T) {
 			t.Fatal("expected true when shards=2 is configured")
 		}
 	})
+}
+
+// TestMongodbeesSingleMemberUsecases verifies the payload built by buildDBConfig for all
+// single-member / multi-member / sharding combinations for mongodbees.
+// UC2 (members=2) and UC6 (member_zones + shards>1) are rejected by the DB API, not Terraform.
+func TestMongodbeesSingleMemberUsecases(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+
+	memberGroup := func(count int, zones []string) []interface{} {
+		m := map[string]interface{}{"allocation_count": count}
+		if len(zones) > 0 {
+			z := make([]interface{}, len(zones))
+			for i, v := range zones {
+				z[i] = v
+			}
+			m["member_zones"] = z
+		}
+		return []interface{}{
+			map[string]interface{}{
+				"group_id": "member",
+				"members":  []interface{}{m},
+				"host_flavor": []interface{}{
+					map[string]interface{}{"id": "bxf.4x16"},
+				},
+			},
+		}
+	}
+
+	// UC1: members=1, no member_zones, no shards — should pass, API defaults shards.
+	t.Run("UC1: members=1 only", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"group":   memberGroup(1, nil),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if config["members"] != 1 {
+			t.Fatalf("expected members=1, got %v", config["members"])
+		}
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent (API defaults it), got %v", config["shards"])
+		}
+		if _, ok := config["member_zones"]; ok {
+			t.Fatalf("expected member_zones absent, got %v", config["member_zones"])
+		}
+	})
+
+	// UC2: members=2 — invalid, rejected by the API. Terraform passes it through.
+	t.Run("UC2: members=2 passes through to API (API rejects)", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"group":   memberGroup(2, nil),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no Terraform error (API rejects members=2), got %v", err)
+		}
+		if config["members"] != 2 {
+			t.Fatalf("expected members=2 in payload, got %v", config["members"])
+		}
+	})
+
+	// UC3: members=3, no shards — should pass.
+	t.Run("UC3: members=3 only", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"group":   memberGroup(3, nil),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if config["members"] != 3 {
+			t.Fatalf("expected members=3, got %v", config["members"])
+		}
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent, got %v", config["shards"])
+		}
+		if _, ok := config["member_zones"]; ok {
+			t.Fatalf("expected member_zones absent, got %v", config["member_zones"])
+		}
+	})
+
+	// UC4: members=1, member_zones=["us-east-1"], no shards — should pass.
+	t.Run("UC4: members=1 with member_zones", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"group":   memberGroup(1, []string{"us-east-1"}),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if config["members"] != 1 {
+			t.Fatalf("expected members=1, got %v", config["members"])
+		}
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent, got %v", config["shards"])
+		}
+		zones, _ := config["member_zones"].([]string)
+		if len(zones) != 1 || zones[0] != "us-east-1" {
+			t.Fatalf("expected member_zones=[us-east-1], got %v", config["member_zones"])
+		}
+	})
+
+	// UC5: members=1, member_zones=["us-east-1"], shards=1 — should pass.
+	t.Run("UC5: members=1 with member_zones and shards=1", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"shards":  1,
+			"group":   memberGroup(1, []string{"us-east-1"}),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if config["members"] != 1 {
+			t.Fatalf("expected members=1, got %v", config["members"])
+		}
+		if config["shards"] != 1 {
+			t.Fatalf("expected shards=1, got %v", config["shards"])
+		}
+		zones, _ := config["member_zones"].([]string)
+		if len(zones) != 1 || zones[0] != "us-east-1" {
+			t.Fatalf("expected member_zones=[us-east-1], got %v", config["member_zones"])
+		}
+	})
+
+	// UC6: members=1, member_zones=["us-east-1"], shards=2 — rejected by API. Terraform passes through.
+	t.Run("UC6: members=1 with member_zones and shards=2 passes through to API (API rejects)", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"shards":  2,
+			"group":   memberGroup(1, []string{"us-east-1"}),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no Terraform error (API rejects member_zones+shards>1), got %v", err)
+		}
+		if config["members"] != 1 {
+			t.Fatalf("expected members=1, got %v", config["members"])
+		}
+		if config["shards"] != 2 {
+			t.Fatalf("expected shards=2, got %v", config["shards"])
+		}
+		zones, _ := config["member_zones"].([]string)
+		if len(zones) != 1 || zones[0] != "us-east-1" {
+			t.Fatalf("expected member_zones=[us-east-1], got %v", config["member_zones"])
+		}
+	})
+
+	// UC7: members=3, shards=2 — should pass, both sent in payload.
+	t.Run("UC7: members=3 with shards=2", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"shards":  2,
+			"group":   memberGroup(3, nil),
+		})
+		config, err := g.buildDBConfig(d, "", nil, "mongodbees")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if config["members"] != 3 {
+			t.Fatalf("expected members=3, got %v", config["members"])
+		}
+		if config["shards"] != 2 {
+			t.Fatalf("expected shards=2, got %v", config["shards"])
+		}
+		if _, ok := config["member_zones"]; ok {
+			t.Fatalf("expected member_zones absent, got %v", config["member_zones"])
+		}
+	})
+}
+func TestIsRemoteLeaderIDSupported(t *testing.T) {
+	tests := []struct {
+		service string
+		plan    string
+		want    bool
+	}{
+		{"databases-for-postgresql", "standard", true},
+		{"databases-for-postgresql", "standard-gen2", true},
+		{"databases-for-mysql", "standard", true},
+		{"databases-for-enterprisedb", "standard", true},
+		{"databases-for-mongodb", "enterprise-sharding-gen2", true},
+		{"databases-for-mongodb", "standard-gen2", false},
+		{"databases-for-mongodb", "standard", false},
+		{"databases-for-mongodb", "enterprise", false},
+		{"databases-for-mongodb", "enterprise-sharding", false},
+		{"databases-for-redis", "standard", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.service+"/"+tt.plan, func(t *testing.T) {
+			if got := isRemoteLeaderIDSupported(tt.service, tt.plan); got != tt.want {
+				t.Fatalf("isRemoteLeaderIDSupported(%q, %q) = %v, want %v", tt.service, tt.plan, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateMongoSyncSource(t *testing.T) {
+	const mongoCRN = "crn:v1:bluemix:public:databases-for-mongodb:us-south:a/account-id:instance-id::"
+
+	t.Run("accepts Gen1 Enterprise instance", func(t *testing.T) {
+		if err := validateMongoSyncSource(mongoCRN, "enterprise"); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("rejects Gen2 source", func(t *testing.T) {
+		err := validateMongoSyncSource(mongoCRN, "enterprise-sharding-gen2")
+		requireErrContains(t, err, "not yet supported as a MongoSync source")
+	})
+
+	t.Run("rejects other Gen1 plans", func(t *testing.T) {
+		for _, plan := range []string{"standard", "enterprise-sharding"} {
+			err := validateMongoSyncSource(mongoCRN, plan)
+			requireErrContains(t, err, "only a Gen1 databases-for-mongodb Enterprise instance is supported")
+		}
+	})
+
+	t.Run("rejects non-MongoDB source", func(t *testing.T) {
+		err := validateMongoSyncSource("crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::", "enterprise")
+		requireErrContains(t, err, "must be the CRN of a databases-for-mongodb instance")
+	})
+
+	t.Run("rejects malformed CRN", func(t *testing.T) {
+		err := validateMongoSyncSource("not-a-crn", "enterprise")
+		requireErrContains(t, err, "must be the CRN of a databases-for-mongodb instance")
+	})
+}
+
+func TestBuildPromoteParameters(t *testing.T) {
+	t.Run("mongodbees commits the migration", func(t *testing.T) {
+		got := buildPromoteParameters("mongodbees")
+		want := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"migrate": map[string]interface{}{"commit": true},
+				},
+			},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("other database types promote the read replica", func(t *testing.T) {
+		got := buildPromoteParameters("postgresql")
+		want := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": map[string]interface{}{
+					"read_replica": map[string]interface{}{"promoted": true},
+				},
+			},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("expected %v, got %v", want, got)
+		}
+	})
+}
+
+// On an existing mongodbees instance (update path) remote_leader_id must not add a migrate or read_replica block.
+func TestBuildGen2Parameters_mongodbeesRemoteLeaderOnlyMigratesAtCreate(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service":          "databases-for-mongodb",
+		"plan":             "enterprise-sharding-gen2",
+		"remote_leader_id": "crn:v1:bluemix:public:databases-for-mongodb:us-south:a/account-id:instance-id::",
+		"group": []interface{}{
+			map[string]interface{}{
+				"group_id": "member",
+				// members set explicitly so getMembersCount doesn't call the catalog API
+				"members": []interface{}{
+					map[string]interface{}{"allocation_count": 3},
+				},
+			},
+		},
+	})
+
+	params, err := g.buildGen2Parameters(d, "databases-for-mongodb", nil, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := params["dataservices"].(map[string]interface{})["mongodbees"].(map[string]interface{})
+	for _, key := range []string{"migrate", "read_replica"} {
+		if _, ok := cfg[key]; ok {
+			t.Fatalf("expected %q absent on a non-create build, got %v", key, cfg[key])
+		}
+	}
 }
