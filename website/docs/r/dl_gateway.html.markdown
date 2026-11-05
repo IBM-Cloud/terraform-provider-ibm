@@ -121,7 +121,7 @@ Review the argument reference that you can specify for your resource.
    - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
    - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
    - `le` - (Optional, Integer) The maximum matching length of the prefix-set
-- `authentication_key` - (Optional, String) BGP MD5 authentication key.
+- `authentication_key` - (Optional, String) CRN of the Key Protect standard key, Hyper Protect Crypto Services standard key, or Secrets Manager arbitrary secret used for BGP MD5 authentication. Remove this argument to disable BGP MD5 authentication.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
 - `bgp_asn`- (Required, Integer) The BGP ASN of the gateway to be created. For example, `64999`.

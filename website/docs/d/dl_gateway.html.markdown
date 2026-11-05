@@ -38,7 +38,7 @@ In addition to the argument reference list, you can access the following attribu
   - `prefix` - (Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
   - `specific_prefixes` - (Array of Strings) Array of prefixes this AS Prepend applies to. 
   - `updated_at`- (String) The date and time AS Prepend was updated
-- `authentication_key` - (String) BGP MD5 authentication key.
+- `authentication_key` - (String) CRN of the key used for BGP MD5 authentication.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
 - `bfd_status` - (String) Gateway BFD status.

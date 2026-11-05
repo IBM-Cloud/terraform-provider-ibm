@@ -848,10 +848,9 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		// 	gatewayDedicatedTemplateModel.MacsecConfig = gatewayMacsecConfigTemplateModel
 		// }
 
-		// if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
-		// 	authKeyCrnStr := authKeyCrn.(string)
-		// 	gatewayDedicatedTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
-		// }
+		if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+			gatewayDedicatedTemplateModel.AuthenticationKey = newAuthenticationKeyIdentity(authKeyCrn.(string))
+		}
 
 		if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 			connectionModeStr := connectionMode.(string)
@@ -913,10 +912,9 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 			}
 
-			// if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
-			// 	authKeyCrnStr := authKeyCrn.(string)
-			// 	gatewayConnectTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
-			// }
+			if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+				gatewayConnectTemplateModel.AuthenticationKey = newAuthenticationKeyIdentity(authKeyCrn.(string))
+			}
 
 			if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 				connectionModeStr := connectionMode.(string)
@@ -1178,9 +1176,11 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
 	}
-	// if instance.AuthenticationKey != nil {
-	// 	d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
-	// }
+	if authenticationKeyCrn, ok := authenticationKeyCRN(instance.AuthenticationKey); ok {
+		d.Set(dlAuthenticationKey, authenticationKeyCrn)
+	} else {
+		d.Set(dlAuthenticationKey, nil)
+	}
 	if instance.ConnectionMode != nil {
 		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
@@ -1564,12 +1564,13 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		metered := d.Get(dlMetered).(bool)
 		gatewayPatchTemplateModel["metered"] = &metered
 	}
-	// if d.HasChange(dlAuthenticationKey) {
-	// 	authenticationKeyCrn := d.Get(dlAuthenticationKey).(string)
-	// 	authenticationKeyPatchTemplate := new(directlinkv1.GatewayPatchTemplateAuthenticationKey)
-	// 	authenticationKeyPatchTemplate.Crn = &authenticationKeyCrn
-	// 	gatewayPatchTemplateModel["authentication_key"] = authenticationKeyPatchTemplate
-	// }
+	if d.HasChange(dlAuthenticationKey) {
+		if authenticationKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
+			gatewayPatchTemplateModel["authentication_key"] = newAuthenticationKeyIdentity(authenticationKeyCrn.(string))
+		} else {
+			gatewayPatchTemplateModel["authentication_key"] = nil
+		}
+	}
 
 	if mode, ok := d.GetOk(dlConnectionMode); ok && d.HasChange(dlConnectionMode) {
 		updatedConnectionMode := mode.(string)
