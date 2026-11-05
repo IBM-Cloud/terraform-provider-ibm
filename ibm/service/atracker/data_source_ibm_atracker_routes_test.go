@@ -188,3 +188,66 @@ func TestDataSourceIBMAtrackerRoutesRuleToMap(t *testing.T) {
 	assert.Nil(t, err)
 	checkResult(result)
 }
+
+// The Activity Tracker API can return routes with fields missing. The mappers must
+// tolerate missing fields instead of crashing the provider.
+func TestDataSourceIBMAtrackerRoutesRouteToMapSparseResponse(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		ruleModel := make(map[string]interface{})
+		ruleModel["target_ids"] = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+		ruleModel["locations"] = []string(nil)
+
+		model := make(map[string]interface{})
+		model["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		model["name"] = "my-route"
+		model["crn"] = ""
+		model["rules"] = []map[string]interface{}{ruleModel}
+		model["api_version"] = int(0)
+
+		assert.Equal(t, result, model)
+	}
+
+	ruleModel := new(atrackerv2.Rule)
+	ruleModel.TargetIds = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
+	// locations intentionally left nil
+
+	model := new(atrackerv2.Route)
+	model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	model.Name = core.StringPtr("my-route")
+	model.Rules = []atrackerv2.Rule{*ruleModel}
+	// crn, version, created_at, updated_at, api_version, message and managed_by intentionally left nil
+
+	result, err := atracker.DataSourceIBMAtrackerRoutesRouteToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMAtrackerRoutesRouteToMapEmptyRoute(t *testing.T) {
+	result, err := atracker.DataSourceIBMAtrackerRoutesRouteToMap(new(atrackerv2.Route))
+	assert.Nil(t, err)
+	assert.Equal(t, "", result["id"])
+	assert.Equal(t, "", result["name"])
+	assert.Equal(t, "", result["crn"])
+	assert.Equal(t, int(0), result["api_version"])
+	assert.Equal(t, []map[string]interface{}{}, result["rules"])
+	assert.NotContains(t, result, "version")
+	assert.NotContains(t, result, "created_at")
+	assert.NotContains(t, result, "updated_at")
+	assert.NotContains(t, result, "message")
+	assert.NotContains(t, result, "managed_by")
+
+	result, err = atracker.DataSourceIBMAtrackerRoutesRouteToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, result)
+}
+
+func TestDataSourceIBMAtrackerRoutesRuleToMapNilSafe(t *testing.T) {
+	result, err := atracker.DataSourceIBMAtrackerRoutesRuleToMap(new(atrackerv2.Rule))
+	assert.Nil(t, err)
+	assert.Equal(t, []string(nil), result["target_ids"])
+	assert.Equal(t, []string(nil), result["locations"])
+
+	result, err = atracker.DataSourceIBMAtrackerRoutesRuleToMap(nil)
+	assert.Nil(t, err)
+	assert.Empty(t, result)
+}

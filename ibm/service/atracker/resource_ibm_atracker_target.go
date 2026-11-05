@@ -609,20 +609,28 @@ func ResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(modelMap map[strin
 
 func ResourceIBMAtrackerTargetCosEndpointToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["endpoint"] = *model.Endpoint
-	modelMap["target_crn"] = *model.TargetCRN
-	modelMap["bucket"] = *model.Bucket
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["endpoint"] = flex.StringValue(model.Endpoint)
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
+	modelMap["bucket"] = flex.StringValue(model.Bucket)
 	// TODO: remove after deprecation
 	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
-	modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	if model.ServiceToServiceEnabled != nil {
+		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	}
 	return modelMap, nil
 }
 
 func ResourceIBMAtrackerTargetEventstreamsEndpointToMap(model *atrackerv2.EventstreamsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	modelMap["brokers"] = model.Brokers
-	modelMap["topic"] = *model.Topic
+	modelMap["topic"] = flex.StringValue(model.Topic)
 	// TODO: remove after deprecation
 	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
 	if model.ServiceToServiceEnabled != nil {
@@ -633,21 +641,30 @@ func ResourceIBMAtrackerTargetEventstreamsEndpointToMap(model *atrackerv2.Events
 
 func ResourceIBMAtrackerTargetCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	return modelMap, nil
 }
 
 func ResourceIBMAtrackerTargetAppconfigEndpointToMap(model *atrackerv2.AppconfigEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_crn"] = *model.TargetCRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["target_crn"] = flex.StringValue(model.TargetCRN)
 	return modelMap, nil
 }
 
 func ResourceIBMAtrackerTargetWriteStatusToMap(model *atrackerv2.WriteStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["status"] = *model.Status
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["status"] = flex.StringValue(model.Status)
 	if model.LastFailure != nil {
-		modelMap["last_failure"] = model.LastFailure.String()
+		modelMap["last_failure"] = flex.DateTimeToString(model.LastFailure)
 	}
 	if model.ReasonForLastFailure != nil {
 		modelMap["reason_for_last_failure"] = *model.ReasonForLastFailure
