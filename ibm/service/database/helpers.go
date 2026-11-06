@@ -46,10 +46,6 @@ const (
 	databaseInstanceFailStatus         = "failed"
 	databaseInstanceRemovedStatus      = "removed"
 
-	// Gen2 independent backups retention bounds (days)
-	backupsRetentionMinDays = 7
-	backupsRetentionMaxDays = 60
-
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
 	dataservicesKey    = "dataservices"
