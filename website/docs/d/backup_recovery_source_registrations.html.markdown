@@ -150,6 +150,18 @@ Nested schema for **registrations**:
 	* `id` - (Integer) Source Registration ID. This can be used to retrieve, edit or delete the source registration.
 	* `last_refreshed_time_msecs` - (Integer) Specifies the time when the source was last refreshed in milliseconds.
 	* `name` - (String) The user specified name for this source.
+	* `db2_params` - (List) Specifies parameters to register a DB2 source.
+	Nested schema for **db2_params**:
+		* `host_os_type` - (String) Specifies the type of DB2 host.
+		  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kOther`, `kHPUX`, `kVOS`.
+	* `sap_hana_params` - (List) Specifies parameters to register a SAP HANA source.
+	Nested schema for **sap_hana_params**:
+		* `backint_protocol_version` - (String) Backint protocol version to be used during backup/restore.
+		  * Constraints: The default value is `1.0`.
+		* `hosts` - (List) Specifies the IPs/hostnames for the nodes forming the SAP HANA source cluster.
+		  * Constraints: The minimum length is `1` item.
+		* `script_dir` - (String) Specifies the absolute path of scripts used to interact with the SAP HANA source.
+		* `source_name` - (String) Specifies user friendly name for the source.
 	* `physical_params` - (List) Specifies parameters to register physical server.
 	Nested schema for **physical_params**:
 		* `applications` - (List) Specifies the list of applications to be registered with Physical Source.

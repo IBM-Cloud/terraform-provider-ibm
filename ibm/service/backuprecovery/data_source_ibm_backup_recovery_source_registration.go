@@ -906,6 +906,52 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
+			"db2_params": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Specifies parameters to register a DB2 source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"host_os_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the type of DB2 host.",
+						},
+					},
+				},
+			},
+			"sap_hana_params": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Specifies parameters to register a SAP HANA source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backint_protocol_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Backint protocol version to be used during backup/restore.",
+						},
+						"hosts": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the IPs/hostnames for the nodes forming the SAP HANA source cluster.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"script_dir": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the absolute path of scripts used to interact with the SAP HANA source.",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies user friendly name for the source.",
+						},
+					},
+				},
+			},
 			"physical_params": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1344,6 +1390,30 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 		physicalParams = append(physicalParams, physicalParamsMap)
 		if err = d.Set("physical_params", physicalParams); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting physical_params: %s", err), "(Data) ibm_backup_recovery_source_registration", "read", "set-physical_params").GetDiag()
+		}
+	}
+
+	if !core.IsNil(sourceRegistrationReponseParams.Db2Params) {
+		db2Params := []map[string]interface{}{}
+		db2ParamsMap, err := DataSourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(sourceRegistrationReponseParams.Db2Params)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registration", "read", "db2_params-to-map").GetDiag()
+		}
+		db2Params = append(db2Params, db2ParamsMap)
+		if err = d.Set("db2_params", db2Params); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting db2_params: %s", err), "(Data) ibm_backup_recovery_source_registration", "read", "set-db2_params").GetDiag()
+		}
+	}
+
+	if !core.IsNil(sourceRegistrationReponseParams.SapHanaParams) {
+		sapHanaParams := []map[string]interface{}{}
+		sapHanaParamsMap, err := DataSourceIbmBackupRecoverySourceRegistrationSapHanaSourceRegistrationParamsToMap(sourceRegistrationReponseParams.SapHanaParams)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registration", "read", "sap_hana_params-to-map").GetDiag()
+		}
+		sapHanaParams = append(sapHanaParams, sapHanaParamsMap)
+		if err = d.Set("sap_hana_params", sapHanaParams); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sap_hana_params: %s", err), "(Data) ibm_backup_recovery_source_registration", "read", "set-sap_hana_params").GetDiag()
 		}
 	}
 
@@ -2039,6 +2109,25 @@ func DataSourceIbmBackupRecoverySourceRegistrationWorkflowInterventionSpecToMap(
 	modelMap := make(map[string]interface{})
 	modelMap["intervention"] = *model.Intervention
 	modelMap["workflow_type"] = *model.WorkflowType
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(model *backuprecoveryv1.DB2SourceRegistrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.HostOsType != nil {
+		modelMap["host_os_type"] = *model.HostOsType
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoverySourceRegistrationSapHanaSourceRegistrationParamsToMap(model *backuprecoveryv1.SapHanaSourceRegistrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BackintProtocolVersion != nil {
+		modelMap["backint_protocol_version"] = *model.BackintProtocolVersion
+	}
+	modelMap["hosts"] = model.Hosts
+	modelMap["script_dir"] = *model.ScriptDir
+	modelMap["source_name"] = *model.SourceName
 	return modelMap, nil
 }
 

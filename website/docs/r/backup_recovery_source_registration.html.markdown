@@ -172,6 +172,18 @@ Nested schema for **physical_params**:
 	  * Constraints: Allowable values are: `kLinux`, `kWindows`.
 	* `physical_type` - (Optional, String) Specifies the type of physical server.
 	  * Constraints: Allowable values are: `kGroup`, `kHost`, `kWindowsCluster`, `kOracleRACCluster`, `kOracleAPCluster`, `kUnixCluster`.
+* `db2_params` - (Optional, Forces new resource, List) Specifies parameters to register a DB2 source.
+Nested schema for **db2_params**:
+	* `host_os_type` - (Optional, String) Specifies the type of DB2 host.
+	  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kOther`, `kHPUX`, `kVOS`.
+* `sap_hana_params` - (Optional, Forces new resource, List) Specifies parameters to register a SAP HANA source.
+Nested schema for **sap_hana_params**:
+	* `backint_protocol_version` - (Optional, String) Backint protocol version to be used during backup/restore.
+	  * Constraints: The default value is `1.0`.
+	* `hosts` - (Required, List) Specifies the IPs/hostnames for the nodes forming the SAP HANA source cluster.
+	* `script_dir` - (Required, String) Specifies the absolute path of scripts used to interact with the SAP HANA source.
+	* `source_name` - (Required, String) Specifies user friendly name for the source.
+* `delete_connector_agent` - (Optional, Boolean) Specifies whether to also delete the connector agent associated with the source when the source is unregistered (on `terraform destroy`). Has no effect if the source's connection is not a connector agent.
 * `x_ibm_tenant_id` - (Required, String) Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.
 
 ## Attribute Reference

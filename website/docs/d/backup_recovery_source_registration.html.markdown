@@ -146,6 +146,18 @@ Nested schema for **external_metadata**:
 				* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
 				* `interface_name` - (String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
 				* `vlan_id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
+* `db2_params` - (List) Specifies parameters to register a DB2 source.
+Nested schema for **db2_params**:
+	* `host_os_type` - (String) Specifies the type of DB2 host.
+	  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kOther`, `kHPUX`, `kVOS`.
+* `sap_hana_params` - (List) Specifies parameters to register a SAP HANA source.
+Nested schema for **sap_hana_params**:
+	* `backint_protocol_version` - (String) Backint protocol version to be used during backup/restore.
+	  * Constraints: The default value is `1.0`.
+	* `hosts` - (List) Specifies the IPs/hostnames for the nodes forming the SAP HANA source cluster.
+	  * Constraints: The minimum length is `1` item.
+	* `script_dir` - (String) Specifies the absolute path of scripts used to interact with the SAP HANA source.
+	* `source_name` - (String) Specifies user friendly name for the source.
 * `physical_params` - (List) Specifies parameters to register physical server.
 Nested schema for **physical_params**:
 	* `applications` - (List) Specifies the list of applications to be registered with Physical Source.
