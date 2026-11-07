@@ -13,6 +13,9 @@ Create backup_recovery_connector_access_tokens with this resource.
 **Note**
 ibm_backup_recovery_connector_access_token resource does not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will throw an error in the plan phase stating that the resource cannot be updated.
 
+**TLS verification**
+The provider verifies the TLS certificate of the connector endpoint (`IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT`) before sending the `username` and `password`. The connector certificate must chain to a certificate authority trusted by the machine running Terraform. If your connector uses a self-signed certificate, add that certificate to the trust store of the Terraform host. As a last resort you can set the environment variable `IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY=true` to disable certificate verification for the connector client only. This is not recommended, because an attacker on the network path could then impersonate the connector and capture the credentials.
+
 ## Example Usage
 
 ```hcl
