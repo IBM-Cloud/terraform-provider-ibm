@@ -80,7 +80,7 @@ The domain ID and CRN will be located on the overview page of the IBM Cloud Inte
 
 - **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
 
-The API does not return the certificate contents, so after import the configured `certificate` is adopted without replacing the resource. To manage several zones after import, add the `zone` blocks to the configuration; the next apply moves the host names into them.
+The API does not return the certificate contents, so after import the configured `certificate` is compared with the certificate `fingerprint`: the same certificate is adopted without replacing the resource, a different one replaces it. To manage several zones after import, add the `zone` blocks to the configuration; the next apply moves the host names into them.
 
 **Syntax**
 

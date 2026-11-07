@@ -5,6 +5,8 @@ package cis
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/pem"
 	"fmt"
 	"strings"
 	"time"
@@ -62,9 +64,10 @@ func ResourceIBMCISMtls() *schema.Resource {
 				ForceNew:    true,
 				Description: "Certificate contents",
 				Sensitive:   true,
-				// The API never returns the PEM, so an imported resource adopts the configured value.
+				// The API never returns the PEM, so after import the configured value is matched against the fingerprint.
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return old == "" && d.Id() != ""
+					fingerprint := d.Get(cisMtlsCertFingerprint).(string)
+					return old == "" && d.Id() != "" && fingerprint != "" && cisMtlsCertFingerprintOf(new) == fingerprint
 				},
 			},
 			cisMtlsCertName: {
@@ -144,6 +147,20 @@ func ResourceIBMCISMtlsValidator() *validate.ResourceValidator {
 		ResourceName: "ibm_cis_mtls",
 		Schema:       validateSchema}
 	return &ibmCISMtlsValidator
+}
+
+// cisMtlsCertFingerprintOf renders the first certificate of a PEM bundle the way the API reports its fingerprint.
+func cisMtlsCertFingerprintOf(certPEM string) string {
+	block, _ := pem.Decode([]byte(certPEM))
+	if block == nil {
+		return ""
+	}
+	sum := md5.Sum(block.Bytes)
+	hexBytes := make([]string, len(sum))
+	for i, b := range sum {
+		hexBytes[i] = fmt.Sprintf("%02X", b)
+	}
+	return "MD5 Fingerprint=" + strings.Join(hexBytes, ":")
 }
 
 type cisMtlsZoneHosts struct {
