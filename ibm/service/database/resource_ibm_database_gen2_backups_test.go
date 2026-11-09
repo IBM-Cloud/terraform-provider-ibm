@@ -44,7 +44,7 @@ func TestGen2BuildGen2ParametersBackups(t *testing.T) {
 	g := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
 	backups := []interface{}{map[string]interface{}{
 		"preserve":  true,
-		"retention": 45,
+		"retention": "45d",
 	}}
 
 	t.Run("create sends backups next to the db-type key", func(t *testing.T) {
@@ -127,7 +127,7 @@ func backupsUpdateData(t *testing.T, priorBackups, plannedBackups []interface{})
 func TestBuildBackupsConfigOnlyChanged(t *testing.T) {
 	prior := []interface{}{map[string]interface{}{
 		"preserve":  false,
-		"retention": 30,
+		"retention": "30d",
 		"automatic_backups": []interface{}{map[string]interface{}{
 			"copy": []interface{}{map[string]interface{}{
 				"enabled": true,
@@ -137,13 +137,13 @@ func TestBuildBackupsConfigOnlyChanged(t *testing.T) {
 	}}
 
 	t.Run("retention change omits unchanged preserve and targets", func(t *testing.T) {
-		d := backupsUpdateData(t, prior, []interface{}{map[string]interface{}{"retention": 45}})
+		d := backupsUpdateData(t, prior, []interface{}{map[string]interface{}{"retention": "45d"}})
 		require.True(t, d.HasChange("backups"))
 		assert.Equal(t, map[string]interface{}{"retention": "45d"}, buildBackupsConfig(d, true))
 	})
 
 	t.Run("no change sends nothing", func(t *testing.T) {
-		d := backupsUpdateData(t, prior, []interface{}{map[string]interface{}{"retention": 30}})
+		d := backupsUpdateData(t, prior, []interface{}{map[string]interface{}{"retention": "30d"}})
 		assert.Nil(t, buildBackupsConfig(d, true))
 	})
 
@@ -208,7 +208,7 @@ func TestGen2BackupsFlattenAcceptedBySchema(t *testing.T) {
 	require.NoError(t, d.Set("backups", flattenBackupsFromExtensions(extensions)))
 
 	assert.Equal(t, true, d.Get("backups.0.preserve"))
-	assert.Equal(t, 45, d.Get("backups.0.retention"))
+	assert.Equal(t, "45d", d.Get("backups.0.retention"))
 	assert.Equal(t, true, d.Get("backups.0.automatic_backups.0.copy.0.enabled"))
 	var targets []interface{}
 	if set, ok := d.Get("backups.0.automatic_backups.0.copy.0.target").(*schema.Set); ok {
@@ -239,7 +239,7 @@ func TestGen2BackupsFlattenCopyDisabledAcceptedBySchema(t *testing.T) {
 	require.NoError(t, d.Set("backups", flattenBackupsFromExtensions(extensions)))
 
 	assert.Equal(t, false, d.Get("backups.0.preserve"))
-	assert.Equal(t, 30, d.Get("backups.0.retention"))
+	assert.Equal(t, "30d", d.Get("backups.0.retention"))
 	assert.Equal(t, false, d.Get("backups.0.automatic_backups.0.copy.0.enabled"))
 	assert.Equal(t, 0, d.Get("backups.0.automatic_backups.0.copy.0.target.#"))
 }
@@ -308,11 +308,11 @@ func TestValidateBackupsDiffThroughResourceDiff(t *testing.T) {
 	}
 
 	t.Run("gen2 postgres with backups is valid", func(t *testing.T) {
-		assert.NoError(t, plan("databases-for-postgresql", "standard-gen2", []interface{}{map[string]interface{}{"retention": 45}}, nil))
+		assert.NoError(t, plan("databases-for-postgresql", "standard-gen2", []interface{}{map[string]interface{}{"retention": "45d"}}, nil))
 	})
 
 	t.Run("classic plan with backups is rejected", func(t *testing.T) {
-		err := plan("databases-for-postgresql", "standard", []interface{}{map[string]interface{}{"retention": 45}}, nil)
+		err := plan("databases-for-postgresql", "standard", []interface{}{map[string]interface{}{"retention": "45d"}}, nil)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "only supported for Gen2")
 	})

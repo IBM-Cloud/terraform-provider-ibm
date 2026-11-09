@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -1088,21 +1087,20 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	return backups
 }
 
-// parseBackupsRetentionDays converts an API retention value to a number of days.
+// parseBackupsRetention converts an API retention value to a string format (e.g. "30d").
 // It accepts a duration string such as "45d" or a plain number (JSON numbers decode as float64).
-func parseBackupsRetentionDays(v interface{}) (int, bool) {
+func parseBackupsRetention(v interface{}) (string, bool) {
 	switch val := v.(type) {
 	case string:
-		days, err := strconv.Atoi(strings.TrimSuffix(val, "d"))
-		if err != nil {
-			log.Printf("[WARN] Unable to parse backups retention %q: %s", val, err)
-			return 0, false
+		if val != "" {
+			return val, true
 		}
-		return days, true
 	case float64:
-		return int(val), true
+		return fmt.Sprintf("%dd", int(val)), true
+	case int:
+		return fmt.Sprintf("%dd", val), true
 	}
-	return 0, false
+	return "", false
 }
 
 // flattenBackupsFromExtensions maps the backups object from instance extensions into the backups schema block.
@@ -1125,8 +1123,8 @@ func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface
 		result["preserve"] = isTruthy(v)
 	}
 
-	if days, ok := parseBackupsRetentionDays(backups["retention"]); ok {
-		result["retention"] = days
+	if ret, ok := parseBackupsRetention(backups["retention"]); ok {
+		result["retention"] = ret
 	}
 
 	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {
