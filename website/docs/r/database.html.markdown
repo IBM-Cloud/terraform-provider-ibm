@@ -163,7 +163,7 @@ resource "ibm_database" "postgres_gen2_backups" {
 
   backups {
     preserve  = true # cannot be set back to false once enabled
-    retention = 45   # days, between 30 and 60
+    retention = "45d"   # number of days, 
 
     automatic_backups {
       copy {
@@ -941,7 +941,8 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `backups`:
   - `preserve` - (Optional, Boolean) Set to `true` to keep independent backups, except for on-demand backup copies, after the database instance is hard deleted. The default is `false`. This option can be enabled but it cannot be disabled after it is enabled; `terraform plan` fails if you change it from `true` to `false`. It cannot be enabled for `databases-for-mysql`.
-  - `retention` - (Optional, Integer) The number of days backups are retained. Automatic backups are deleted automatically after the retention duration expires. On-demand backups can be deleted manually after the retention duration expires.
+  - `retention` - (Optional, String) The number of days backups are retained. Automatic backups are deleted automatically after the retention duration expires. On-demand backups can be deleted manually after the retention duration expires. For valid retention values please refer [API docs](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=terraform#configuring-instance).
+
   - `automatic_backups` - (Optional, List, Max: 1) Settings for automatic backups.
 
     Nested scheme for `automatic_backups`:

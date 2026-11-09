@@ -77,7 +77,7 @@ In addition to all argument references list, you can access the following attrib
 
   Nested scheme for `backups`:
   - `preserve` - (Boolean) Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted.
-  - `retention` - (Integer) The number of days backups are retained.
+  - `retention` - (String) The number of days backups are retained.
   - `automatic_backups` - (List) Settings for automatic backups.
 
     Nested scheme for `automatic_backups`:
