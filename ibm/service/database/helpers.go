@@ -1048,7 +1048,7 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	}
 
 	if v, ok := d.GetOk(backupsRetentionKey); ok && include(backupsRetentionKey) {
-		backups["retention"] = fmt.Sprintf("%dd", v.(int))
+		backups["retention"] = v.(string)
 	}
 
 	copyCfg := map[string]interface{}{}
