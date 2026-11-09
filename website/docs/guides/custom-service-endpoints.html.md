@@ -93,6 +93,7 @@ provider "ibm" {
 |Satellite Link|IBMCLOUD_SATELLITE_LINK_API_ENDPOINT|Yes|
 |Schematics|IBMCLOUD_SCHEMATICS_API_ENDPOINT|Yes|
 |Security and Compliance Center|IBMCLOUD_SCC_API_ENDPOINT|No|
+|Security and Compliance Center Workload Protection|IBMCLOUD_SCC_WORKLOAD_PROTECTION_API_ENDPOINT|Yes|
 |Software Defined Storage|IBMCLOUD_SDS_ENDPOINT|No|
 |Tekton Pipelines|IBMCLOUD_TEKTON_PIPELINE_ENDPOINT|Yes|
 |Toolchain|IBMCLOUD_TOOLCHAIN_ENDPOINT|Yes|

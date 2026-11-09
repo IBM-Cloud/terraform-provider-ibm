@@ -361,16 +361,17 @@ var (
 
 // Security and Complinace Center
 var (
-	SccApiEndpoint            string
-	SccEventNotificationsCRN  string
-	SccInstanceID             string
-	SccAccountID              string
-	SccObjectStorageCRN       string
-	SccObjectStorageBucket    string
-	SccProviderTypeAttributes string
-	SccProviderTypeID         string
-	SccResourceGroupID        string
-	SccReportID               string
+	SccApiEndpoint                  string
+	SccEventNotificationsCRN        string
+	SccInstanceID                   string
+	SccWorkloadProtectionInstanceID string
+	SccAccountID                    string
+	SccObjectStorageCRN             string
+	SccObjectStorageBucket          string
+	SccProviderTypeAttributes       string
+	SccProviderTypeID               string
+	SccResourceGroupID              string
+	SccReportID                     string
 )
 
 // ROKS Cluster
@@ -1984,6 +1985,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID with a VALID SCC INSTANCE ID")
 	}
 
+	SccWorkloadProtectionInstanceID = os.Getenv("IBMCLOUD_SCC_WORKLOAD_PROTECTION_INSTANCE_ID")
+	if SccWorkloadProtectionInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_WORKLOAD_PROTECTION_INSTANCE_ID with the GUID or CRN of a Security and Compliance Center Workload Protection instance for testing ibm_scc_workload_protection_api_token")
+	}
+
 	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
 	SccAccountID = os.Getenv("IBMCLOUD_SCC_ACCOUNT_ID")
 	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
@@ -2770,6 +2776,13 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 func TestAccPreCheckUsage(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckSccWorkloadProtection(t *testing.T) {
+	TestAccPreCheck(t)
+	if SccWorkloadProtectionInstanceID == "" {
+		t.Fatal("IBMCLOUD_SCC_WORKLOAD_PROTECTION_INSTANCE_ID must be set for ibm_scc_workload_protection_api_token acceptance tests")
 	}
 }
 

@@ -356,6 +356,7 @@ type ClientSession interface {
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
 	CloudMonitoringV1() (*core.BaseService, error)
+	SccWorkloadProtectionV1() (*core.BaseService, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
 	RhaiiV1() (*rhaiiv1.RhaiiV1, error)
@@ -737,6 +738,9 @@ type clientSession struct {
 
 	cloudMonitoringClient    *core.BaseService
 	cloudMonitoringClientErr error
+
+	sccWorkloadProtectionClient    *core.BaseService
+	sccWorkloadProtectionClientErr error
 
 	// Logs Routing v1
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
@@ -1491,6 +1495,11 @@ func (session clientSession) CloudMonitoringV1() (*core.BaseService, error) {
 	return session.cloudMonitoringClient, session.cloudMonitoringClientErr
 }
 
+// IBM Cloud Security and Compliance Center Workload Protection instance API (no Go SDK, so a go-sdk-core BaseService is used)
+func (session clientSession) SccWorkloadProtectionV1() (*core.BaseService, error) {
+	return session.sccWorkloadProtectionClient, session.sccWorkloadProtectionClientErr
+}
+
 // IBM Cloud Logs Routing V1
 func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error) {
 	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
@@ -1703,6 +1712,7 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		session.mqcloudClientErr = errEmptyBluemixCredentials
 		session.logsClientErr = errEmptyBluemixCredentials
 		session.cloudMonitoringClientErr = errEmptyBluemixCredentials
+		session.sccWorkloadProtectionClientErr = errEmptyBluemixCredentials
 		session.ibmCloudLogsRoutingClientErr = errEmptyBluemixCredentials
 		session.rhaiiClientErr = errEmptyBluemixCredentials
 
@@ -2010,6 +2020,29 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		})
 	} else {
 		session.cloudMonitoringClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Monitoring API service: %q", err)
+	}
+
+	// IBM Cloud Security and Compliance Center Workload Protection instance API
+	sccWorkloadProtectionEndpoint := ContructEndpoint(fmt.Sprintf("%s.security-compliance-secure", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		sccWorkloadProtectionEndpoint = ContructEndpoint(fmt.Sprintf("private.%s.security-compliance-secure", c.Region), cloudEndpoint)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		sccWorkloadProtectionEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_WORKLOAD_PROTECTION_API_ENDPOINT", c.Region, sccWorkloadProtectionEndpoint)
+	}
+	session.sccWorkloadProtectionClient, err = core.NewBaseService(&core.ServiceOptions{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_WORKLOAD_PROTECTION_API_ENDPOINT"}, sccWorkloadProtectionEndpoint),
+	})
+	if err == nil {
+		// Enable retries for API calls
+		session.sccWorkloadProtectionClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.sccWorkloadProtectionClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.sccWorkloadProtectionClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Security and Compliance Center Workload Protection API service: %q", err)
 	}
 
 	// LOGS ROUTER Version 0
