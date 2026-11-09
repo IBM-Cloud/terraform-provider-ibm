@@ -387,6 +387,44 @@ func TestAccIBMContainerVPCClusterEnableSecureByDefault(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerOpenshiftClusterDeleteRegistryCOSBucket(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	openshiftFlavour := "bx2.16x64"
+	operatingSystem := "REDHAT_9_64"
+	openShiftworkerCount := "2"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{	
+				// create an openshift cluster with delete_openshift_registry_cos_bucket default to false
+				Config: testAccCheckIBMContainerOcpClusterDeleteRegistryCOSBucketSetting(name, openshiftFlavour, operatingSystem, openShiftworkerCount, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "delete_openshift_registry_cos_bucket", "false"),
+				),
+			},
+			{	
+				// update the cluster and set delete_openshift_registry_cos_bucket to true
+				Config: testAccCheckIBMContainerOcpClusterDeleteRegistryCOSBucketSetting(name, openshiftFlavour, operatingSystem, openShiftworkerCount, "true"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "delete_openshift_registry_cos_bucket", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -1178,4 +1216,38 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	}
 	%[3]s
 }`, name, region, networkPluginConfig)
+}
+
+func testAccCheckIBMContainerOcpClusterDeleteRegistryCOSBucketSetting(name, openshiftFlavour, operatingSystem, openShiftworkerCount, deleteRegistryBucket string) string {
+	deleteRegistryBucketConfig := ""
+	if deleteRegistryBucket != "" {
+		deleteRegistryBucketConfig = fmt.Sprintf(`delete_openshift_registry_cos_bucket = "%s"`, deleteRegistryBucket)
+	}
+	return fmt.Sprintf(`
+data "ibm_resource_instance" "cos_instance" {
+	name     = "%[5]s"
+}
+
+resource "ibm_container_vpc_cluster" "cluster" {
+	name              = "%[1]s"
+	vpc_id            = "%[2]s"
+	flavor            = "%[6]s"
+	worker_count      = 2
+	kube_version      = "4.20_openshift"
+ 	operating_system  = "%[7]s"
+	wait_till         = "OneWorkerNodeReady"
+	entitlement       = "cloud_pak"
+	cos_instance_crn  = data.ibm_resource_instance.cos_instance.id
+	resource_group_id = "%[3]s"
+	zones {
+		 subnet_id = "%[4]s"
+		 name      = "us-south-1"
+	  }
+ %[8]s
+  }
+  data "ibm_container_cluster_config" "testacc_ds_cluster" {
+	cluster_name_id = ibm_container_vpc_cluster.cluster.id
+  }
+  `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, operatingSystem, deleteRegistryBucketConfig)
+
 }
