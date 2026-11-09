@@ -432,7 +432,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "The number of days backups are retained before they can be deleted in the format \\u003cnumber\\u003ed (e.g., 30d)",
+							Description: "The number of days backups are retained before they can be deleted in the format <number>d (e.g., 30d)",
 						},
 						"automatic_backups": {
 							Type:        schema.TypeList,
