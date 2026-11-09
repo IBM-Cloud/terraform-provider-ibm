@@ -1245,9 +1245,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	  }
  %[8]s
   }
-  data "ibm_container_cluster_config" "testacc_ds_cluster" {
-	cluster_name_id = ibm_container_vpc_cluster.cluster.id
-  }
   `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, operatingSystem, deleteRegistryBucketConfig)
 
 }
