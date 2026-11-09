@@ -399,7 +399,7 @@ func TestAccIBMContainerOpenshiftClusterDeleteRegistryCOSBucket(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
 		Steps: []resource.TestStep{
-			{	
+			{
 				// create an openshift cluster with delete_openshift_registry_cos_bucket default to false
 				Config: testAccCheckIBMContainerOcpClusterDeleteRegistryCOSBucketSetting(name, openshiftFlavour, operatingSystem, openShiftworkerCount, ""),
 				Check: resource.ComposeTestCheckFunc(
@@ -410,7 +410,7 @@ func TestAccIBMContainerOpenshiftClusterDeleteRegistryCOSBucket(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "delete_openshift_registry_cos_bucket", "false"),
 				),
 			},
-			{	
+			{
 				// update the cluster and set delete_openshift_registry_cos_bucket to true
 				Config: testAccCheckIBMContainerOcpClusterDeleteRegistryCOSBucketSetting(name, openshiftFlavour, operatingSystem, openShiftworkerCount, "true"),
 				Check: resource.ComposeTestCheckFunc(
