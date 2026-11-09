@@ -146,7 +146,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Description: "Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted.",
 						},
 						"retention": {
-							Type:        schema.TypeInt,
+							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The number of days backups are retained before they can be deleted.",
 						},

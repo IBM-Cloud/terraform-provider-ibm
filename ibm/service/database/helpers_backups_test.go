@@ -43,7 +43,7 @@ func TestBuildBackupsConfig(t *testing.T) {
 		{
 			name: "retention only",
 			backups: []interface{}{map[string]interface{}{
-				"retention": 45,
+				"retention": "45d",
 			}},
 			want: map[string]interface{}{"retention": "45d"},
 		},
@@ -73,7 +73,7 @@ func TestBuildBackupsConfig(t *testing.T) {
 			name: "all attributes with two targets",
 			backups: []interface{}{map[string]interface{}{
 				"preserve":  true,
-				"retention": 60,
+				"retention": "60d",
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": true,
@@ -161,7 +161,7 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 			},
 			want: []interface{}{map[string]interface{}{
 				"preserve":  true,
-				"retention": 31,
+				"retention": "31d",
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": true,
@@ -187,7 +187,7 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 			},
 			want: []interface{}{map[string]interface{}{
 				"preserve":  false,
-				"retention": 30,
+				"retention": "30d",
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": false,
@@ -203,7 +203,7 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 					"backups": map[string]interface{}{"retention": float64(45)},
 				},
 			},
-			want: []interface{}{map[string]interface{}{"retention": 45}},
+			want: []interface{}{map[string]interface{}{"retention": "45d"}},
 		},
 		{
 			name: "unparseable retention is skipped without panic",
@@ -211,7 +211,7 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 				"dataservices": map[string]interface{}{
 					"backups": map[string]interface{}{
 						"preserve":  false,
-						"retention": "abc",
+						"retention": true,
 					},
 				},
 			},
