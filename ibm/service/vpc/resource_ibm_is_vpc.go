@@ -875,6 +875,7 @@ func vpcCreate(context context.Context, d *schema.ResourceData, meta interface{}
 			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
 		}
+		updateVPCDefaultResourcesTags(oldList, newList, meta, vpc, isVPCUserTagType)
 	}
 	if _, ok := d.GetOk(isVPCAccessTags); ok {
 		oldList, newList := d.GetChange(isVPCAccessTags)
@@ -885,6 +886,30 @@ func vpcCreate(context context.Context, d *schema.ResourceData, meta interface{}
 		}
 	}
 	return nil
+}
+
+// updateVPCDefaultResourcesTags applies the tag changes of a VPC to the default network ACL,
+// default security group and default routing table that are created along with the VPC.
+// Failures are logged and do not fail the operation, consistent with the VPC tag handling.
+func updateVPCDefaultResourcesTags(oldList, newList interface{}, meta interface{}, vpc *vpcv1.VPC, tagType string) {
+	defaultResourceCRNs := map[string]*string{}
+	if vpc.DefaultNetworkACL != nil {
+		defaultResourceCRNs["default network acl"] = vpc.DefaultNetworkACL.CRN
+	}
+	if vpc.DefaultSecurityGroup != nil {
+		defaultResourceCRNs["default security group"] = vpc.DefaultSecurityGroup.CRN
+	}
+	if vpc.DefaultRoutingTable != nil {
+		defaultResourceCRNs["default routing table"] = vpc.DefaultRoutingTable.CRN
+	}
+	for resourceName, crn := range defaultResourceCRNs {
+		if crn == nil || *crn == "" {
+			continue
+		}
+		if err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *crn, "", tagType); err != nil {
+			log.Printf("Error on update of vpc (%s) %s (%s) %s tags: %s", *vpc.ID, resourceName, *crn, tagType, err)
+		}
+	}
 }
 
 func isWaitForVPCAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
@@ -1540,6 +1565,7 @@ func vpcUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
+		updateVPCDefaultResourcesTags(oldList, newList, meta, vpc, isVPCUserTagType)
 	}
 	if d.HasChange(isVPCAccessTags) {
 		getvpcOptions := &vpcv1.GetVPCOptions{

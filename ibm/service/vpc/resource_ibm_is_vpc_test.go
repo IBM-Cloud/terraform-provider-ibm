@@ -6,10 +6,12 @@ package vpc_test
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -42,6 +44,7 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 						"ibm_is_vpc.testacc_vpc", "default_routing_table_name", "drtn"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "tags.#", "2"),
+					testAccCheckIBMISVPCDefaultResourcesTags("ibm_is_vpc.testacc_vpc", []string{"tag1", "tag2"}, nil),
 				),
 			},
 			{
@@ -52,6 +55,7 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 						"ibm_is_vpc.testacc_vpc", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "tags.#", "1"),
+					testAccCheckIBMISVPCDefaultResourcesTags("ibm_is_vpc.testacc_vpc", []string{"tag1"}, []string{"tag2"}),
 				),
 			},
 			{
@@ -445,6 +449,46 @@ func testAccCheckIBMISVPCDestroy(s *terraform.State) error {
 		}
 	}
 	return nil
+}
+
+// testAccCheckIBMISVPCDefaultResourcesTags verifies that the user tags of the VPC are also attached
+// to its default network ACL, default security group and default routing table.
+func testAccCheckIBMISVPCDefaultResourcesTags(n string, expected, unexpected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		crns := map[string]string{
+			"default_network_acl_crn":    rs.Primary.Attributes["default_network_acl_crn"],
+			"default_security_group_crn": rs.Primary.Attributes["default_security_group_crn"],
+			"default_routing_table_crn":  rs.Primary.Attributes["default_routing_table_crn"],
+		}
+		for attr, crn := range crns {
+			if crn == "" {
+				return fmt.Errorf("%s is not set on %s", attr, n)
+			}
+			tags, err := flex.GetGlobalTagsUsingCRN(acc.TestAccProvider.Meta(), crn, "", "user")
+			if err != nil {
+				return fmt.Errorf("error getting tags of %s (%s): %s", attr, crn, err)
+			}
+			actual := map[string]bool{}
+			for _, tag := range tags.List() {
+				actual[strings.ToLower(fmt.Sprint(tag))] = true
+			}
+			for _, tag := range expected {
+				if !actual[strings.ToLower(tag)] {
+					return fmt.Errorf("tag %q not found on %s (%s), found: %v", tag, attr, crn, tags.List())
+				}
+			}
+			for _, tag := range unexpected {
+				if actual[strings.ToLower(tag)] {
+					return fmt.Errorf("tag %q should not be present on %s (%s), found: %v", tag, attr, crn, tags.List())
+				}
+			}
+		}
+		return nil
+	}
 }
 
 func testAccCheckIBMISVPCExists(n, vpcID string) resource.TestCheckFunc {

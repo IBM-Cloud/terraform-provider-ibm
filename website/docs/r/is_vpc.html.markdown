@@ -191,7 +191,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) Enter a name for your VPC. No.
 - `no_sg_acl_rules` - (Optional, Bool) If set to true, delete all rules attached to default security group and default network ACL for a new VPC. This attribute has no impact on update. default false.
 - `resource_group` - (Optional, Forces new resource, String) Enter the ID of the resource group where you want to create the VPC. To list available resource groups, run `ibmcloud resource groups`. If you do not specify a resource group, the VPC is created in the `default` resource group. 
-- `tags` - (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
+- `tags` - (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`). The tags are also attached to the default network ACL, default security group, and default routing table of the VPC.
 
 
 ## Attribute reference
