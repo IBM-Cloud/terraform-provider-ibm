@@ -1232,7 +1232,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	name              = "%[1]s"
 	vpc_id            = "%[2]s"
 	flavor            = "%[6]s"
-	worker_count      = 2
+	worker_count      = "%[9]s"
 	kube_version      = "4.20_openshift"
  	operating_system  = "%[7]s"
 	wait_till         = "OneWorkerNodeReady"
@@ -1245,6 +1245,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	  }
  %[8]s
   }
-  `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, operatingSystem, deleteRegistryBucketConfig)
+  `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, operatingSystem, deleteRegistryBucketConfig, openShiftworkerCount)
 
 }
