@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	keyprotect_dedicated "github.com/IBM/keyprotect-go-client/dedicated"
 )
@@ -89,8 +91,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"signature_key": {
 				Type:        schema.TypeSet,
 				Required:    true,
-				MaxItems:    1,
-				Description: "Credentials for the user will use to create sessions with the cryptounits",
+				Description: "Credentials for the user will use to create sessions with the cryptounits. Multiple signature_key blocks are allowed, each with a unique filepath",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"filepath": {
@@ -150,6 +151,28 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 					},
 				},
 			},
+			"quorum": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Set signature and revocation thresholds for crypto unit(s). Both thresholds must be between 1 and 5 and cannot exceed the number of admin users. Note: Crypto unit will restart when threshold is configured",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"signature_threshold": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 5),
+							Description:  "Signature threshold value (1-5, required)",
+						},
+						"revocation_threshold": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 5),
+							Description:  "Revocation threshold value (1-5, required)",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -173,10 +196,16 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Parse and validate signature key configuration
-	sigKeySpec, err := parseSignatureKey(d)
+	sigKeySpecs, err := parseSignatureKey(d)
 	if err != nil {
 		return diag.Errorf("failed to parse signature_key: %v", err)
 	}
+	if err := validateQuorumSignatureKeyCount(d, len(sigKeySpecs)); err != nil {
+		return diag.FromErr(err)
+	}
+	// TODO: InitializeCryptoUnits in keyprotect-go-client accepts a single signature key.
+	// Pass the remaining keys once the client supports multiple signature keys.
+	sigKeySpec := sigKeySpecs[0]
 
 	// Inspect current unit states before deciding whether to initialize.
 	cryptoUnitsResponse, _, err := kmsCryptoUnitClient.ListCryptoUnitsWithContext(ctx)
@@ -362,8 +391,10 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 	)
 }
 
-// parseSignatureKey extracts and validates signature key configuration from TypeSet
-func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureKeyRequest, error) {
+// parseSignatureKey extracts and validates all signature key blocks from the TypeSet.
+// Keys are returned sorted by resolved filepath so the order is deterministic.
+// It returns an error if two blocks resolve to the same filepath.
+func parseSignatureKey(d *schema.ResourceData) ([]*keyprotect_dedicated.SignatureKeyRequest, error) {
 	sigKeySet, ok := d.GetOk("signature_key")
 	if !ok {
 		return nil, fmt.Errorf("signature_key is required but not provided")
@@ -379,57 +410,110 @@ func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureK
 		return nil, fmt.Errorf("signature_key must contain at least one element")
 	}
 
-	sigKeyData, ok := sigKeyList[0].(map[string]interface{})
+	// Track unique filepaths to ensure no duplicates
+	filepathMap := make(map[string]bool)
+	sigKeys := make([]*keyprotect_dedicated.SignatureKeyRequest, 0, len(sigKeyList))
+
+	for i, item := range sigKeyList {
+		sigKeyData, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("signature_key[%d] must be a map", i)
+		}
+
+		// Extract and validate filepath
+		filePathRaw, ok := sigKeyData["filepath"]
+		if !ok {
+			return nil, fmt.Errorf("filepath is required in signature_key[%d]", i)
+		}
+
+		filePath, ok := filePathRaw.(string)
+		if !ok {
+			return nil, fmt.Errorf("filepath in signature_key[%d] must be a string", i)
+		}
+		if filePath == "" {
+			return nil, fmt.Errorf("filepath in signature_key[%d] cannot be empty", i)
+		}
+
+		// Resolve relative path to absolute path based on terraform execution directory
+		resolvedFilePath, err := resolveRelativePath(filePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve filepath in signature_key[%d]: %v", i, err)
+		}
+		resolvedFilePath = filepath.Clean(resolvedFilePath)
+
+		// Check for duplicate filepaths
+		if filepathMap[resolvedFilePath] {
+			return nil, fmt.Errorf("duplicate filepath detected in signature_key[%d]: %s", i, filePath)
+		}
+		filepathMap[resolvedFilePath] = true
+
+		// Extract and validate passphrase
+		passphraseRaw, ok := sigKeyData["passphrase"]
+		if !ok {
+			return nil, fmt.Errorf("passphrase is required in signature_key[%d]", i)
+		}
+
+		passphrase, ok := passphraseRaw.(string)
+		if !ok {
+			return nil, fmt.Errorf("passphrase in signature_key[%d] must be a string", i)
+		}
+
+		// Extract and validate owner
+		ownerRaw, ok := sigKeyData["owner"]
+		if !ok {
+			return nil, fmt.Errorf("owner is required in signature_key[%d]", i)
+		}
+
+		owner, ok := ownerRaw.(string)
+		if !ok {
+			return nil, fmt.Errorf("owner in signature_key[%d] must be a string", i)
+		}
+
+		// Check whether the resolved filepath actually exists on disk
+		_, statErr := os.Stat(resolvedFilePath)
+		fileExists := !os.IsNotExist(statErr)
+
+		sigKey, err := keyprotect_dedicated.NewSignatureKeyRequest(resolvedFilePath, passphrase, owner, fileExists)
+		if err != nil {
+			return nil, fmt.Errorf("invalid signature_key[%d]: %v", i, err)
+		}
+		sigKeys = append(sigKeys, sigKey)
+	}
+
+	sort.Slice(sigKeys, func(a, b int) bool { return sigKeys[a].FilePath < sigKeys[b].FilePath })
+
+	return sigKeys, nil
+}
+
+// validateQuorumSignatureKeyCount ensures there are at least max(signature_threshold,
+// revocation_threshold) signature keys when a quorum block is configured.
+func validateQuorumSignatureKeyCount(d *schema.ResourceData, sigKeyCount int) error {
+	quorumSet, ok := d.GetOk("quorum")
 	if !ok {
-		return nil, fmt.Errorf("signature_key[0] must be a map")
+		return nil
 	}
-
-	// Extract and validate filepath
-	filePathRaw, ok := sigKeyData["filepath"]
+	quorumSetTyped, ok := quorumSet.(*schema.Set)
+	if !ok || quorumSetTyped.Len() == 0 {
+		return nil
+	}
+	quorumData, ok := quorumSetTyped.List()[0].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("filepath is required in signature_key")
+		return fmt.Errorf("quorum[0] must be a map")
 	}
 
-	filePath, ok := filePathRaw.(string)
-	if !ok {
-		return nil, fmt.Errorf("filepath must be a string")
-	}
-	if filePath == "" {
-		return nil, fmt.Errorf("filepath cannot be empty")
+	signatureThreshold, _ := quorumData["signature_threshold"].(int)
+	revocationThreshold, _ := quorumData["revocation_threshold"].(int)
+
+	maxThreshold := signatureThreshold
+	if revocationThreshold > maxThreshold {
+		maxThreshold = revocationThreshold
 	}
 
-	// Resolve relative path to absolute path based on terraform execution directory
-	resolvedFilePath, err := resolveRelativePath(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to resolve signature_key filepath: %v", err)
+	if sigKeyCount < maxThreshold {
+		return fmt.Errorf("insufficient signature_key blocks: have %d, need at least %d (signature_threshold=%d, revocation_threshold=%d)",
+			sigKeyCount, maxThreshold, signatureThreshold, revocationThreshold)
 	}
-
-	// Extract and validate passphrase
-	passphraseRaw, ok := sigKeyData["passphrase"]
-	if !ok {
-		return nil, fmt.Errorf("passphrase is required in signature_key")
-	}
-
-	passphrase, ok := passphraseRaw.(string)
-	if !ok {
-		return nil, fmt.Errorf("passphrase must be a string")
-	}
-
-	// Extract and validate owner
-	ownerRaw, ok := sigKeyData["owner"]
-	if !ok {
-		return nil, fmt.Errorf("owner is required in signature_key")
-	}
-
-	owner, ok := ownerRaw.(string)
-	if !ok {
-		return nil, fmt.Errorf("owner must be a string")
-	}
-	// Check whether the resolved filepath actually exists on disk
-	_, statErr := os.Stat(resolvedFilePath)
-	fileExists := !os.IsNotExist(statErr)
-
-	return keyprotect_dedicated.NewSignatureKeyRequest(resolvedFilePath, passphrase, owner, fileExists)
+	return nil
 }
 
 // resolveRelativePath converts a path to be relative to the current working directory
