@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -1020,6 +1021,139 @@ func isTruthy(v interface{}) bool {
 		return val == "true"
 	}
 	return false
+}
+
+const (
+	backupsPreservePath = "backups.0.preserve"
+	backupsRetentionKey = "backups.0.retention"
+	backupsCopyPath     = "backups.0.automatic_backups.0.copy.0"
+)
+
+// isBackupsConfigured reports whether a backups block is present in the resource data.
+func isBackupsConfigured(d interface{ Get(string) interface{} }) bool {
+	list, ok := d.Get("backups").([]interface{})
+	return ok && len(list) > 0
+}
+
+// buildBackupsConfig builds the backups payload. When onlyChanged is true (update),
+// only changed fields are included to avoid overwriting settings managed outside Terraform.
+func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]interface{} {
+	if !isBackupsConfigured(d) {
+		return nil
+	}
+	include := func(path string) bool {
+		return !onlyChanged || d.HasChange(path)
+	}
+
+	backups := map[string]interface{}{}
+
+	if v, ok := d.GetOkExists(backupsPreservePath); ok && include(backupsPreservePath) {
+		backups["preserve"] = v.(bool)
+	}
+
+	if v, ok := d.GetOk(backupsRetentionKey); ok && include(backupsRetentionKey) {
+		backups["retention"] = v.(string)
+	}
+
+	copyCfg := map[string]interface{}{}
+	copyEnabled := true
+	if v, ok := d.GetOkExists(backupsCopyPath + ".enabled"); ok {
+		copyEnabled = v.(bool)
+		if include(backupsCopyPath + ".enabled") {
+			copyCfg["enabled"] = copyEnabled
+		}
+	}
+	// Targets are retained from state (Computed) when removed from HCL, so they
+	// must not be sent when copies are disabled.
+	if v, ok := d.GetOk(backupsCopyPath + ".target"); ok && copyEnabled && include(backupsCopyPath+".target") {
+		var targets []interface{}
+		for _, raw := range v.([]interface{}) {
+			if target, ok := raw.(map[string]interface{}); ok {
+				if region, _ := target["region"].(string); region != "" {
+					targets = append(targets, map[string]interface{}{"region": region})
+				}
+			}
+		}
+		// Sort so the payload is deterministic regardless of config order.
+		sort.Slice(targets, func(i, j int) bool {
+			return targets[i].(map[string]interface{})["region"].(string) < targets[j].(map[string]interface{})["region"].(string)
+		})
+		if len(targets) > 0 {
+			copyCfg["target"] = targets
+		}
+	}
+	if len(copyCfg) > 0 {
+		backups["automatic_backups"] = map[string]interface{}{"copy": copyCfg}
+	}
+
+	if len(backups) == 0 {
+		return nil
+	}
+	return backups
+}
+
+// parseBackupsRetention converts an API retention value to a string format (e.g. "30d").
+// It accepts a duration string such as "45d" or a plain number (JSON numbers decode as float64).
+func parseBackupsRetention(v interface{}) (string, bool) {
+	switch val := v.(type) {
+	case string:
+		if val != "" {
+			return val, true
+		}
+	case float64:
+		return fmt.Sprintf("%dd", int(val)), true
+	case int:
+		return fmt.Sprintf("%dd", val), true
+	}
+	return "", false
+}
+
+// flattenBackupsFromExtensions maps the backups object from instance extensions into the backups schema block.
+func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface{} {
+	if extensions == nil {
+		return nil
+	}
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	backups, ok := dataservices["backups"].(map[string]interface{})
+	if !ok || backups == nil {
+		return nil
+	}
+
+	result := map[string]interface{}{}
+
+	if v, exists := backups["preserve"]; exists && v != nil {
+		result["preserve"] = isTruthy(v)
+	}
+
+	if ret, ok := parseBackupsRetention(backups["retention"]); ok {
+		result["retention"] = ret
+	}
+
+	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {
+		if cp, ok := auto["copy"].(map[string]interface{}); ok {
+			copyBlock := map[string]interface{}{"target": []interface{}{}}
+			if v, exists := cp["enabled"]; exists && v != nil {
+				copyBlock["enabled"] = isTruthy(v)
+			}
+			if rawTargets, ok := cp["target"].([]interface{}); ok {
+				for _, rt := range rawTargets {
+					if t, ok := rt.(map[string]interface{}); ok {
+						if region, _ := t["region"].(string); region != "" {
+							copyBlock["target"] = append(copyBlock["target"].([]interface{}), map[string]interface{}{"region": region})
+						}
+					}
+				}
+			}
+			result["automatic_backups"] = []interface{}{
+				map[string]interface{}{"copy": []interface{}{copyBlock}},
+			}
+		}
+	}
+
+	return []interface{}{result}
 }
 
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
