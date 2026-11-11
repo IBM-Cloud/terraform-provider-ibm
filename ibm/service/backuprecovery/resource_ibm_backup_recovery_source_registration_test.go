@@ -95,6 +95,7 @@ func TestAccIbmBackupRecoveryKubernetesSourceRegistrationBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "id"),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "connections.#"),
+					resource.TestCheckResourceAttrPair("ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "auto_protection_group_id", "ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "auto_proetction_group_id"),
 				),
 			},
 		},
