@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/accountmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii"
@@ -506,6 +507,7 @@ func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		// Red Hat AI Inference
 		rhaii.NewRhaiiProjectResource,
+		accountmanagement.NewAccountTraitsResource,
 	}
 }
 
@@ -518,6 +520,7 @@ func (p *frameworkProvider) DataSources(ctx context.Context) []func() datasource
 		rhaii.NewRhaiiProjectDataSource,
 		rhaii.NewRhaiiInferenceModelsDataSource,
 		rhaii.NewRhaiiInferenceModelDataSource,
+		accountmanagement.NewAccountTraitsDataSource,
 	}
 }
 
