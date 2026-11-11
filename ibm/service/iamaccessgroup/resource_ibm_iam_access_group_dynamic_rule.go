@@ -130,7 +130,7 @@ func resourceIBMIAMDynamicRuleCreate(d *schema.ResourceData, meta interface{}) e
 	}
 	rule, detailedResponse, err := iamAccessGroupsClient.AddAccessGroupRule(addAccessGroupRuleOptions)
 	if err != nil || rule == nil {
-		return fmt.Errorf("[ERROR] Error adding rule to Access Group(%s) %s. API Response: %s", grpID, err, detailedResponse)
+		return flex.FmtErrorf("[ERROR] Error adding rule to Access Group(%s) %s. API Response: %s", grpID, err, detailedResponse)
 	}
 	ruleID := rule.ID
 	d.SetId(fmt.Sprintf("%s/%s", grpID, *ruleID))
@@ -163,7 +163,7 @@ func resourceIBMIAMDynamicRuleRead(d *schema.ResourceData, meta interface{}) err
 			d.SetId("")
 			return nil
 		} else {
-			return fmt.Errorf("[ERROR] Error retrieving access group Rules: %s. API Response: %s", err, detailResponse)
+			return flex.FmtErrorf("[ERROR] Error retrieving access group Rules: %s. API Response: %s", err, detailResponse)
 		}
 	}
 
@@ -192,7 +192,7 @@ func resourceIBMIAMDynamicRuleUpdate(d *schema.ResourceData, meta interface{}) e
 	getAccessGroupRuleOptions := iamAccessGroupsClient.NewGetAccessGroupRuleOptions(grpID, ruleID)
 	_, detailedResponse, err := iamAccessGroupsClient.GetAccessGroupRule(getAccessGroupRuleOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving access group Rules: %s. API Response: %s", err, detailedResponse)
+		return flex.FmtErrorf("[ERROR] Error retrieving access group Rules: %s. API Response: %s", err, detailedResponse)
 	}
 
 	etag := detailedResponse.GetHeaders().Get("etag")
@@ -220,7 +220,7 @@ func resourceIBMIAMDynamicRuleUpdate(d *schema.ResourceData, meta interface{}) e
 	replaceAccessGroupRuleOption := iamAccessGroupsClient.NewReplaceAccessGroupRuleOptions(grpID, ruleID, etag, expiration, realm, condition)
 	rule, detailedResponse, err := iamAccessGroupsClient.ReplaceAccessGroupRule(replaceAccessGroupRuleOption)
 	if err != nil || rule == nil {
-		return fmt.Errorf("[ERROR] Error replacing group(%s) rule(%s). API response: %s", grpID, ruleID, detailedResponse)
+		return flex.FmtErrorf("[ERROR] Error replacing group(%s) rule(%s). API response: %s", grpID, ruleID, detailedResponse)
 	}
 
 	return resourceIBMIAMDynamicRuleRead(d, meta)
@@ -247,7 +247,7 @@ func resourceIBMIAMDynamicRuleDelete(d *schema.ResourceData, meta interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting group(%s) rule(%s). API Response: %s", grpID, ruleID, detailedResponse)
+		return flex.FmtErrorf("[ERROR] Error getting group(%s) rule(%s). API Response: %s", grpID, ruleID, detailedResponse)
 	}
 
 	return nil
@@ -264,7 +264,7 @@ func resourceIBMIAMDynamicRuleExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 	if len(parts) < 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of accessGroupID/RuleID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of accessGroupID/RuleID", d.Id())
 	}
 	grpID := parts[0]
 	ruleID := parts[1]
@@ -277,7 +277,7 @@ func resourceIBMIAMDynamicRuleExists(d *schema.ResourceData, meta interface{}) (
 		return false, nil
 	}
 	if err != nil || rule == nil {
-		return false, fmt.Errorf("[ERROR] Error getting group(%s) rule(%s). API response: %s", grpID, ruleID, detailResponse)
+		return false, flex.FmtErrorf("[ERROR] Error getting group(%s) rule(%s). API response: %s", grpID, ruleID, detailResponse)
 	}
 	return *rule.AccessGroupID == grpID, nil
 }

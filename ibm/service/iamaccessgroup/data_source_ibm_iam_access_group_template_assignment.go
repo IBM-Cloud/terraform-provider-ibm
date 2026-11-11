@@ -5,7 +5,6 @@ package iamaccessgroup
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -206,21 +205,21 @@ func dataSourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, 
 	listTemplateAssignmentResponse, response, err := iamAccessGroupsClient.ListAssignmentsWithContext(context, listAssignmentsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListAssignmentsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListAssignmentsWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("ListAssignmentsWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(dataSourceIBMIAMAccessGroupTemplateAssignmentID(d))
 
 	if err = d.Set("limit", flex.IntValue(listTemplateAssignmentResponse.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting limit: %s", err))
 	}
 
 	if err = d.Set("offset", flex.IntValue(listTemplateAssignmentResponse.Offset)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offset: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting offset: %s", err))
 	}
 
 	if err = d.Set("total_count", flex.IntValue(listTemplateAssignmentResponse.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting total_count: %s", err))
 	}
 
 	first := []map[string]interface{}{}
@@ -232,7 +231,7 @@ func dataSourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, 
 		first = append(first, modelMap)
 	}
 	if err = d.Set("first", first); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting first %s", err))
 	}
 
 	last := []map[string]interface{}{}
@@ -244,7 +243,7 @@ func dataSourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, 
 		last = append(last, modelMap)
 	}
 	if err = d.Set("last", last); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting last %s", err))
 	}
 
 	assignments := []map[string]interface{}{}
@@ -258,7 +257,7 @@ func dataSourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, 
 		}
 	}
 	if err = d.Set("assignments", assignments); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting assignments %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting assignments %s", err))
 	}
 
 	return nil

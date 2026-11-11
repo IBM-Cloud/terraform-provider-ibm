@@ -341,7 +341,9 @@ func ResourceIBMIAMAccessGroupTemplateValidator() *validate.ResourceValidator {
 func resourceIBMIAMAccessGroupTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createTemplateOptions := &iamaccessgroupsv2.CreateTemplateOptions{}
@@ -383,8 +385,9 @@ func resourceIBMIAMAccessGroupTemplateCreate(context context.Context, d *schema.
 
 	templateResponse, response, err := iamAccessGroupsClient.CreateTemplateWithContext(context, createTemplateOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateTemplateWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateTemplateWithContext failed: %s", err.Error()), "ibm_iam_access_group_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	version, _ := strconv.Atoi(*templateResponse.Version)
 
@@ -395,8 +398,9 @@ func resourceIBMIAMAccessGroupTemplateCreate(context context.Context, d *schema.
 		commitTemplateOptions.SetIfMatch(response.Headers.Get("ETag"))
 		response, err = iamAccessGroupsClient.CommitTemplateWithContext(context, commitTemplateOptions)
 		if err != nil {
-			log.Printf("[DEBUG] CommitTemplateWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("CommitTemplateWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CommitTemplateWithContext failed: %s", err.Error()), "ibm_iam_access_group_template", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId(fmt.Sprintf("%s/%d", *templateResponse.ID, version))
