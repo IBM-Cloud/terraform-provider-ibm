@@ -148,7 +148,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 						"retention": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The number of days backups are retained before they can be deleted.",
+							Description: "The number of days backups are retained before they can be deleted in the format <number>d (e.g., 30d)",
 						},
 						"automatic_backups": {
 							Type:        schema.TypeList,

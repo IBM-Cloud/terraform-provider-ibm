@@ -88,12 +88,10 @@ In addition to all argument references list, you can access the following attrib
       - `target` - (List) The regions that automatic backup copies are created in.
 
         Nested scheme for `target`:
-        - `region` - (String) The region the automatic backup copy is created in.
+        - `region` - (String) The region the automatic backup copy is created in.     
+        Supported regions and usecases  Please refer [API docs](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=terraform#independent-backups-crc).
 
-        **Use cases for CRC from eu-fr2 to eu-de:**
-        - Can manually copy both automatic and on-demand backups from `eu-fr2` to `eu-de` only.
-        - Cannot configure automatic backup copying between `eu-fr2` and `eu-de` DB instances.
-        - Cannot copy automatic or on-demand backups from `eu-de` to any region.
+
 - `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
   Nested scheme for `auto_scaling`:
