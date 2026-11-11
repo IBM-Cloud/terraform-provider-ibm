@@ -958,12 +958,9 @@ Review the argument reference that you can specify for your resource.
         ]
         ```
         Nested scheme for `target`:
-        - `region` - (Required, String) The region to create the automatic backup copy in, for example `ca-mon`.
+        - `region` - (Required, String) The region to create the automatic backup copy in, for example `ca-mon`.      
+        Supported regions and usecases  Please refer [API docs](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=terraform#independent-backups-crc).
 
-        **Use cases for CRC from eu-fr2 to eu-de:**
-        - Can manually copy both automatic and on-demand backups from `eu-fr2` to `eu-de` only.
-        - Cannot configure automatic backup copying between `eu-fr2` and `eu-de` DB instances.
-        - Cannot copy automatic or on-demand backups from `eu-de` to any region.
 
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`, and `messages-for-rabbitmq`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
