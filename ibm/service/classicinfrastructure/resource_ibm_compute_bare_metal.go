@@ -354,7 +354,7 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 
 			// Quote based provisioning, Monthly
 			"public_subnet": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
@@ -370,7 +370,7 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 
 			// Quote based provisioning, Monthly
 			"private_subnet": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
@@ -678,7 +678,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
-			"primaryVersion6IpAddressRecord[subnet,id]]," +
+			"primaryVersion6IpAddressRecord[subnet,id,ipAddress]]," +
 			"primaryBackendNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
 			"maxSpeed,redundancyEnabledFlag]," +
