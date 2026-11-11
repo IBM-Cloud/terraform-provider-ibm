@@ -177,6 +177,26 @@ resource "ibm_resource_instance" "openpages_instance" {
 }
 ```
 
+
+### Example to provision a independent backups instance for the data service
+The following example enables you to create a service instance of Independent Backups instance.
+
+```terraform
+resource "ibm_resource_instance" "backup" {
+  name              = "MyDataServiceBackupInstance"
+  service           = "databases-independent-backups"
+  plan              = "standard"
+  location          = "ca-mon"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  parameters_json = jsonencode({
+    dataservices     = {
+        source_dataservice_crn = var.source_dataservice_crn
+    }
+  })
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
