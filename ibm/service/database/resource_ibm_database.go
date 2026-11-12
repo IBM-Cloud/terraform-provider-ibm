@@ -392,7 +392,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional: true,
 			},
 			"async_restore": {
-				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance from backup_id. Gen2: Accepted but ignored (Classic-only feature).",
+				Description:      "Option to support FAST PG Restore. Only applicable to a point-in-time restore of a PostgreSQL instance (point_in_time_recovery_deployment_id and point_in_time_recovery_time) in the same region and major version as the source. Not supported with backup_id. Gen2: Accepted but ignored (Classic-only feature).",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
