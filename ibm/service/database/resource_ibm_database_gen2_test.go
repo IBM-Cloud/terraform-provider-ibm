@@ -3961,3 +3961,176 @@ func TestGen2ElasticsearchStandardGen2ResourceDataValid(t *testing.T) {
 	assert.True(t, isGen2Plan(d.Get("plan").(string)),
 		"standard-gen2 plan should be routed to the Gen2 backend")
 }
+
+// TestAutomaticBackupsSchemaDefinition verifies that the automatic_backups schema is
+// correctly defined in both resource and data source schemas.
+func TestAutomaticBackupsSchemaDefinition(t *testing.T) {
+	// Resource schema
+	resSchema := ResourceIBMDatabaseInstance().Schema
+	autoBackupRes, ok := resSchema["automatic_backups"]
+	assert.True(t, ok, "resource schema must contain 'automatic_backups'")
+	assert.Equal(t, schema.TypeList, autoBackupRes.Type)
+	assert.Equal(t, 1, autoBackupRes.MaxItems)
+	assert.True(t, autoBackupRes.Optional)
+	assert.True(t, autoBackupRes.Computed)
+
+	resFields := autoBackupRes.Elem.(*schema.Resource).Schema
+	assert.Contains(t, resFields, "enabled")
+	assert.Equal(t, schema.TypeBool, resFields["enabled"].Type)
+	assert.True(t, resFields["enabled"].Optional)
+	assert.True(t, resFields["enabled"].Computed)
+
+	// Data source schema
+	dsSchema := DataSourceIBMDatabaseInstance().Schema
+	autoBackupDS, ok := dsSchema["automatic_backups"]
+	assert.True(t, ok, "data source schema must contain 'automatic_backups'")
+	assert.Equal(t, schema.TypeList, autoBackupDS.Type)
+	assert.True(t, autoBackupDS.Computed)
+
+	dsFields := autoBackupDS.Elem.(*schema.Resource).Schema
+	assert.Contains(t, dsFields, "enabled")
+	assert.Equal(t, schema.TypeBool, dsFields["enabled"].Type)
+	assert.True(t, dsFields["enabled"].Computed)
+}
+
+// TestBuildGen2Parameters_AutomaticBackups verifies buildGen2Parameters includes automatic_backups
+// in dataservices on create when configured.
+func TestBuildGen2Parameters_AutomaticBackups(t *testing.T) {
+	t.Run("automatic_backups disabled on create", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service":  "databases-for-postgresql",
+			"plan":     "standard-gen2",
+			"name":     "test-pg-gen2",
+			"location": "us-south",
+			"group": []interface{}{
+				map[string]interface{}{
+					"group_id": "member",
+					"members": []interface{}{
+						map[string]interface{}{
+							"allocation_count": 2,
+						},
+					},
+					"disk": []interface{}{
+						map[string]interface{}{
+							"allocation_mb": 20480,
+						},
+					},
+				},
+			},
+			"automatic_backups": []interface{}{
+				map[string]interface{}{
+					"enabled": false,
+				},
+			},
+		})
+
+		backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+		params, err := backend.buildGen2Parameters(d, "databases-for-postgresql", nil, "")
+		assert.NoError(t, err)
+		assert.NotNil(t, params)
+
+		ds, ok := params["dataservices"].(map[string]interface{})
+		assert.True(t, ok, "dataservices must be present")
+		backups, ok := ds["backups"].(map[string]interface{})
+		assert.True(t, ok, "backups must be present")
+		autoBackups, ok := backups["automatic_backups"].(map[string]interface{})
+		assert.True(t, ok, "automatic_backups must be present")
+		assert.Equal(t, false, autoBackups["enabled"])
+	})
+
+	t.Run("automatic_backups enabled on create", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service":  "databases-for-postgresql",
+			"plan":     "standard-gen2",
+			"name":     "test-pg-gen2",
+			"location": "us-south",
+			"group": []interface{}{
+				map[string]interface{}{
+					"group_id": "member",
+					"members": []interface{}{
+						map[string]interface{}{
+							"allocation_count": 2,
+						},
+					},
+					"disk": []interface{}{
+						map[string]interface{}{
+							"allocation_mb": 20480,
+						},
+					},
+				},
+			},
+			"automatic_backups": []interface{}{
+				map[string]interface{}{
+					"enabled": true,
+				},
+			},
+		})
+
+		backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+		params, err := backend.buildGen2Parameters(d, "databases-for-postgresql", nil, "")
+		assert.NoError(t, err)
+		assert.NotNil(t, params)
+
+		ds, ok := params["dataservices"].(map[string]interface{})
+		assert.True(t, ok, "dataservices must be present")
+		backups, ok := ds["backups"].(map[string]interface{})
+		assert.True(t, ok, "backups must be present")
+		autoBackups, ok := backups["automatic_backups"].(map[string]interface{})
+		assert.True(t, ok, "automatic_backups must be present")
+		assert.Equal(t, true, autoBackups["enabled"])
+	})
+
+	t.Run("automatic_backups omitted on create", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service":  "databases-for-postgresql",
+			"plan":     "standard-gen2",
+			"name":     "test-pg-gen2",
+			"location": "us-south",
+			"group": []interface{}{
+				map[string]interface{}{
+					"group_id": "member",
+					"members": []interface{}{
+						map[string]interface{}{
+							"allocation_count": 2,
+						},
+					},
+					"disk": []interface{}{
+						map[string]interface{}{
+							"allocation_mb": 20480,
+						},
+					},
+				},
+			},
+		})
+
+		backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+		params, err := backend.buildGen2Parameters(d, "databases-for-postgresql", nil, "")
+		assert.NoError(t, err)
+		assert.NotNil(t, params)
+
+		ds, ok := params["dataservices"].(map[string]interface{})
+		assert.True(t, ok, "dataservices must be present")
+		_, ok = ds["backups"]
+		assert.False(t, ok, "backups should not be present when automatic_backups is not configured")
+	})
+}
+
+// TestDataSourceIBMDatabase_AutomaticBackups verifies setting automatic_backups on data source.
+func TestDataSourceIBMDatabase_AutomaticBackups(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, DataSourceIBMDatabaseInstance().Schema, map[string]interface{}{})
+	ext := map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			"backups": map[string]interface{}{
+				"automatic_backups": map[string]interface{}{
+					"enabled": false,
+				},
+			},
+		},
+	}
+	err := d.Set("automatic_backups", flattenAutomaticBackupsFromExtensions(ext))
+	assert.NoError(t, err)
+	autoBackups := d.Get("automatic_backups").([]interface{})
+	assert.Len(t, autoBackups, 1)
+	m := autoBackups[0].(map[string]interface{})
+	assert.Equal(t, false, m["enabled"])
+}

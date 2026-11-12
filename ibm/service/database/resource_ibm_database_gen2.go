@@ -362,6 +362,15 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Send automatic_backups on create if configured
+	if d.Id() == "" {
+		if autoBackups := buildAutomaticBackupsConfig(d, false); autoBackups != nil {
+			dataservices["backups"] = map[string]interface{}{
+				"automatic_backups": autoBackups,
+			}
+		}
+	}
+
 	// Handle maintenance window
 	g.addMaintenanceConfig(d, dataservices)
 
@@ -1021,6 +1030,11 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		}
 	}
 
+	// Set automatic_backups from instance extensions
+	if err := d.Set("automatic_backups", flattenAutomaticBackupsFromExtensions(instance.Extensions)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting automatic_backups: %w", err))
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -1222,6 +1236,36 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// applyAutomaticBackupsWithDiagnostics sends changed automatic_backups fields to the instance.
+func (g *resourceIBMDatabaseGen2Backend) applyAutomaticBackupsWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("automatic_backups") {
+		return nil
+	}
+
+	autoBackups := buildAutomaticBackupsConfig(d, true)
+	if autoBackups == nil {
+		return nil
+	}
+
+	params := map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			"backups": map[string]interface{}{
+				"automatic_backups": autoBackups,
+			},
+		},
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, d.Id(), params); err != nil {
+		return diagError("error applying automatic_backups update: %s", err)
+	}
+
+	if _, err := g.waitForGen2InstanceUpdate(d, meta); err != nil {
+		return diagError("error waiting for automatic_backups update to complete: %s", err)
+	}
+
+	return nil
+}
+
 // buildPromoteParameters builds the PATCH parameters that promote a read replica, or commit a MongoSync migration for mongodbees.
 func buildPromoteParameters(dbType string) map[string]interface{} {
 	dbParams := map[string]interface{}{
@@ -1328,6 +1372,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.applyAutomaticBackupsWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 

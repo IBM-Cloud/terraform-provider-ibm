@@ -985,9 +985,29 @@ func hasIndependentBackups(extensions map[string]interface{}) bool {
 	if !ok {
 		return false
 	}
-	backups, exists := dataservices["backups"]
-	return exists && backups != nil
+	backupsRaw, exists := dataservices["backups"]
+	if !exists || backupsRaw == nil {
+		return false
+	}
+	backups, ok := backupsRaw.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {
+		if enabled, exists := auto["enabled"]; exists && enabled != nil {
+			if !isTruthy(enabled) {
+				return false
+			}
+		}
+	}
+	return true
 }
+
+
+
+
+
+
 
 // checkS2SAuthorization returns true only when both "independent_backups" and
 // "resource_group" authorizations are present and truthy in the RC extensions map.
@@ -1020,6 +1040,60 @@ func isTruthy(v interface{}) bool {
 		return val == "true"
 	}
 	return false
+}
+
+const automaticBackupsEnabledPath = "automatic_backups.0.enabled"
+
+// isAutomaticBackupsConfigured reports whether an automatic_backups block is present in the resource data.
+func isAutomaticBackupsConfigured(d interface{ Get(string) interface{} }) bool {
+	list, ok := d.Get("automatic_backups").([]interface{})
+	return ok && len(list) > 0
+}
+
+// buildAutomaticBackupsConfig builds the automatic_backups payload. When onlyChanged is true (update),
+// it returns nil if enabled has not changed.
+func buildAutomaticBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]interface{} {
+	if !isAutomaticBackupsConfigured(d) {
+		return nil
+	}
+	if onlyChanged && !d.HasChange(automaticBackupsEnabledPath) {
+		return nil
+	}
+
+	if v, ok := d.GetOkExists(automaticBackupsEnabledPath); ok {
+		return map[string]interface{}{
+			"enabled": v.(bool),
+		}
+	}
+	return nil
+}
+
+// flattenAutomaticBackupsFromExtensions maps automatic_backups from instance extensions into the schema block.
+func flattenAutomaticBackupsFromExtensions(extensions map[string]interface{}) []interface{} {
+	if extensions == nil {
+		return nil
+	}
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	backups, ok := dataservices["backups"].(map[string]interface{})
+	if !ok || backups == nil {
+		return nil
+	}
+	auto, ok := backups["automatic_backups"].(map[string]interface{})
+	if !ok || auto == nil {
+		return nil
+	}
+
+	result := map[string]interface{}{}
+	if v, exists := auto["enabled"]; exists && v != nil {
+		result["enabled"] = isTruthy(v)
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return []interface{}{result}
 }
 
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
