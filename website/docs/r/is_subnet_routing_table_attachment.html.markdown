@@ -72,13 +72,14 @@ Incoming traffic will be routed according to the routing table with one exceptio
 - `routes` - (List) The routes for this routing table.
 
   Nested scheme for `routes`:
-  - `href` - (List) The URL for this route.
-  - `id` - (List) The unique identifier for this route.
-  - `name` - (List) The user-defined name for this route.
+  - `href` - (String) The URL for this route.
+  - `id` - (String) The unique identifier for this route.
+  - `name` - (String) The user-defined name for this route.
 
 - `subnets` - (List) The subnets to which this routing table is attached.
 
   Nested scheme for `subnets`:
+  - `href` - (String) The URL for this subnet.
   - `id` - (String) The unique identifier for this subnet.
   - `name` - (String) The user-defined name for this subnet.
 

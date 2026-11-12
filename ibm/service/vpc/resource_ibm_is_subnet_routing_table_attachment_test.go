@@ -37,6 +37,41 @@ func TestAccIBMISSubnetRoutingTableAttachment_basic(t *testing.T) {
 						"ibm_is_subnet_routing_table_attachment.attach", "resource_type"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_subnet_routing_table_attachment.attach", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "subnets.0.href"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISSubnetRoutingTableAttachment_hrefWithRoutes(t *testing.T) {
+	var subnetRT string
+	rtname := fmt.Sprintf("tfrt-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tfvpc-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfsubnet-vpc-%d", acctest.RandIntRange(10, 100))
+	routename := fmt.Sprintf("tfroute-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkSubnetRoutingTableAttachmentDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISSubnetRoutingTableAttachmentRouteConfig(rtname, subnetname, vpcname, routename, acc.ISZoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSubnetRoutingTableAttachmentExists("ibm_is_subnet_routing_table_attachment.attach", subnetRT),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "routes.0.href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "routes.0.id"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet_routing_table_attachment.attach", "routes.0.name", routename),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_subnet_routing_table_attachment.attach", "subnets.0.href"),
 				),
 			},
 		},
@@ -139,6 +174,42 @@ func testAccCheckIBMISSubnetRoutingTableAttachmentConfig(rtname, subnetname, vpc
 	  }
 
 	`, vpcname, rtname, subnetname, zone)
+}
+
+func testAccCheckIBMISSubnetRoutingTableAttachmentRouteConfig(rtname, subnetname, vpcname, routename, zone string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_vpc_routing_table" "testacc_vpc_routing_table" {
+		vpc = ibm_is_vpc.testacc_vpc.id
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		total_ipv4_address_count  = 16
+	}
+
+	resource "ibm_is_vpc_routing_table_route" "testacc_route" {
+		vpc           = ibm_is_vpc.testacc_vpc.id
+		routing_table = ibm_is_vpc_routing_table.testacc_vpc_routing_table.routing_table
+		name          = "%s"
+		zone          = "%s"
+		destination   = "10.240.0.0/24"
+		action        = "drop"
+		next_hop      = "0.0.0.0"
+	}
+
+	resource "ibm_is_subnet_routing_table_attachment" "attach" {
+		depends_on = [ibm_is_vpc_routing_table_route.testacc_route, ibm_is_subnet.testacc_subnet]
+		subnet      = ibm_is_subnet.testacc_subnet.id
+		routing_table = ibm_is_vpc_routing_table.testacc_vpc_routing_table.routing_table
+	  }
+
+	`, vpcname, rtname, subnetname, zone, routename, zone)
 }
 
 func testAccCheckIBMISSubnetRoutingTableAttachmentCRNConfig(rtname, subnetname, vpcname, zone string) string {

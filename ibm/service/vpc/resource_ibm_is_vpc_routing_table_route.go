@@ -304,7 +304,7 @@ func resourceIBMISVPCRoutingTableRouteRead(context context.Context, d *schema.Re
 
 	d.Set(rID, *route.ID)
 	if route.Advertise != nil {
-		d.Set("Advertise", route.Advertise)
+		d.Set("advertise", route.Advertise)
 	}
 	if err = d.Set(rName, *route.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "ibm_is_vpc_routing_table_route", "read", "set-name").GetDiag()

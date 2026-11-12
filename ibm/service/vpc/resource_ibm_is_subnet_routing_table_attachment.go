@@ -70,6 +70,12 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 				Description: "he lifecycle state of the routing table [ deleting, failed, pending, stable, suspended, updating, waiting ]",
 			},
 
+			rtHref: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL for this routing table.",
+			},
+
 			isRoutingTableName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -98,6 +104,11 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						rtHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this subnet.",
+						},
 						rtName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -117,6 +128,11 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						rtHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this route.",
+						},
 						rtName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -227,6 +243,10 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if err = d.Set(rtHref, subRT.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-href").GetDiag()
+	}
 	if err = d.Set(isRoutingTableName, *subRT.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_routing_table_attachment", "read", "set-name").GetDiag()
@@ -275,6 +295,7 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 
 	for _, s := range subRT.Subnets {
 		subnet := make(map[string]interface{})
+		subnet[rtHref] = *s.Href
 		subnet[ID] = *s.ID
 		subnet["name"] = *s.Name
 		subnets = append(subnets, subnet)
@@ -286,6 +307,7 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 	routes := make([]map[string]interface{}, 0)
 	for _, s := range subRT.Routes {
 		route := make(map[string]interface{})
+		route[rtHref] = *s.Href
 		route[ID] = *s.ID
 		route["name"] = *s.Name
 		routes = append(routes, route)
