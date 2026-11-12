@@ -1003,12 +1003,6 @@ func hasIndependentBackups(extensions map[string]interface{}) bool {
 	return true
 }
 
-
-
-
-
-
-
 // checkS2SAuthorization returns true only when both "independent_backups" and
 // "resource_group" authorizations are present and truthy in the RC extensions map.
 // The authorizations are nested under extensions["dataservices"]["authorizations"].
