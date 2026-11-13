@@ -291,14 +291,14 @@ func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
 	}
 }
 
-func TestDbConfigToMap_membersExcludedAndShardsIncludedForMongodbees(t *testing.T) {
+func TestDbConfigToMap_membersIncludedAndShardsIncludedForMongodbees(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 	config := DBConfig{Members: 3, Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
 
 	result := g.dbConfigToMap(config, "mongodbees")
 
-	if _, ok := result["members"]; ok {
-		t.Fatalf("expected 'members' to be absent for dbType 'mongodbees', got %v", result["members"])
+	if result["members"] != 3 {
+		t.Fatalf("expected members=3 for dbType 'mongodbees', got %v", result["members"])
 	}
 	if result["shards"] != 2 {
 		t.Fatalf("expected shards=2, got %v", result["shards"])
