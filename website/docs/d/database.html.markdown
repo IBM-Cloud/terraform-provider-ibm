@@ -55,7 +55,7 @@ In addition to all argument references list, you can access the following attrib
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
 - `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
-- `automatic_backups` - (List) Controls the daily automatic configuration for the instance. Applicable to Gen2 plans only.
+- `automatic_backups` - (List) Controls the daily automatic backup configuration for the instance. Applicable to Gen2 plans only.
 
   Nested scheme for `automatic_backups`:
   - `enabled` - (Boolean) Whether daily automatic backups are enabled.

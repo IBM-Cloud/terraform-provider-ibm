@@ -3674,6 +3674,88 @@ func TestClassicPlanRejectsMaintenance(t *testing.T) {
 	}
 }
 
+// TestClassicPlanRejectsAutomaticBackups verifies that the Classic backend's
+// ValidateUnsupportedAttrsDiff returns an error when the automatic_backups block is set,
+// enforcing that automatic_backups is a Gen2-only feature.
+func TestClassicPlanRejectsAutomaticBackups(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+
+	tests := []struct {
+		name        string
+		raw         map[string]interface{}
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name: "classic_with_automatic_backups_errors",
+			raw: map[string]interface{}{
+				"service":  "databases-for-postgresql",
+				"plan":     "standard",
+				"name":     "test-db",
+				"location": "us-south",
+				"automatic_backups": []interface{}{
+					map[string]interface{}{
+						"enabled": false,
+					},
+				},
+			},
+			wantErr:     true,
+			errContains: "automatic_backups",
+		},
+		{
+			name: "classic_without_automatic_backups_ok",
+			raw: map[string]interface{}{
+				"service":  "databases-for-postgresql",
+				"plan":     "standard",
+				"name":     "test-db",
+				"location": "us-south",
+			},
+			wantErr: false,
+		},
+		{
+			name: "gen2_with_automatic_backups_ok",
+			raw: map[string]interface{}{
+				"service":  "databases-for-postgresql",
+				"plan":     "standard-gen2",
+				"name":     "test-db",
+				"location": "us-south",
+				"automatic_backups": []interface{}{
+					map[string]interface{}{
+						"enabled": false,
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, resourceSchema, tt.raw)
+
+			plan := tt.raw["plan"].(string)
+			var err error
+			if !isGen2Plan(plan) {
+				for _, attr := range classicUnsupportedAttrs {
+					if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
+						err = fmt.Errorf("attribute %q is only supported for Gen2 database plans and cannot be used with Classic plans", attr)
+						break
+					}
+				}
+			}
+
+			if tt.wantErr {
+				assert.Error(t, err, "expected error for test case %q", tt.name)
+				if tt.errContains != "" {
+					assert.Contains(t, err.Error(), tt.errContains)
+				}
+			} else {
+				assert.NoError(t, err, "unexpected error for test case %q", tt.name)
+			}
+		})
+	}
+}
+
 // TestGen2ValidateMaintenanceWindowDiffOnBackend verifies the Gen2 backend's
 // ValidateMaintenanceWindowDiff method directly, using the same logic as the
 // production validator but driven through the raw field values.

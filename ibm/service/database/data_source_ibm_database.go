@@ -137,7 +137,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			"automatic_backups": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Controls the daily automatic configuration for the instance.",
+				Description: "Controls the daily automatic backup configuration for the instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {

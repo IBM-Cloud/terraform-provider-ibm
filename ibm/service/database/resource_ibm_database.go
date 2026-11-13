@@ -427,7 +427,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
-				Description: "Controls the daily automatic configuration for the instance.",
+				Description: "Controls the daily automatic backup configuration for the instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {

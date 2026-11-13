@@ -1,0 +1,168 @@
+diff --git a/ibm/service/database/data_source_ibm_database.go b/ibm/service/database/data_source_ibm_database.go
+index 9a9516aee..81f7e0149 100644
+--- a/ibm/service/database/data_source_ibm_database.go
++++ b/ibm/service/database/data_source_ibm_database.go
+@@ -137,7 +137,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
+ 			"automatic_backups": {
+ 				Type:        schema.TypeList,
+ 				Computed:    true,
+-				Description: "Controls the daily automatic configuration for the instance.",
++				Description: "Controls the daily automatic backup configuration for the instance.",
+ 				Elem: &schema.Resource{
+ 					Schema: map[string]*schema.Schema{
+ 						"enabled": {
+diff --git a/ibm/service/database/resource_ibm_database.go b/ibm/service/database/resource_ibm_database.go
+index f3c7edb06..87aac7ce0 100644
+--- a/ibm/service/database/resource_ibm_database.go
++++ b/ibm/service/database/resource_ibm_database.go
+@@ -427,7 +427,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
+ 				Optional:    true,
+ 				Computed:    true,
+ 				MaxItems:    1,
+-				Description: "Controls the daily automatic configuration for the instance.",
++				Description: "Controls the daily automatic backup configuration for the instance.",
+ 				Elem: &schema.Resource{
+ 					Schema: map[string]*schema.Schema{
+ 						"enabled": {
+diff --git a/ibm/service/database/resource_ibm_database_classic.go b/ibm/service/database/resource_ibm_database_classic.go
+index e61b80d55..e1bf778a1 100644
+--- a/ibm/service/database/resource_ibm_database_classic.go
++++ b/ibm/service/database/resource_ibm_database_classic.go
+@@ -13,6 +13,7 @@ import (
+ var classicUnsupportedAttrs = []string{
+ 	"shards",
+ 	"maintenance",
++	"automatic_backups",
+ }
+ 
+ type resourceIBMDatabaseClassicBackend struct{}
+diff --git a/ibm/service/database/resource_ibm_database_classic_test.go b/ibm/service/database/resource_ibm_database_classic_test.go
+index 8f4c944ea..7680aedff 100644
+--- a/ibm/service/database/resource_ibm_database_classic_test.go
++++ b/ibm/service/database/resource_ibm_database_classic_test.go
+@@ -839,6 +839,19 @@ func TestClassicBackendValidateUnsupportedAttrsDiff(t *testing.T) {
+ 			expectError:   true,
+ 			errorContains: "shards",
+ 		},
++		{
++			name:        "automatic_backups_not_set",
++			attr:        "automatic_backups",
++			configured:  false,
++			expectError: false,
++		},
++		{
++			name:          "automatic_backups_set_on_classic",
++			attr:          "automatic_backups",
++			configured:    true,
++			expectError:   true,
++			errorContains: "automatic_backups",
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
+diff --git a/ibm/service/database/resource_ibm_database_gen2_test.go b/ibm/service/database/resource_ibm_database_gen2_test.go
+index 08d1a32b6..1ee4d7371 100644
+--- a/ibm/service/database/resource_ibm_database_gen2_test.go
++++ b/ibm/service/database/resource_ibm_database_gen2_test.go
+@@ -3674,6 +3674,88 @@ func TestClassicPlanRejectsMaintenance(t *testing.T) {
+ 	}
+ }
+ 
++// TestClassicPlanRejectsAutomaticBackups verifies that the Classic backend's
++// ValidateUnsupportedAttrsDiff returns an error when the automatic_backups block is set,
++// enforcing that automatic_backups is a Gen2-only feature.
++func TestClassicPlanRejectsAutomaticBackups(t *testing.T) {
++	resourceSchema := ResourceIBMDatabaseInstance().Schema
++
++	tests := []struct {
++		name        string
++		raw         map[string]interface{}
++		wantErr     bool
++		errContains string
++	}{
++		{
++			name: "classic_with_automatic_backups_errors",
++			raw: map[string]interface{}{
++				"service":  "databases-for-postgresql",
++				"plan":     "standard",
++				"name":     "test-db",
++				"location": "us-south",
++				"automatic_backups": []interface{}{
++					map[string]interface{}{
++						"enabled": false,
++					},
++				},
++			},
++			wantErr:     true,
++			errContains: "automatic_backups",
++		},
++		{
++			name: "classic_without_automatic_backups_ok",
++			raw: map[string]interface{}{
++				"service":  "databases-for-postgresql",
++				"plan":     "standard",
++				"name":     "test-db",
++				"location": "us-south",
++			},
++			wantErr: false,
++		},
++		{
++			name: "gen2_with_automatic_backups_ok",
++			raw: map[string]interface{}{
++				"service":  "databases-for-postgresql",
++				"plan":     "standard-gen2",
++				"name":     "test-db",
++				"location": "us-south",
++				"automatic_backups": []interface{}{
++					map[string]interface{}{
++						"enabled": false,
++					},
++				},
++			},
++			wantErr: false,
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			d := schema.TestResourceDataRaw(t, resourceSchema, tt.raw)
++
++			plan := tt.raw["plan"].(string)
++			var err error
++			if !isGen2Plan(plan) {
++				for _, attr := range classicUnsupportedAttrs {
++					if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
++						err = fmt.Errorf("attribute %q is only supported for Gen2 database plans and cannot be used with Classic plans", attr)
++						break
++					}
++				}
++			}
++
++			if tt.wantErr {
++				assert.Error(t, err, "expected error for test case %q", tt.name)
++				if tt.errContains != "" {
++					assert.Contains(t, err.Error(), tt.errContains)
++				}
++			} else {
++				assert.NoError(t, err, "unexpected error for test case %q", tt.name)
++			}
++		})
++	}
++}
++
+ // TestGen2ValidateMaintenanceWindowDiffOnBackend verifies the Gen2 backend's
+ // ValidateMaintenanceWindowDiff method directly, using the same logic as the
+ // production validator but driven through the raw field values.
+diff --git a/website/docs/d/database.html.markdown b/website/docs/d/database.html.markdown
+index 2030470b2..3fecd91c9 100644
+--- a/website/docs/d/database.html.markdown
++++ b/website/docs/d/database.html.markdown
+@@ -55,7 +55,7 @@ In addition to all argument references list, you can access the following attrib
+ - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
+ - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
+ - `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
+-- `automatic_backups` - (List) Controls the daily automatic configuration for the instance. Applicable to Gen2 plans only.
++- `automatic_backups` - (List) Controls the daily automatic backup configuration for the instance. Applicable to Gen2 plans only.
+ 
+   Nested scheme for `automatic_backups`:
+   - `enabled` - (Boolean) Whether daily automatic backups are enabled.
