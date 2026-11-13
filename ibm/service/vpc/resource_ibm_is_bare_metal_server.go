@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -116,6 +117,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 					return flex.ResourceTagsCustomizeDiff(diff)
 				},
 			),
+			customdiff.Sequence(resourceIBMISBareMetalServerNetworkAttachmentsOrderDiff),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceValidateAccessTags(diff, v)
@@ -1710,24 +1712,24 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 	if _, ok := d.GetOk("primary_network_attachment"); ok {
 		primarynetworkAttachmentsIntf := d.Get("primary_network_attachment")
-		i := 0
-		allowipspoofing := fmt.Sprintf("primary_network_attachment.0.virtual_network_interface.%d.allow_ip_spoofing", i)
-		autodelete := fmt.Sprintf("primary_network_attachment.0.virtual_network_interface.%d.autodelete", i)
-		enablenat := fmt.Sprintf("primary_network_attachment.0.virtual_network_interface.%d.enable_infrastructure_nat", i)
+		allowipspoofing := "primary_network_attachment.0.virtual_network_interface.0.allow_ip_spoofing"
+		autodelete := "primary_network_attachment.0.virtual_network_interface.0.auto_delete"
+		enablenat := "primary_network_attachment.0.virtual_network_interface.0.enable_infrastructure_nat"
 		primaryNetworkAttachmentModel, err := resourceIBMIsBareMetalServerMapToBareMetalServerPrimaryNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primarynetworkAttachmentsIntf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "create", "parse-primary_network_attachment").GetDiag()
 		}
 		options.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
-	if i, ok := d.GetOk("network_attachments"); ok {
-		allowipspoofing := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.allow_ip_spoofing", i)
-		autodelete := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.autodelete", i)
-		enablenat := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
-		allowfloat := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.allow_to_float", i)
+	if _, ok := d.GetOk("network_attachments"); ok {
 		networkAttachmentsIntf := d.Get("network_attachments")
 		networkAttachments := []vpcv1.BareMetalServerNetworkAttachmentPrototypeIntf{}
-		for _, networkAttachmentsItem := range networkAttachmentsIntf.([]interface{}) {
+		for i, networkAttachmentsItem := range networkAttachmentsIntf.([]interface{}) {
+			// Send a flag only when the configuration sets it.
+			allowipspoofing := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.allow_ip_spoofing", i)
+			autodelete := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.auto_delete", i)
+			enablenat := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
+			allowfloat := fmt.Sprintf("network_attachments.%d.allow_to_float", i)
 			networkAttachmentsItemModel, err := resourceIBMIsBareMetalServerMapToBareMetalServerNetworkAttachmentPrototype(allowipspoofing, allowfloat, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "create", "parse-network_attachments").GetDiag()
@@ -2788,6 +2790,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				networkAttachments = append(networkAttachments, networkAttachmentsItemMap)
 			}
 		}
+		networkAttachments = orderBareMetalServerNetworkAttachments(networkAttachments, d.Get("network_attachments"))
 		if err = d.Set("network_attachments", networkAttachments); err != nil {
 			err = fmt.Errorf("Error setting network_attachments: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-network_attachments").GetDiag()
@@ -4900,6 +4903,10 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 	case "*vpcv1.BareMetalServerNetworkAttachmentByPci":
 		{
 			vna := na.(*vpcv1.BareMetalServerNetworkAttachmentByPci)
+			modelMap["interface_type"] = "pci"
+			if vna.InterfaceType != nil {
+				modelMap["interface_type"] = *vna.InterfaceType
+			}
 			if vna.AllowedVlans != nil {
 				var out = make([]interface{}, len(vna.AllowedVlans))
 				for i, v := range vna.AllowedVlans {
@@ -4918,6 +4925,10 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 	case "*vpcv1.BareMetalServerNetworkAttachmentByVlan":
 		{
 			vna := na.(*vpcv1.BareMetalServerNetworkAttachmentByVlan)
+			modelMap["interface_type"] = "vlan"
+			if vna.InterfaceType != nil {
+				modelMap["interface_type"] = *vna.InterfaceType
+			}
 			if vna.Vlan != nil {
 				modelMap["vlan"] = *vna.Vlan
 			}
@@ -4935,6 +4946,9 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 	default:
 		{
 			vna := na.(*vpcv1.BareMetalServerNetworkAttachment)
+			if vna.InterfaceType != nil {
+				modelMap["interface_type"] = *vna.InterfaceType
+			}
 			if vna.VirtualNetworkInterface != nil {
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
@@ -5252,6 +5266,51 @@ func resourceIBMIsBareMetalServerMapToBareMetalServerNetworkAttachmentPrototypeB
 	return model, nil
 }
 
+// orderBareMetalServerNetworkAttachments keeps network_attachments in a
+// stable order: the API returns them in a changing order. Rows already in
+// state keep their position; new rows follow, sorted by name.
+func orderBareMetalServerNetworkAttachments(fetched []map[string]interface{}, prior interface{}) []map[string]interface{} {
+	position := map[string]int{}
+	if priorList, ok := prior.([]interface{}); ok {
+		for i, item := range priorList {
+			if m, ok := item.(map[string]interface{}); ok {
+				if name, ok := m["name"].(string); ok && name != "" {
+					if _, seen := position[name]; !seen {
+						position[name] = i
+					}
+				}
+			}
+		}
+	}
+	nameOf := func(m map[string]interface{}) string {
+		switch v := m["name"].(type) {
+		case string:
+			return v
+		case *string:
+			if v != nil {
+				return *v
+			}
+		}
+		return ""
+	}
+	ordered := make([]map[string]interface{}, len(fetched))
+	copy(ordered, fetched)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		nameI, nameJ := nameOf(ordered[i]), nameOf(ordered[j])
+		posI, knownI := position[nameI]
+		posJ, knownJ := position[nameJ]
+		switch {
+		case knownI && knownJ:
+			return posI < posJ
+		case knownI != knownJ:
+			return knownI
+		default:
+			return nameI < nameJ
+		}
+	})
+	return ordered
+}
+
 func findNetworkAttachmentDifferences(oldList, newList []interface{}, bareMetalServerId string, sess *vpcv1.VpcV1, d *schema.ResourceData) ([]vpcv1.DeleteBareMetalServerNetworkAttachmentOptions, []vpcv1.CreateBareMetalServerNetworkAttachmentOptions, bool, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -5261,44 +5320,58 @@ func findNetworkAttachmentDifferences(oldList, newList []interface{}, bareMetalS
 	var err error
 	var serverRestartNeeded bool
 
+	// Pair state rows with plan rows by name, then by id.
+	matches := matchNetworkAttachments(oldList, newList)
+
+	var removeRestart, addRestart bool
 	go func() {
-		listToDelete, serverRestartNeeded = compareRemovedNacs(oldList, newList, bareMetalServerId)
+		listToDelete, removeRestart = compareRemovedNacs(oldList, newList, bareMetalServerId, matches)
 		wg.Done()
 	}()
 
 	go func() {
-		listToAdd, serverRestartNeeded = compareAddedNacs(oldList, newList, bareMetalServerId)
+		listToAdd, addRestart = compareAddedNacs(oldList, newList, bareMetalServerId, matches, d)
 		wg.Done()
 	}()
 
 	go func() {
-		err = compareModifiedNacs(oldList, newList, bareMetalServerId, sess, d)
+		err = compareModifiedNacs(oldList, newList, bareMetalServerId, sess, d, matches)
 		wg.Done()
 	}()
 
 	wg.Wait()
+	serverRestartNeeded = removeRestart || addRestart
 	return listToDelete, listToAdd, serverRestartNeeded, err
 }
-func compareRemovedNacs(oldList, newList []interface{}, bareMetalServerId string) ([]vpcv1.DeleteBareMetalServerNetworkAttachmentOptions, bool) {
-	var removed []vpcv1.DeleteBareMetalServerNetworkAttachmentOptions
-	newListMap := make(map[string]struct{})
-	restartNeeded := false
-	for _, newListitem := range newList {
-		newListitemMap := newListitem.(map[string]interface{})
-		// list of ids in new list
-		if newListitemMap["id"] != nil && newListitemMap["id"].(string) != "" {
-			newListMap[newListitemMap["id"].(string)] = struct{}{}
-		}
+
+// bareMetalServerNetworkAttachmentIsPci reports whether a state row is a PCI
+// attachment, which needs the server stopped to be deleted. Older state has
+// no interface_type, so a row without a VLAN id counts as PCI.
+func bareMetalServerNetworkAttachmentIsPci(row map[string]interface{}) bool {
+	if interfaceType, ok := row["interface_type"].(string); ok && interfaceType != "" {
+		return interfaceType == "pci"
 	}
-	// find the ids missing in the oldList, difference are the ones to be removed
-	for _, oldListitem1 := range oldList {
+	if vlan, ok := row["vlan"].(int); ok && vlan != 0 {
+		return false
+	}
+	return true
+}
+
+// compareRemovedNacs returns a delete for every state row not in the plan.
+func compareRemovedNacs(oldList, newList []interface{}, bareMetalServerId string, matches map[int]int) ([]vpcv1.DeleteBareMetalServerNetworkAttachmentOptions, bool) {
+	var removed []vpcv1.DeleteBareMetalServerNetworkAttachmentOptions
+	restartNeeded := false
+	for i, oldListitem1 := range oldList {
 		oldListitemMap := oldListitem1.(map[string]interface{})
-		if _, exists := newListMap[oldListitemMap["id"].(string)]; !exists {
+		if oldListitemMap["id"] == nil || oldListitemMap["id"].(string) == "" {
+			continue
+		}
+		if _, exists := matches[i]; !exists {
 			deleteNac := &vpcv1.DeleteBareMetalServerNetworkAttachmentOptions{
 				BareMetalServerID: &bareMetalServerId,
 				ID:                core.StringPtr(oldListitemMap["id"].(string)),
 			}
-			if oldListitemMap["interface_type"].(string) == "pci" {
+			if bareMetalServerNetworkAttachmentIsPci(oldListitemMap) {
 				restartNeeded = true
 			}
 			removed = append(removed, *deleteNac)
@@ -5307,15 +5380,23 @@ func compareRemovedNacs(oldList, newList []interface{}, bareMetalServerId string
 	return removed, restartNeeded
 }
 
-func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) ([]vpcv1.CreateBareMetalServerNetworkAttachmentOptions, bool) {
+// compareAddedNacs returns a create for every plan row not in state.
+func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string, matches map[int]int, d *schema.ResourceData) ([]vpcv1.CreateBareMetalServerNetworkAttachmentOptions, bool) {
 	var added []vpcv1.CreateBareMetalServerNetworkAttachmentOptions
 
+	matched := map[int]bool{}
+	for _, j := range matches {
+		matched[j] = true
+	}
 	restartNeeded := false
-	// the nac(s) which dont have the id are to be created
-	for _, newListitem := range newList {
+	for j, newListitem := range newList {
 		newListitemmMap := newListitem.(map[string]interface{})
-		// if _, exists := oldListMap[newListitemmMap["name"].(string)]; !exists {
-		if (newListitemmMap["id"] == nil) || (newListitemmMap["id"] != nil && newListitemmMap["id"].(string) == "") {
+		if !matched[j] {
+			// Send a VNI flag only when the configuration sets it.
+			cfgVNI := map[string]interface{}{}
+			if cfgVNIs, ok := networkAttachmentFromConfig(d, j)["virtual_network_interface"].([]interface{}); ok && len(cfgVNIs) > 0 {
+				cfgVNI, _ = cfgVNIs[0].(map[string]interface{})
+			}
 			addNac := &vpcv1.CreateBareMetalServerNetworkAttachmentOptions{
 				BareMetalServerID: &bareMetalServerId,
 			}
@@ -5333,14 +5414,14 @@ func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) 
 				if newListitemmMap["virtual_network_interface"] != nil {
 					newListItemVniMap := newListitemmMap["virtual_network_interface"].([]interface{})[0].(map[string]interface{})
 					virtualNetworkInterface := &vpcv1.BareMetalServerNetworkAttachmentPrototypeVirtualNetworkInterface{}
-					if newListItemVniMap["allow_ip_spoofing"] != nil {
-						virtualNetworkInterface.AllowIPSpoofing = core.BoolPtr(newListItemVniMap["allow_ip_spoofing"].(bool))
+					if v, ok := cfgVNI["allow_ip_spoofing"].(bool); ok {
+						virtualNetworkInterface.AllowIPSpoofing = core.BoolPtr(v)
 					}
-					if newListItemVniMap["auto_delete"] != nil {
-						virtualNetworkInterface.AutoDelete = core.BoolPtr(newListItemVniMap["auto_delete"].(bool))
+					if v, ok := cfgVNI["auto_delete"].(bool); ok {
+						virtualNetworkInterface.AutoDelete = core.BoolPtr(v)
 					}
-					if newListItemVniMap["enable_infrastructure_nat"] != nil {
-						virtualNetworkInterface.EnableInfrastructureNat = core.BoolPtr(newListItemVniMap["enable_infrastructure_nat"].(bool))
+					if v, ok := cfgVNI["enable_infrastructure_nat"].(bool); ok {
+						virtualNetworkInterface.EnableInfrastructureNat = core.BoolPtr(v)
 					}
 					if newListItemVniMap["ips"] != nil && newListItemVniMap["ips"].(*schema.Set).Len() > 0 {
 						ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
@@ -5422,14 +5503,14 @@ func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) 
 				if newListitemmMap["virtual_network_interface"] != nil {
 					newListVniitemmMap := newListitemmMap["virtual_network_interface"].([]interface{})[0].(map[string]interface{})
 					virtualNetworkInterface := &vpcv1.BareMetalServerNetworkAttachmentPrototypeVirtualNetworkInterface{}
-					if newListVniitemmMap["allow_ip_spoofing"] != nil {
-						virtualNetworkInterface.AllowIPSpoofing = core.BoolPtr(newListVniitemmMap["allow_ip_spoofing"].(bool))
+					if v, ok := cfgVNI["allow_ip_spoofing"].(bool); ok {
+						virtualNetworkInterface.AllowIPSpoofing = core.BoolPtr(v)
 					}
-					if newListVniitemmMap["auto_delete"] != nil {
-						virtualNetworkInterface.AutoDelete = core.BoolPtr(newListVniitemmMap["auto_delete"].(bool))
+					if v, ok := cfgVNI["auto_delete"].(bool); ok {
+						virtualNetworkInterface.AutoDelete = core.BoolPtr(v)
 					}
-					if newListVniitemmMap["enable_infrastructure_nat"] != nil {
-						virtualNetworkInterface.EnableInfrastructureNat = core.BoolPtr(newListVniitemmMap["enable_infrastructure_nat"].(bool))
+					if v, ok := cfgVNI["enable_infrastructure_nat"].(bool); ok {
+						virtualNetworkInterface.EnableInfrastructureNat = core.BoolPtr(v)
 					}
 					if newListVniitemmMap["ips"] != nil && newListVniitemmMap["ips"].(*schema.Set).Len() > 0 {
 						ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
@@ -5514,22 +5595,19 @@ func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) 
 	return added, restartNeeded
 }
 
-func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId string, sess *vpcv1.VpcV1, d *schema.ResourceData) error {
-	list2Map := make(map[string]interface{})
-
-	for _, newListitem := range newList {
-		newListitemMap := newListitem.(map[string]interface{})
-		if newListitemMap["id"] != nil && newListitemMap["id"] != "" {
-			list2Map[newListitemMap["id"].(string)] = newListitem
-		}
-	}
-
-	for _, oldListitem1 := range oldList {
+// compareModifiedNacs patches every paired attachment, and its VNI, whose
+// plan row differs from its state row. A plan row that carries another
+// row's computed values is replaced by the configured row first.
+func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId string, sess *vpcv1.VpcV1, d *schema.ResourceData, matches map[int]int) error {
+	for i, oldListitem1 := range oldList {
 		oldListitemMap := oldListitem1.(map[string]interface{})
-		if oldListitemMap["id"] != nil {
-			if oldListitem2, exists := list2Map[oldListitemMap["id"].(string)]; exists {
+		if oldListitemMap["id"] != nil && oldListitemMap["id"].(string) != "" {
+			if j, exists := matches[i]; exists {
 				s1 := oldListitem1.(map[string]interface{})
-				s2 := oldListitem2.(map[string]interface{})
+				s2 := newList[j].(map[string]interface{})
+				if networkAttachmentShifted(s1, s2) {
+					s2 = networkAttachmentFromConfig(d, j)
+				}
 				id := s1["id"].(string)
 				modilfiedNac := &vpcv1.UpdateBareMetalServerNetworkAttachmentOptions{
 					BareMetalServerID: &bareMetalServerId,
