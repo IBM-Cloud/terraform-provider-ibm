@@ -16,6 +16,7 @@ import (
 	gohttp "net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -1327,6 +1328,15 @@ func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecover
 	return session.backupRecoveryClient, session.backupRecoveryClientErr
 }
 
+// backupRecoveryConnectorSkipTLSVerify reports whether the user has explicitly
+// opted out of TLS certificate verification for the Backup Recovery connector
+// client by setting IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY to a
+// true value. Verification is enabled by default.
+func backupRecoveryConnectorSkipTLSVerify() bool {
+	skipVerify, err := strconv.ParseBool(os.Getenv("IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY"))
+	return err == nil && skipVerify
+}
+
 func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error) {
 	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
 }
@@ -1901,11 +1911,18 @@ func (c *Config) ClientSession() (*clientSession, error) {
 
 	// Construct the service connector client.
 	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
-	session.backupRecoveryConnectorClient.Service.DisableSSLVerification()
 	if err != nil {
 		session.backupRecoveryConnectorClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API connector service: %q", err)
 	}
 	if session.backupRecoveryConnectorClient != nil && session.backupRecoveryConnectorClient.Service != nil {
+		// TLS certificate verification is enabled by default. The connector client
+		// sends connector credentials (username/password) to the connector endpoint,
+		// so the peer certificate must chain to a trusted authority unless the user
+		// explicitly opts out via IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY.
+		if backupRecoveryConnectorSkipTLSVerify() {
+			log.Println("[WARN] IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY is set: TLS certificate verification is disabled for the Backup Recovery connector client. Connector credentials may be exposed to an on-path attacker.")
+			session.backupRecoveryConnectorClient.Service.DisableSSLVerification()
+		}
 		// Enable retries for API calls
 		session.backupRecoveryConnectorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
