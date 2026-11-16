@@ -429,10 +429,16 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
+			"auto_protection_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Id of the protection group created using auto protect config.",
+			},
 			"auto_proetction_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The user specified name for this source.",
+				Deprecated:  "Use auto_protection_group_id instead.",
+				Description: "Id of the protection group created using auto protect config.",
 			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -1461,7 +1467,13 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 
 	if sourceRegistrationReponseParams.KubernetesParams != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID != nil {
 
-		err := d.Set("auto_proetction_group_id", *sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID)
+		protectionGroupID := *sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID
+		if err := d.Set("auto_protection_group_id", protectionGroupID); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		err := d.Set("auto_proetction_group_id", protectionGroupID)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
