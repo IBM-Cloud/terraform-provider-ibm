@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2025, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package cdtoolchain
@@ -166,7 +166,24 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
+							Description:      "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
+						},
+						"github_app_auth_method": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise.",
+						},
+						"github_app_credential_app_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The numeric GitHub App ID, found in the About section of the GitHub App's General settings tab. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.",
+						},
+						"github_app_credential_private_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "RSA private key contents (PEM format). Encrypted at rest. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -242,7 +259,7 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Default:     false,
+							Default:     true,
 							ForceNew:    true,
 							Description: "Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.",
 						},
