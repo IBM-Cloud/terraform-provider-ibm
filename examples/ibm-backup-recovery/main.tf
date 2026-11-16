@@ -484,6 +484,30 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
       }
     }
   }
+  db2_params {
+    backup_job_arguments {
+      key = "key"
+      value = "value"
+    }
+    concurrency = 1
+    exclude_object_ids = [ 1 ]
+    mounts = 1
+    objects {
+      id = 1
+      name = "name"
+    }
+    source_id = 1
+  }
+  sap_hana_params {
+    concurrency = 1
+    delta = "delta"
+    exclude_object_ids = [ 1 ]
+    objects {
+      id = 1
+      name = "name"
+    }
+    source_id = 1
+  }
 }
 
 // Provision backup_recovery_protection_policy resource instance

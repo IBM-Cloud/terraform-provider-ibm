@@ -1421,6 +1421,125 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 					},
 				},
 			},
+			"db2_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Specifies parameters related to the DB2 Protection job.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backup_job_arguments": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the map of custom arguments to be supplied to the various backup scripts.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "key.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "value.",
+									},
+								},
+							},
+						},
+						"concurrency": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the maximum number of concurrent IO Streams that will be created to exchange data with the cluster. If not specified, the default value is taken as 1.",
+						},
+						"exclude_object_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the objects to be excluded in the Protection Group.",
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+						},
+						"mounts": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the maximum number of view mounts per host. If not specified, the default value is taken as 1.",
+						},
+						"objects": &schema.Schema{
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Specifies a list of fully qualified names of the objects to be protected.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Specifies the ID of the object.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the fully qualified name of the object.",
+									},
+								},
+							},
+						},
+						"source_id": &schema.Schema{
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Specifies the source Id of the objects to be protected.",
+						},
+					},
+				},
+			},
+			"sap_hana_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Specifies parameters related to the SAP HANA Protection job.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"concurrency": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the maximum number of concurrent IO Streams that will be created to exchange data with the cluster. If not specified, the default value is taken as 1.",
+						},
+						"delta": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the incremental backup delta (incremental/differential).",
+						},
+						"exclude_object_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the objects to be excluded in the Protection Group.",
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+						},
+						"objects": &schema.Schema{
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Specifies a list of fully qualified names of the objects to be protected.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Specifies the ID of the object.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the fully qualified name of the object.",
+									},
+								},
+							},
+						},
+						"source_id": &schema.Schema{
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Specifies the source Id of the objects to be protected.",
+						},
+					},
+				},
+			},
 			"kubernetes_params": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -5790,7 +5909,7 @@ func ResourceIbmBackupRecoveryProtectionGroupValidator() *validate.ResourceValid
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "kKubernetes, kPhysical, kSQL",
+			AllowedValues:              "kDB2, kKubernetes, kPhysical, kSAPHANA, kSQL",
 		},
 	)
 
@@ -5906,6 +6025,21 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-kubernetes_params").GetDiag()
 		}
 		createProtectionGroupOptions.SetKubernetesParams(kubernetesParamsModel)
+	}
+
+	if _, ok := d.GetOk("db2_params"); ok {
+		db2ParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToDB2ProtectionGroupParams(d.Get("db2_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-db2_params").GetDiag()
+		}
+		createProtectionGroupOptions.SetDb2Params(db2ParamsModel)
+	}
+	if _, ok := d.GetOk("sap_hana_params"); ok {
+		sapHanaParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToSapHanaProtectionGroupParams(d.Get("sap_hana_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-sap_hana_params").GetDiag()
+		}
+		createProtectionGroupOptions.SetSapHanaParams(sapHanaParamsModel)
 	}
 
 	protectionGroupResponse, _, err := backupRecoveryClient.CreateProtectionGroupWithContext(context, createProtectionGroupOptions)
@@ -6348,6 +6482,21 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-kubernetes_params").GetDiag()
 		}
 		updateProtectionGroupOptions.SetKubernetesParams(kubernetesParams)
+	}
+
+	if _, ok := d.GetOk("db2_params"); ok {
+		db2ParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToDB2ProtectionGroupParams(d.Get("db2_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-db2_params").GetDiag()
+		}
+		updateProtectionGroupOptions.SetDb2Params(db2ParamsModel)
+	}
+	if _, ok := d.GetOk("sap_hana_params"); ok {
+		sapHanaParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToSapHanaProtectionGroupParams(d.Get("sap_hana_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-sap_hana_params").GetDiag()
+		}
+		updateProtectionGroupOptions.SetSapHanaParams(sapHanaParamsModel)
 	}
 
 	_, _, err = backupRecoveryClient.UpdateProtectionGroupWithContext(context, updateProtectionGroupOptions)
@@ -9915,4 +10064,80 @@ func ResourceIbmBackupRecoveryProtectionGroupMissingEntityParamsToMap(model *bac
 		modelMap["parent_source_name"] = *model.ParentSourceName
 	}
 	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToUdaProtectionGroupObjectParams(modelMap map[string]interface{}) (*backuprecoveryv1.UdaProtectionGroupObjectParams, error) {
+	model := &backuprecoveryv1.UdaProtectionGroupObjectParams{}
+	if modelMap["id"] != nil && modelMap["id"].(int) != 0 {
+		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToDB2ProtectionGroupParams(modelMap map[string]interface{}) (*backuprecoveryv1.DB2ProtectionGroupParams, error) {
+	model := &backuprecoveryv1.DB2ProtectionGroupParams{}
+	if modelMap["backup_job_arguments"] != nil {
+		backupJobArguments := []backuprecoveryv1.KeyValuePair{}
+		for _, backupJobArgumentsItem := range modelMap["backup_job_arguments"].([]interface{}) {
+			backupJobArgumentsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKeyValuePair(backupJobArgumentsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			backupJobArguments = append(backupJobArguments, *backupJobArgumentsItemModel)
+		}
+		model.BackupJobArguments = backupJobArguments
+	}
+	if modelMap["concurrency"] != nil && modelMap["concurrency"].(int) != 0 {
+		model.Concurrency = core.Int64Ptr(int64(modelMap["concurrency"].(int)))
+	}
+	if modelMap["exclude_object_ids"] != nil {
+		excludeObjectIds := []int64{}
+		for _, excludeObjectIdsItem := range modelMap["exclude_object_ids"].([]interface{}) {
+			excludeObjectIds = append(excludeObjectIds, int64(excludeObjectIdsItem.(int)))
+		}
+		model.ExcludeObjectIds = excludeObjectIds
+	}
+	if modelMap["mounts"] != nil && modelMap["mounts"].(int) != 0 {
+		model.Mounts = core.Int64Ptr(int64(modelMap["mounts"].(int)))
+	}
+	objects := []backuprecoveryv1.UdaProtectionGroupObjectParams{}
+	for _, objectsItem := range modelMap["objects"].([]interface{}) {
+		objectsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToUdaProtectionGroupObjectParams(objectsItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		objects = append(objects, *objectsItemModel)
+	}
+	model.Objects = objects
+	model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToSapHanaProtectionGroupParams(modelMap map[string]interface{}) (*backuprecoveryv1.SapHanaProtectionGroupParams, error) {
+	model := &backuprecoveryv1.SapHanaProtectionGroupParams{}
+	if modelMap["concurrency"] != nil && modelMap["concurrency"].(int) != 0 {
+		model.Concurrency = core.Int64Ptr(int64(modelMap["concurrency"].(int)))
+	}
+	model.Delta = core.StringPtr(modelMap["delta"].(string))
+	if modelMap["exclude_object_ids"] != nil {
+		excludeObjectIds := []int64{}
+		for _, excludeObjectIdsItem := range modelMap["exclude_object_ids"].([]interface{}) {
+			excludeObjectIds = append(excludeObjectIds, int64(excludeObjectIdsItem.(int)))
+		}
+		model.ExcludeObjectIds = excludeObjectIds
+	}
+	objects := []backuprecoveryv1.UdaProtectionGroupObjectParams{}
+	for _, objectsItem := range modelMap["objects"].([]interface{}) {
+		objectsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToUdaProtectionGroupObjectParams(objectsItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		objects = append(objects, *objectsItemModel)
+	}
+	model.Objects = objects
+	model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
+	return model, nil
 }

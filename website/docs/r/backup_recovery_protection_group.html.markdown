@@ -30,6 +30,30 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 		raise_object_level_failure_alert_after_each_attempt = true
   }
   environment = "kPhysical"
+  db2_params {
+		backup_job_arguments {
+			key = "key"
+			value = "value"
+		}
+		concurrency = 1
+		exclude_object_ids = [ 1 ]
+		mounts = 1
+		objects {
+			id = 1
+			name = "name"
+		}
+		source_id = 1
+  }
+  sap_hana_params {
+		concurrency = 1
+		delta = "delta"
+		exclude_object_ids = [ 1 ]
+		objects {
+			id = 1
+			name = "name"
+		}
+		source_id = 1
+  }
     kubernetes_params {
 		enable_indexing = true
 		exclude_label_ids = [ [ 1 ] ]
@@ -445,9 +469,33 @@ Nested schema for **alert_policy**:
 * `description` - (Optional, String) Specifies a description of the Protection Group.
 * `end_time_usecs` - (Optional, Integer) Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended.
 * `environment` - (Required, String) Specifies the environment of the Protection Group.
-  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
+  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`, `kDB2`, `kSAPHANA`.
 * `is_paused` - (Optional, Boolean) Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted.
 * `delete_snapshots` - (Optional, Boolean) Specifies whether to delete snapshots when deleting the Protection Group. If true, all snapshots associated with this Protection Group will be deleted. Default is false.
+* `db2_params` - (Optional, List) Specifies parameters related to the DB2 Protection job.
+Nested schema for **db2_params**:
+	* `backup_job_arguments` - (Optional, List) Specifies the map of custom arguments to be supplied to the various backup scripts.
+	Nested schema for **backup_job_arguments**:
+		* `key` - (Required, String) key.
+		* `value` - (Required, String) value.
+	* `concurrency` - (Optional, Integer) Specifies the maximum number of concurrent IO Streams that will be created to exchange data with the cluster. If not specified, the default value is taken as 1.
+	* `exclude_object_ids` - (Optional, List) Specifies the objects to be excluded in the Protection Group.
+	* `mounts` - (Optional, Integer) Specifies the maximum number of view mounts per host. If not specified, the default value is taken as 1.
+	* `objects` - (Required, List) Specifies a list of fully qualified names of the objects to be protected.
+	Nested schema for **objects**:
+		* `id` - (Optional, Integer) Specifies the ID of the object.
+		* `name` - (Optional, String) Specifies the fully qualified name of the object.
+	* `source_id` - (Required, Integer) Specifies the source Id of the objects to be protected.
+* `sap_hana_params` - (Optional, List) Specifies parameters related to the SAP HANA Protection job.
+Nested schema for **sap_hana_params**:
+	* `concurrency` - (Optional, Integer) Specifies the maximum number of concurrent IO Streams that will be created to exchange data with the cluster. If not specified, the default value is taken as 1.
+	* `delta` - (Required, String) Specifies the incremental backup delta (incremental/differential).
+	* `exclude_object_ids` - (Optional, List) Specifies the objects to be excluded in the Protection Group.
+	* `objects` - (Required, List) Specifies a list of fully qualified names of the objects to be protected.
+	Nested schema for **objects**:
+		* `id` - (Optional, Integer) Specifies the ID of the object.
+		* `name` - (Optional, String) Specifies the fully qualified name of the object.
+	* `source_id` - (Required, Integer) Specifies the source Id of the objects to be protected.
 * `kubernetes_params` - (Optional, List) Specifies the parameters which are related to Kubernetes Protection Groups.
 Nested schema for **kubernetes_params**:
 	* `enable_indexing` - (Optional, Boolean) Specifies if indexing of files and folders is allowed or not while backing up namespace. If allowed files and folder can be recovered.
