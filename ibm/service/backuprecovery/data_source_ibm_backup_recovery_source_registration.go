@@ -912,6 +912,51 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 				Description: "Specifies parameters to register a DB2 source.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the name of the DB2 source.",
+						},
+						"hosts": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the hosts of the DB2 source.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"username": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the DB2 instance username.",
+						},
+						"profile_path": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the path of the DB2 profile.",
+						},
+						"script_dir": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the directory of the DB2 scripts.",
+						},
+						"source_registration_arguments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the key-value arguments used while registering the DB2 source.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the argument key.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the argument value.",
+									},
+								},
+							},
+						},
 						"host_os_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -2114,6 +2159,35 @@ func DataSourceIbmBackupRecoverySourceRegistrationWorkflowInterventionSpecToMap(
 
 func DataSourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(model *backuprecoveryv1.DB2SourceRegistrationParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.Hosts != nil {
+		modelMap["hosts"] = model.Hosts
+	}
+	if model.Username != nil {
+		modelMap["username"] = *model.Username
+	}
+	if model.ProfilePath != nil {
+		modelMap["profile_path"] = *model.ProfilePath
+	}
+	if model.ScriptDir != nil {
+		modelMap["script_dir"] = *model.ScriptDir
+	}
+	if model.SourceRegistrationArguments != nil {
+		args := []map[string]interface{}{}
+		for _, a := range model.SourceRegistrationArguments {
+			m := map[string]interface{}{}
+			if a.Key != nil {
+				m["key"] = *a.Key
+			}
+			if a.Value != nil {
+				m["value"] = *a.Value
+			}
+			args = append(args, m)
+		}
+		modelMap["source_registration_arguments"] = args
+	}
 	if model.HostOsType != nil {
 		modelMap["host_os_type"] = *model.HostOsType
 	}

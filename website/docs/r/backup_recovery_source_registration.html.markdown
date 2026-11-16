@@ -175,6 +175,15 @@ Nested schema for **physical_params**:
 * `db2_params` - (Optional, Forces new resource, List) Specifies parameters to register a DB2 source.
 Nested schema for **db2_params**:
 	* `host_os_type` - (Optional, String) Specifies the type of DB2 host.
+	* `hosts` - (Required, List) Specifies the hosts of the DB2 source.
+	* `profile_path` - (Required, String) Specifies the path of the DB2 profile.
+	* `script_dir` - (Required, String) Specifies the directory of the DB2 scripts.
+	* `source_name` - (Required, String) Specifies the name of the DB2 source.
+	* `source_registration_arguments` - (Optional, List) Specifies the key-value arguments used while registering the DB2 source.
+	  Nested schema for **source_registration_arguments**:
+		* `key` - (Required, String) Specifies the argument key.
+		* `value` - (Required, String) Specifies the argument value.
+	* `username` - (Required, String) Specifies the DB2 instance username.
 	  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kOther`, `kHPUX`, `kVOS`.
 * `sap_hana_params` - (Optional, Forces new resource, List) Specifies parameters to register a SAP HANA source.
 Nested schema for **sap_hana_params**:

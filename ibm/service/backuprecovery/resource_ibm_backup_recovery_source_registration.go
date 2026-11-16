@@ -171,10 +171,55 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 				Description: "Specifies parameters to register a DB2 source.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies user friendly unique name provided for registering DB2 source.",
+						},
+						"hosts": &schema.Schema{
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Specifies the IPs/hostnames for the nodes forming the DB2 source cluster.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"username": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the username to access target DB2 entity.",
+						},
+						"profile_path": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies file location of DB2 Profile path of the instance.",
+						},
+						"script_dir": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the absolute path of scripts used to interact with the DB2 source.",
+						},
 						"host_os_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Specifies the type of DB2 host.",
+						},
+						"source_registration_arguments": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the map of custom arguments to be supplied to the source registration scripts.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "key.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "value.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -2195,8 +2240,28 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesVlanInfo(modelMap
 
 func ResourceIbmBackupRecoverySourceRegistrationMapToDB2SourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.DB2SourceRegistrationParams, error) {
 	model := &backuprecoveryv1.DB2SourceRegistrationParams{}
+	model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	hosts := []string{}
+	for _, hostsItem := range modelMap["hosts"].([]interface{}) {
+		hosts = append(hosts, hostsItem.(string))
+	}
+	model.Hosts = hosts
+	model.Username = core.StringPtr(modelMap["username"].(string))
+	model.ProfilePath = core.StringPtr(modelMap["profile_path"].(string))
+	model.ScriptDir = core.StringPtr(modelMap["script_dir"].(string))
 	if modelMap["host_os_type"] != nil && modelMap["host_os_type"].(string) != "" {
 		model.HostOsType = core.StringPtr(modelMap["host_os_type"].(string))
+	}
+	if modelMap["source_registration_arguments"] != nil {
+		sourceRegistrationArguments := []backuprecoveryv1.KeyValuePair{}
+		for _, argItem := range modelMap["source_registration_arguments"].([]interface{}) {
+			argItemModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(argItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			sourceRegistrationArguments = append(sourceRegistrationArguments, *argItemModel)
+		}
+		model.SourceRegistrationArguments = sourceRegistrationArguments
 	}
 	return model, nil
 }
@@ -2265,8 +2330,37 @@ func ResourceIbmBackupRecoverySourceRegistrationKeyValuePairToMap(model *backupr
 
 func ResourceIbmBackupRecoverySourceRegistrationDB2SourceRegistrationParamsToMap(model *backuprecoveryv1.DB2SourceRegistrationParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.Hosts != nil {
+		modelMap["hosts"] = model.Hosts
+	}
+	if model.Username != nil {
+		modelMap["username"] = *model.Username
+	}
+	if model.ProfilePath != nil {
+		modelMap["profile_path"] = *model.ProfilePath
+	}
+	if model.ScriptDir != nil {
+		modelMap["script_dir"] = *model.ScriptDir
+	}
 	if model.HostOsType != nil {
 		modelMap["host_os_type"] = *model.HostOsType
+	}
+	if model.SourceRegistrationArguments != nil {
+		sourceRegistrationArguments := []map[string]interface{}{}
+		for _, argItem := range model.SourceRegistrationArguments {
+			argItemMap := map[string]interface{}{}
+			if argItem.Key != nil {
+				argItemMap["key"] = *argItem.Key
+			}
+			if argItem.Value != nil {
+				argItemMap["value"] = *argItem.Value
+			}
+			sourceRegistrationArguments = append(sourceRegistrationArguments, argItemMap)
+		}
+		modelMap["source_registration_arguments"] = sourceRegistrationArguments
 	}
 	return modelMap, nil
 }
