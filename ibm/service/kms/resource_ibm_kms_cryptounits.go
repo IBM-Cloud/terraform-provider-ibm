@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"time"
 
@@ -27,6 +28,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 		UpdateContext: resourceIBMKmsCryptoUnitsUpdate,
 		DeleteContext: resourceIBMKmsCryptoUnitsDelete,
 		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: resourceIBMKmsCryptoUnitsCustomizeDiff,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
@@ -91,20 +93,23 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"signature_key": {
 				Type:        schema.TypeSet,
 				Required:    true,
+				MinItems:    1,
 				MaxItems:    1,
 				Description: "Credentials for the initial administrator who will create sessions with the cryptounits. Use additional_admin blocks to register more administrators",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"filepath": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The filepath to store the signature key or find an exisiting signature key",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
+							Description:  "The filepath to store the signature key or find an exisiting signature key",
 						},
 						"passphrase": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Sensitive:        true,
-							Description:      "The passphrase of the signature_key",
+							ValidateFunc:     validateAdminPassphraseFunc,
+							Description:      "The passphrase of the signature_key. Empty or 4-255 characters",
 							DiffSuppressFunc: suppresspassphraseDiff,
 						},
 						"owner": {
@@ -131,24 +136,28 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"additional_admin": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				MaxItems:    4,
 				Description: "Additional administrators to register on the cryptounits. Each additional_admin must have a unique name and filepath",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the administrator",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateAdminNameFunc,
+							Description:  "The name of the administrator. 1-255 characters, unique, must not match the reserved pattern ^(SO|USR)_\\d{4}$ and must differ from signature_key.owner",
 						},
 						"filepath": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The filepath to store the administrator's signature key or find an existing one",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
+							Description:  "The filepath to store the administrator's signature key or find an existing one",
 						},
 						"passphrase": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Sensitive:        true,
-							Description:      "The passphrase of the administrator's signature key",
+							ValidateFunc:     validateAdminPassphraseFunc,
+							Description:      "The passphrase of the administrator's signature key. Empty or 4-255 characters",
 							DiffSuppressFunc: suppresspassphraseDiff,
 						},
 						"exists": {
@@ -265,6 +274,12 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to parse additional_admin: %v", err)
 	}
 	if err := validateAdminFilepaths(primaryAdmin, additionalAdmins); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := validateAdditionalAdminNames(primaryAdmin, additionalAdmins); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := validateAdminCount(1 + len(additionalAdmins)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -518,6 +533,9 @@ func buildAdminKeySpec(ctx context.Context, data map[string]interface{}, label, 
 	if !ok {
 		return nil, fmt.Errorf("passphrase in %s must be a string", label)
 	}
+	if err := checkAdminPassphrase(passphrase); err != nil {
+		return nil, fmt.Errorf("invalid passphrase in %s: %v", label, err)
+	}
 
 	// The key is treated as existing when the file is on disk. Declaring
 	// exists = true for a file that is not there is a configuration error.
@@ -596,8 +614,8 @@ func parseAdditionalAdmins(ctx context.Context, d *schema.ResourceData) ([]*admi
 		}
 
 		name, _ := adminData["name"].(string)
-		if name == "" {
-			return nil, fmt.Errorf("name in additional_admin[%d] cannot be empty", i)
+		if err := checkAdminName(name); err != nil {
+			return nil, fmt.Errorf("invalid name in additional_admin[%d]: %v", i, err)
 		}
 		if names[name] {
 			return nil, fmt.Errorf("duplicate name detected in additional_admin[%d]: %s", i, name)
@@ -629,9 +647,96 @@ func validateAdminFilepaths(primary *adminKeySpec, additional []*adminKeySpec) e
 	return nil
 }
 
+// maxAdminCount is the maximum number of administrators (signature_key plus
+// all additional_admin blocks).
+const maxAdminCount = 5
+
+// reservedAdminNamePattern matches administrator names reserved by the
+// cryptounit (security officer and user accounts such as SO_0001, USR_0002).
+var reservedAdminNamePattern = regexp.MustCompile(`^(SO|USR)_\d{4}$`)
+
+// checkAdminName validates an additional_admin name: 1-255 characters and not
+// matching the reserved pattern.
+func checkAdminName(name string) error {
+	if len(name) < 1 || len(name) > 255 {
+		return fmt.Errorf("name must be between 1 and 255 characters, got %d", len(name))
+	}
+	if reservedAdminNamePattern.MatchString(name) {
+		return fmt.Errorf("name %q matches the reserved pattern %s", name, reservedAdminNamePattern.String())
+	}
+	return nil
+}
+
+// validateAdminNameFunc is the schema-level form of checkAdminName.
+func validateAdminNameFunc(v interface{}, k string) ([]string, []error) {
+	s, ok := v.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("%s must be a string", k)}
+	}
+	if err := checkAdminName(s); err != nil {
+		return nil, []error{fmt.Errorf("%s: %v", k, err)}
+	}
+	return nil, nil
+}
+
+// checkAdminPassphrase validates an admin key passphrase: empty (no
+// passphrase) or 4-255 characters. The value is never included in the error.
+func checkAdminPassphrase(passphrase string) error {
+	if passphrase == "" {
+		return nil
+	}
+	if len(passphrase) < keyprotect_dedicated.SigKeyPassphraseMinLength ||
+		len(passphrase) > keyprotect_dedicated.SigKeyPassphraseMaxLength {
+		return fmt.Errorf("passphrase must be empty or between %d and %d characters",
+			keyprotect_dedicated.SigKeyPassphraseMinLength, keyprotect_dedicated.SigKeyPassphraseMaxLength)
+	}
+	return nil
+}
+
+// validateAdminPassphraseFunc is the schema-level form of checkAdminPassphrase.
+func validateAdminPassphraseFunc(v interface{}, k string) ([]string, []error) {
+	s, ok := v.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("%s must be a string", k)}
+	}
+	if err := checkAdminPassphrase(s); err != nil {
+		return nil, []error{fmt.Errorf("%s: %v", k, err)}
+	}
+	return nil, nil
+}
+
+// validateAdditionalAdminNames ensures no additional_admin name equals the
+// signature_key owner.
+func validateAdditionalAdminNames(primary *adminKeySpec, additional []*adminKeySpec) error {
+	if primary.Name == "" {
+		return nil
+	}
+	for _, admin := range additional {
+		if admin.Name == primary.Name {
+			return fmt.Errorf("additional_admin name %q must not be equal to signature_key.owner", admin.Name)
+		}
+	}
+	return nil
+}
+
+// validateAdminCount ensures the total number of administrators
+// (signature_key plus all additional_admin blocks) is at most maxAdminCount.
+func validateAdminCount(adminCount int) error {
+	if adminCount > maxAdminCount {
+		return fmt.Errorf("too many administrators: have %d (signature_key plus additional_admin), at most %d are allowed",
+			adminCount, maxAdminCount)
+	}
+	return nil
+}
+
+// quorumGetter is satisfied by both *schema.ResourceData and *schema.ResourceDiff.
+type quorumGetter interface {
+	GetOk(key string) (interface{}, bool)
+}
+
 // parseQuorum returns the signature and revocation thresholds, and whether
 // a quorum block is configured.
-func parseQuorum(d *schema.ResourceData) (signature, revocation int, configured bool, err error) {
+func parseQuorum(d quorumGetter) (signature, revocation int, configured bool, err error) {
 	quorumSet, ok := d.GetOk("quorum")
 	if !ok {
 		return 0, 0, false, nil
@@ -653,7 +758,7 @@ func parseQuorum(d *schema.ResourceData) (signature, revocation int, configured 
 // validateQuorumAdminCount ensures the number of administrators (the
 // signature_key admin plus all additional_admin blocks) is at least
 // max(signature_threshold, revocation_threshold) when a quorum block is configured.
-func validateQuorumAdminCount(d *schema.ResourceData, adminCount int) error {
+func validateQuorumAdminCount(d quorumGetter, adminCount int) error {
 	signature, revocation, configured, err := parseQuorum(d)
 	if err != nil {
 		return err
@@ -674,22 +779,15 @@ func validateQuorumAdminCount(d *schema.ResourceData, adminCount int) error {
 	return nil
 }
 
-// validateQuorumSignerCount ensures that, when a quorum block is configured,
-// enough administrators are flagged with quorum_signer = true to satisfy
-// max(signature_threshold, revocation_threshold). Otherwise the quorum could
-// never be reached.
-func validateQuorumSignerCount(d *schema.ResourceData, admins []*adminKeySpec) error {
-	signature, revocation, configured, err := parseQuorum(d)
+// validateQuorumSignerCount validates the quorum_signer flags against the
+// quorum block:
+//   - without a quorum block, no administrator may set quorum_signer = true;
+//   - with a quorum block, at least signature_threshold administrators must
+//     set quorum_signer = true.
+func validateQuorumSignerCount(d quorumGetter, admins []*adminKeySpec) error {
+	signature, _, configured, err := parseQuorum(d)
 	if err != nil {
 		return err
-	}
-	if !configured {
-		return nil
-	}
-
-	maxThreshold := signature
-	if revocation > maxThreshold {
-		maxThreshold = revocation
 	}
 
 	signers := 0
@@ -699,9 +797,42 @@ func validateQuorumSignerCount(d *schema.ResourceData, admins []*adminKeySpec) e
 		}
 	}
 
-	if signers < maxThreshold {
-		return fmt.Errorf("insufficient quorum signers: have %d administrator(s) with quorum_signer = true, need at least %d (quorum.signature_threshold=%d, quorum.revocation_threshold=%d)",
-			signers, maxThreshold, signature, revocation)
+	if !configured {
+		if signers > 0 {
+			return fmt.Errorf("quorum_signer = true is set on %d administrator(s) but no quorum block is configured", signers)
+		}
+		return nil
+	}
+
+	if signers < signature {
+		return fmt.Errorf("insufficient quorum signers: have %d administrator(s) with quorum_signer = true, need at least %d (quorum.signature_threshold)",
+			signers, signature)
+	}
+	return nil
+}
+
+// resourceIBMKmsCryptoUnitsCustomizeDiff blocks changes to an existing
+// resource that the provider cannot apply safely:
+//   - quorum cannot be changed after the cryptounits are created;
+//   - additional_admin cannot be reduced so that the administrator count
+//     falls below max(signature_threshold, revocation_threshold).
+func resourceIBMKmsCryptoUnitsCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if d.Id() == "" {
+		return nil
+	}
+
+	if d.HasChange("quorum") {
+		return fmt.Errorf("quorum cannot be changed after the cryptounits are created")
+	}
+
+	if d.HasChange("additional_admin") && d.NewValueKnown("additional_admin") {
+		additionalCount := 0
+		if s, ok := d.Get("additional_admin").(*schema.Set); ok {
+			additionalCount = s.Len()
+		}
+		if err := validateQuorumAdminCount(d, 1+additionalCount); err != nil {
+			return fmt.Errorf("removing an administrator is blocked: %v", err)
+		}
 	}
 	return nil
 }
