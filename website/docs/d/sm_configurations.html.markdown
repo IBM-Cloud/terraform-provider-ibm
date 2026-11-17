@@ -69,7 +69,7 @@ In addition to all argument references listed, you can access the following attr
             * Constraints: Allowable values are: `internal`, `external`.
         * `certificate_authority` - (String) The name of the intermediate certificate authority.
             * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
-        * `crypto_key` - (List) The data that is associated with a cryptographic key.
+        * `crypto_key` - (Deprecated, List) The data that is associated with a cryptographic key.
           Nested scheme for **crypto_key**:
               * `provider` - (List) The data that is associated with a cryptographic provider.
                 Nested scheme for **provider**:

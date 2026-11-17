@@ -140,7 +140,7 @@ Nested scheme for **data**:
 * `uri_sans` - (String) The URI Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
   * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
-* `crypto_key` - (List) The data that is associated with a cryptographic key.
+* `crypto_key` - (Deprecated, List) The data that is associated with a cryptographic key.
   Nested scheme for **crypto_key**:
     * `provider` - (List) The data that is associated with a cryptographic provider.
       Nested scheme for **provider**:

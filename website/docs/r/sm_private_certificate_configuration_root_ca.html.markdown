@@ -97,7 +97,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/^[0-9]+[s,m,h,d]{0,1}$/`.
 * `uri_sans` - (Optional, Forces new resource, String) The URI Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
     * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
-* `crypto_key` - (Optional, Forces new resource, List) The data that is associated with a cryptographic key.
+* `crypto_key` - (Deprecated, Optional, Forces new resource, List) The data that is associated with a cryptographic key.
   Nested scheme for **crypto_key**:
     * `provider` - (Required, Forces new resource, List) The data that is associated with a cryptographic provider.
       Nested scheme for **provider**:
