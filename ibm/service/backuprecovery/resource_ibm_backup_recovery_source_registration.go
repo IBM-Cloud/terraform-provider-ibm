@@ -205,6 +205,7 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 						"source_registration_arguments": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the map of custom arguments to be supplied to the source registration scripts.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
