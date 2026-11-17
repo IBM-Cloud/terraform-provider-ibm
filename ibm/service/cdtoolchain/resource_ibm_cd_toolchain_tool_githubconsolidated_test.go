@@ -22,6 +22,7 @@ func TestAccIBMCdToolchainToolGithubconsolidatedBasic(t *testing.T) {
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	rgName := acc.CdResourceGroupName
 	repoUrl := acc.CdGithubConsolidatedRepoUrl
+	gitId := acc.CdGithubConsolidatedGitId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -29,7 +30,7 @@ func TestAccIBMCdToolchainToolGithubconsolidatedBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdToolchainToolGithubconsolidatedDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfigBasic(tcName, rgName, repoUrl),
+				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfigBasic(tcName, rgName, repoUrl, gitId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdToolchainToolGithubconsolidatedExists("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", conf),
 					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", "toolchain_id"),
@@ -44,6 +45,7 @@ func TestAccIBMCdToolchainToolGithubconsolidatedAllArgs(t *testing.T) {
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	rgName := acc.CdResourceGroupName
 	repoUrl := acc.CdGithubConsolidatedRepoUrl
+	gitId := acc.CdGithubConsolidatedGitId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -53,7 +55,7 @@ func TestAccIBMCdToolchainToolGithubconsolidatedAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdToolchainToolGithubconsolidatedDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName, rgName, repoUrl, name),
+				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName, rgName, repoUrl, gitId, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdToolchainToolGithubconsolidatedExists("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", conf),
 					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", "toolchain_id"),
@@ -61,7 +63,7 @@ func TestAccIBMCdToolchainToolGithubconsolidatedAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName, rgName, repoUrl, nameUpdate),
+				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName, rgName, repoUrl, gitId, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", "toolchain_id"),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated", "name", nameUpdate),
@@ -76,32 +78,70 @@ func TestAccIBMCdToolchainToolGithubconsolidatedAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolGithubconsolidatedConfigBasic(tcName string, rgName string, repoUrl string) string {
-	return fmt.Sprintf(`
-		data "ibm_resource_group" "resource_group" {
-			name = "%s"
-		}
+func TestAccIBMCdToolchainToolGithubconsolidatedGithubAppAuth(t *testing.T) {
+	var conf cdtoolchainv2.ToolchainTool
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	rgName := acc.CdResourceGroupName
+	repoUrl := acc.CdGithubConsolidatedRepoUrl
+	gitId := acc.CdGithubConsolidatedGitId
+	resourceName := "ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated"
 
-		resource "ibm_cd_toolchain" "cd_toolchain" {
-			name = "%s"
-			resource_group_id = data.ibm_resource_group.resource_group.id
-		}
-
-		resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated" {
-			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
-			parameters {
-				toolchain_issues_enabled = true
-				enable_traceability = true
-			}
-			initialization {
-				repo_url = "%s"
-				type = "link"
-			}
-		}
-	`, rgName, tcName, repoUrl)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCdToolchainToolGithubconsolidatedDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedConfigGithubApp(tcName, rgName, repoUrl, gitId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCdToolchainToolGithubconsolidatedExists(resourceName, conf),
+					resource.TestCheckResourceAttrSet(resourceName, "toolchain_id"),
+					resource.TestCheckResourceAttr(resourceName, "parameters.0.auth_type", "github_app"),
+					resource.TestCheckResourceAttr(resourceName, "parameters.0.github_app_auth_method", "managed"),
+				),
+			},
+		},
+	})
 }
 
-func testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName string, rgName string, repoUrl string, name string) string {
+// testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr returns the git_id attribute line for the
+// initialization block, or an empty string when no git_id is set so the provider default applies.
+func testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr(gitId string) string {
+	if gitId == "" {
+		return ""
+	}
+	return fmt.Sprintf(`git_id = "%s"`, gitId)
+}
+
+func testAccCheckIBMCdToolchainToolGithubconsolidatedConfigGithubApp(tcName string, rgName string, repoUrl string, gitId string) string {
+	gitIdAttr := testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr(gitId)
+	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
+		resource "ibm_cd_toolchain" "cd_toolchain" {
+			name = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
+		}
+
+		resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			parameters {
+				auth_type = "github_app"
+				github_app_auth_method = "managed"
+			}
+			initialization {
+				%s
+				repo_url = "%s"
+				type = "link"
+			}
+		}
+	`, rgName, tcName, gitIdAttr, repoUrl)
+}
+
+func testAccCheckIBMCdToolchainToolGithubconsolidatedConfigBasic(tcName string, rgName string, repoUrl string, gitId string) string {
+	gitIdAttr := testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr(gitId)
 	return fmt.Sprintf(`
 		data "ibm_resource_group" "resource_group" {
 			name = "%s"
@@ -119,12 +159,40 @@ func testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName string, rgNam
 				enable_traceability = true
 			}
 			initialization {
+				%s
+				repo_url = "%s"
+				type = "link"
+			}
+		}
+	`, rgName, tcName, gitIdAttr, repoUrl)
+}
+
+func testAccCheckIBMCdToolchainToolGithubconsolidatedConfig(tcName string, rgName string, repoUrl string, gitId string, name string) string {
+	gitIdAttr := testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr(gitId)
+	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
+		resource "ibm_cd_toolchain" "cd_toolchain" {
+			name = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
+		}
+
+		resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			parameters {
+				toolchain_issues_enabled = true
+				enable_traceability = true
+			}
+			initialization {
+				%s
 				repo_url = "%s"
 				type = "link"
 			}
 			name = "%s"
 		}
-	`, rgName, tcName, repoUrl, name)
+	`, rgName, tcName, gitIdAttr, repoUrl, name)
 }
 
 func testAccCheckIBMCdToolchainToolGithubconsolidatedExists(n string, obj cdtoolchainv2.ToolchainTool) resource.TestCheckFunc {

@@ -402,6 +402,7 @@ var (
 	CdSaucelabsUsername              string
 	CdBitbucketRepoUrl               string
 	CdGithubConsolidatedRepoUrl      string
+	CdGithubConsolidatedGitId        string
 	CdGitlabRepoUrl                  string
 	CdHostedGitRepoUrl               string
 	CdEventNotificationsInstanceName string
@@ -2088,6 +2089,9 @@ func init() {
 	if CdGithubConsolidatedRepoUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_GITHUB_CONSOLIDATED_REPO_URL for testing CD resources, CD tests will fail if this is not set")
 	}
+
+	// Optional: 'github' (default). When unset, git_id is omitted from the test config.
+	CdGithubConsolidatedGitId = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_GIT_ID")
 
 	CdGitlabRepoUrl = os.Getenv("IBM_CD_GITLAB_REPO_URL")
 	if CdGitlabRepoUrl == "" {
