@@ -73,7 +73,7 @@ func generateSmAdminToken(context context.Context, d *schema.ResourceData, meta 
 	}
 
 	createTokenOptions := &secretsmanagerinstancemanagementv2.CreateVaultAdmintokenOptions{}
-	createTokenOptions.SetID(d.Get("instance_id").(string))
+	createTokenOptions.SetInstanceID(d.Get("instance_id").(string))
 	if v, ok := d.GetOk("response_wrapping"); ok {
 		createTokenOptions.SetResponseWrapping(v.(bool))
 	}

@@ -940,6 +940,17 @@ func Provider() *schema.Provider {
 			"ibm_sm_instance":     secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
 			"ibm_sm_destination":  secretsmanagerinstancemanagement.DataSourceIbmSmDestination(),
 			"ibm_sm_destinations": secretsmanagerinstancemanagement.DataSourceIbmSmDestinations(),
+			"ibm_sm_hsm_client_certificate":  secretsmanagerinstancemanagement.DataSourceIbmSmHsmClientCertificate(),
+			"ibm_sm_hsm_client_certificates": secretsmanagerinstancemanagement.DataSourceIbmSmHsmClientCertificates(),
+			"ibm_sm_hsm_destination":         secretsmanagerinstancemanagement.DataSourceIbmSmHsmDestination(),
+			"ibm_sm_hsm_destinations":        secretsmanagerinstancemanagement.DataSourceIbmSmHsmDestinations(),
+			"ibm_sm_hsm_destination_health":  secretsmanagerinstancemanagement.DataSourceIbmSmHsmDestinationHealth(),
+			"ibm_sm_hsm_ha_group":            secretsmanagerinstancemanagement.DataSourceIbmSmHsmHaGroup(),
+			"ibm_sm_hsm_ha_groups":           secretsmanagerinstancemanagement.DataSourceIbmSmHsmHaGroups(),
+			"ibm_sm_hsm_path":                secretsmanagerinstancemanagement.DataSourceIbmSmHsmPath(),
+			"ibm_sm_hsm_paths":               secretsmanagerinstancemanagement.DataSourceIbmSmHsmPaths(),
+			"ibm_sm_hsm_server_ca":           secretsmanagerinstancemanagement.DataSourceIbmSmHsmServerCa(),
+			"ibm_sm_hsm_server_cas":          secretsmanagerinstancemanagement.DataSourceIbmSmHsmServerCas(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1734,6 +1745,12 @@ func Provider() *schema.Provider {
 
 			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
 			"ibm_sm_destination": secretsmanagerinstancemanagement.ResourceIbmSmDestination(),
+			"ibm_sm_hsm_client_certificate": secretsmanagerinstancemanagement.ResourceIbmSmHsmClientCertificate(),
+			"ibm_sm_hsm_destination":        secretsmanagerinstancemanagement.ResourceIbmSmHsmDestination(),
+			"ibm_sm_hsm_ha_group":           secretsmanagerinstancemanagement.ResourceIbmSmHsmHaGroup(),
+			"ibm_sm_hsm_path":               secretsmanagerinstancemanagement.ResourceIbmSmHsmPath(),
+			"ibm_sm_hsm_path_build":         secretsmanagerinstancemanagement.ResourceIbmSmHsmPathBuild(),
+			"ibm_sm_hsm_server_ca":          secretsmanagerinstancemanagement.ResourceIbmSmHsmServerCa(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
@@ -2417,6 +2434,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
 				"ibm_sm_destination":                                                 secretsmanagerinstancemanagement.ResourceIbmSmDestinationValidator(),
+				"ibm_sm_hsm_client_certificate":                                      secretsmanagerinstancemanagement.ResourceIbmSmHsmClientCertificateValidator(),
+				"ibm_sm_hsm_destination":                                             secretsmanagerinstancemanagement.ResourceIbmSmHsmDestinationValidator(),
+				"ibm_sm_hsm_ha_group":                                                secretsmanagerinstancemanagement.ResourceIbmSmHsmHaGroupValidator(),
+				"ibm_sm_hsm_path":                                                    secretsmanagerinstancemanagement.ResourceIbmSmHsmPathValidator(),
+				"ibm_sm_hsm_path_build":                                              secretsmanagerinstancemanagement.ResourceIbmSmHsmPathBuildValidator(),
+				"ibm_sm_hsm_server_ca":                                               secretsmanagerinstancemanagement.ResourceIbmSmHsmServerCaValidator(),
 
 				// // Added for Code Engine
 				"ibm_code_engine_allowed_outbound_destination": codeengine.ResourceIbmCodeEngineAllowedOutboundDestinationValidator(),

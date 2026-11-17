@@ -155,7 +155,7 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 
 	getInstanceOptions := &secretsmanagerinstancemanagementv2.GetInstanceOptions{}
 
-	getInstanceOptions.SetID(d.Get("instance_id").(string))
+	getInstanceOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	instance, _, err := secretsManagerInstanceManagementClient.GetInstanceWithContext(context, getInstanceOptions)
 	if err != nil {
