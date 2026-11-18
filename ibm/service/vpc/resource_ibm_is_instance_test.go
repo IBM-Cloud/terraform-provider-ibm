@@ -4466,6 +4466,82 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+// Test that changing profile_refresh_trigger re-applies the current profile
+// (stop, PATCH with the same profile, start) without changing the profile.
+func TestAccIBMISInstance_ProfileRefreshTrigger(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	profile := "bxf-2x8" // Flex profile, as used by the other instance tests
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileRefreshTrigger(
+					vpcname, subnetname, sshname, publicKey, name, profile, "v1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", profile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile_refresh_trigger", "v1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "status", "running"),
+				),
+			},
+			// Changing only the trigger re-applies the same profile; the instance
+			// must end up running with the profile unchanged.
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileRefreshTrigger(
+					vpcname, subnetname, sshname, publicKey, name, profile, "v2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", profile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile_refresh_trigger", "v2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "status", "running"),
+				),
+			},
+			// Removing the trigger from the configuration must not trigger another
+			// refresh and must leave a clean (empty) plan; the instance stays
+			// running with the same profile.
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileRefreshTrigger(
+					vpcname, subnetname, sshname, publicKey, name, profile, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", profile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "status", "running"),
+				),
+			},
+		},
+	})
+}
+
+// Builds on the existing testAccCheckIBMISInstanceConfigWithProfile config and adds
+// profile_refresh_trigger after the profile line. An empty trigger leaves the
+// argument out of the configuration.
+func testAccCheckIBMISInstanceConfigWithProfileRefreshTrigger(vpcname, subnetname, sshname, publicKey, name, profile, trigger string) string {
+	config := testAccCheckIBMISInstanceConfigWithProfile(vpcname, subnetname, sshname, publicKey, name, profile)
+	if trigger == "" {
+		return config
+	}
+	profileLine := fmt.Sprintf(`profile = "%s"`, profile)
+	return strings.Replace(config, profileLine, profileLine+fmt.Sprintf("\n\t\tprofile_refresh_trigger = %q", trigger), 1)
+}
+
 // Configuration function that allows specifying both profile and bandwidth with primary network attachment
 func testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(vpcname, subnetname, sshname, publicKey, name, prefix, profile string, bandwidth int) string {
 	return fmt.Sprintf(`
