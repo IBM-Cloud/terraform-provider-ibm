@@ -261,7 +261,7 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Default:     true,
+							Default:     false,
 							ForceNew:    true,
 							Description: "Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.",
 						},
