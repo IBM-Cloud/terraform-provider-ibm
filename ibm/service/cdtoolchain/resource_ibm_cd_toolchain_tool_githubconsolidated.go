@@ -157,9 +157,10 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Description: "The ID of the GitHub repository.",
 						},
 						"auth_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{"oauth", "pat", "github_app"}),
+							Description:  "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
 						},
 						"api_token": &schema.Schema{
 							Type:             schema.TypeString,
