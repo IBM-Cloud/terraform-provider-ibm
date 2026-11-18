@@ -14,6 +14,8 @@ See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=C
 
 ## Example Usage
 
+### Personal Access Token (PAT) Authentication
+
 ```hcl
 resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
   initialization {
@@ -29,6 +31,46 @@ resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubcon
 		auth_type = "pat"
 		api_token = "<api_token>"
 		toolchain_issues_enabled = true
+  }
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+}
+```
+
+### GitHub App Authentication (Managed)
+
+~> **Note:** The GitHub App must be installed on the target GitHub repository or organization before running `terraform apply`.
+
+```hcl
+resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
+  initialization {
+		git_id = "github"
+		repo_url = "https://github.com/my-org/my-repo"
+		type = "link"
+  }
+  parameters {
+		auth_type = "github_app"
+		github_app_auth_method = "managed"
+  }
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+}
+```
+
+### GitHub App Authentication (Custom)
+
+~> **Note:** The GitHub App must be installed on the target GitHub repository or organization before running `terraform apply`.
+
+```hcl
+resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
+  initialization {
+		git_id = "github"
+		repo_url = "https://github.com/my-org/my-repo"
+		type = "link"
+  }
+  parameters {
+		auth_type = "github_app"
+		github_app_auth_method = "custom"
+		github_app_credential_app_id = "<github_app_id>"
+		github_app_credential_private_key = file("path/to/private-key.pem")
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -71,7 +113,7 @@ Nested schema for **parameters**:
 	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'github' for github.com, or 'githubcustom' for a custom GitHub Enterprise server.
-	* `github_app_auth_method` - (Optional, String) Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise.
+	* `github_app_auth_method` - (Optional, String) Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise. Note that the GitHub App must be installed on the target organization or repository prior to applying.
 	  * Constraints: Allowable values are: `managed`, `custom`.
 	* `github_app_credential_app_id` - (Optional, String) The numeric GitHub App ID, found in the About section of the GitHub App's General settings tab. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.
 	* `github_app_credential_private_key` - (Optional, String) RSA private key contents (PEM format). Encrypted at rest. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.

@@ -190,7 +190,7 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 						"github_app_auth_method": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise.",
+							Description: "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise. Note that the GitHub App must be installed on the target organization or repository prior to applying.",
 						},
 						"github_app_credential_app_id": &schema.Schema{
 							Type:        schema.TypeString,
