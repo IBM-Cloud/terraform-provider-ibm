@@ -3136,19 +3136,12 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
-// validateFlexFlavorForClassic validates that Gen2-only flavors (flex bxf.* and nano nxf-*, bxf-*, mxf-*) are not used with Classic/Gen1 instances
+// validateFlexFlavorForClassic validates that Gen2-only flavors (flex bxf.*, nano nxf.*, mxf.*) are not used with Classic/Gen1 instances
 func validateFlexFlavorForClassic(groupId string, flavorID string) error {
-	// Check if the flavor starts with "bxf."
-	if len(flavorID) >= 4 && flavorID[:4] == "bxf." {
+	if strings.HasPrefix(flavorID, "bxf.") || strings.HasPrefix(flavorID, "nxf.") || strings.HasPrefix(flavorID, "mxf.") {
 		return fmt.Errorf(
-			"Configuration error: Flex flavors (bxf.*) are not supported for Classic/Gen1 databases in group %q.\n"+
+			"Configuration error: Flex flavors (bxf.*, nxf.*, mxf.*) are not supported for Classic/Gen1 databases in group %q.\n"+
 				"   The host_flavor %q is a flex flavor which is only available for Gen2 databases.\n",
-			groupId, flavorID)
-	}
-	if strings.HasPrefix(flavorID, "nxf-") || strings.HasPrefix(flavorID, "bxf-") || strings.HasPrefix(flavorID, "mxf-") {
-		return fmt.Errorf(
-			"Configuration error: Nano profiles (nxf-*, bxf-*, mxf-*) are not supported for Classic/Gen1 databases in group %q.\n"+
-				"   The host_flavor %q is a nano profile which is only available for Gen2 databases.\n",
 			groupId, flavorID)
 	}
 	return nil
@@ -3292,7 +3285,7 @@ func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, met
 				if err != nil {
 					return err
 				}
-				// Validate that flex flavors (bxf.*) are not used with Classic/Gen1 instances
+				// Validate that flex flavors (bxf.*, nxf.*, mxf.*) are not used with Classic/Gen1 instances
 				err = validateFlexFlavorForClassic(groupId, group.HostFlavor.ID)
 				if err != nil {
 					return err
