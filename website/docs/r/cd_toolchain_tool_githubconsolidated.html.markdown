@@ -89,7 +89,7 @@ Nested schema for **initialization**:
 	* `git_id` - (Optional, Forces new resource, String) Set this value to 'github' for github.com, or 'githubcustom' for a custom GitHub Enterprise server.
 	* `owner_id` - (Optional, Forces new resource, String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Optional, Forces new resource, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
-	  * Constraints: The default value is `true`.
+	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, Forces new resource, String) The name of the new GitHub repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (Optional, Forces new resource, String) The URL of the GitHub repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
 	* `root_url` - (Optional, Forces new resource, String) The Root URL of the server. e.g. https://github.example.com.
