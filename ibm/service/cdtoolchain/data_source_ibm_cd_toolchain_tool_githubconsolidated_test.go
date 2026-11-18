@@ -101,6 +101,47 @@ func TestAccIBMCdToolchainToolGithubconsolidatedDataSourceGithubAppAuth(t *testi
 	})
 }
 
+func TestAccIBMCdToolchainToolGithubconsolidatedDataSourceGithubAppAuthCustom(t *testing.T) {
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	rgName := acc.CdResourceGroupName
+	repoUrl := acc.CdGithubConsolidatedRepoUrl
+	gitId := acc.CdGithubConsolidatedGitId
+	appId := acc.CdGithubConsolidatedAppId
+	appKey := acc.CdGithubConsolidatedAppKey
+	dataSourceName := "data.ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acc.TestAccPreCheck(t)
+			testAccPreCheckIBMCdToolchainToolGithubconsolidatedCustomApp(t)
+		},
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCdToolchainToolGithubconsolidatedDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCdToolchainToolGithubconsolidatedDataSourceConfigGithubAppCustom(tcName, rgName, repoUrl, gitId, appId, appKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourceName, "id"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "toolchain_id"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "tool_id"),
+					resource.TestCheckResourceAttr(dataSourceName, "parameters.0.auth_type", "github_app"),
+					resource.TestCheckResourceAttr(dataSourceName, "parameters.0.github_app_auth_method", "custom"),
+					resource.TestCheckResourceAttr(dataSourceName, "parameters.0.github_app_credential_app_id", appId),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMCdToolchainToolGithubconsolidatedDataSourceConfigGithubAppCustom(tcName string, rgName string, repoUrl string, gitId string, appId string, appKey string) string {
+	return testAccCheckIBMCdToolchainToolGithubconsolidatedConfigGithubAppCustom(tcName, rgName, repoUrl, gitId, appId, appKey) + `
+		data "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated" {
+			toolchain_id = ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated.toolchain_id
+			tool_id = ibm_cd_toolchain_tool_githubconsolidated.cd_toolchain_tool_githubconsolidated.tool_id
+		}
+	`
+}
+
 func testAccCheckIBMCdToolchainToolGithubconsolidatedDataSourceConfigGithubApp(tcName string, rgName string, repoUrl string, gitId string) string {
 	gitIdAttr := testAccCheckIBMCdToolchainToolGithubconsolidatedGitIdAttr(gitId)
 	return fmt.Sprintf(`
