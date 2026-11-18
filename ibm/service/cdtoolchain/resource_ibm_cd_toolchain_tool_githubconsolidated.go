@@ -695,6 +695,18 @@ func ResourceIBMCdToolchainToolGithubconsolidatedToolModelParametersAsPatch(patc
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["api_token"] = nil
 	}
+	path = "parameters.0.github_app_auth_method"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_auth_method"] = nil
+	}
+	path = "parameters.0.github_app_credential_app_id"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_credential_app_id"] = nil
+	}
+	path = "parameters.0.github_app_credential_private_key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_credential_private_key"] = nil
+	}
 	path = "parameters.0.toolchain_issues_enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["toolchain_issues_enabled"] = nil
