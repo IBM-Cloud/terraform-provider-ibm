@@ -47,7 +47,7 @@ Nested schema for **parameters**:
 	* `api_root_url` - (String) The API root URL for the GitHub server.
 	* `api_token` - (String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
 	* `auth_type` - (String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
-	  * Constraints: Allowable values are: `oauth`, `pat`.
+	  * Constraints: Allowable values are: `oauth`, `pat`, `github_app`.
 	* `auto_init` - (Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
 	* `blind_connection` - (Boolean) Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.
@@ -56,6 +56,10 @@ Nested schema for **parameters**:
 	* `enable_traceability` - (Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (String) Set this value to 'github' for github.com, or 'githubcustom' for a custom GitHub Enterprise server.
+	* `github_app_auth_method` - (String) Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise. Note that the GitHub App must be installed on the target organization or repository prior to applying.
+	  * Constraints: Allowable values are: `managed`, `custom`.
+	* `github_app_credential_app_id` - (String) The numeric GitHub App ID, found in the About section of the GitHub App's General settings tab. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.
+	* `github_app_credential_private_key` - (String) RSA private key contents (PEM format). Encrypted at rest. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.
 	* `integration_owner` - (String) Select the user which git operations will be performed as.
 	* `owner_id` - (String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
