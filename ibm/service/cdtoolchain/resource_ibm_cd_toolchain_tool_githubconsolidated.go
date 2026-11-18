@@ -170,9 +170,10 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Description:      "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
 						},
 						"github_app_auth_method": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{"managed", "custom"}),
+							Description:  "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise.",
 						},
 						"github_app_credential_app_id": &schema.Schema{
 							Type:        schema.TypeString,
