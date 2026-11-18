@@ -18,7 +18,7 @@ require (
 	github.com/IBM/dra-go-sdk v0.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.25.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
-	github.com/IBM/go-sdk-core/v5 v5.25.1
+	github.com/IBM/go-sdk-core/v5 v5.25.2
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/logs-go-sdk v0.7.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
-	github.com/IBM/networking-go-sdk v0.54.0
+	github.com/IBM/networking-go-sdk v0.55.0
 	github.com/IBM/platform-services-go-sdk v0.103.2
 	github.com/IBM/project-go-sdk v0.4.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -36,8 +36,8 @@ require (
 	github.com/IBM/scc-go-sdk/v5 v5.5.3
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v1.0.1
-	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
-	github.com/IBM/secrets-manager-management-go-sdk/v2 v2.0.4
+	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.24
+	github.com/IBM/secrets-manager-management-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.93.0
@@ -101,10 +101,10 @@ require (
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
 	github.com/go-openapi/errors v0.22.9 // indirect
@@ -202,15 +202,16 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zclconf/go-cty v1.19.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.44.0 // indirect
-	go.opentelemetry.io/otel/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
+	go.opentelemetry.io/otel v1.47.0 // indirect
+	go.opentelemetry.io/otel/log v1.47.0 // indirect
+	go.opentelemetry.io/otel/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect

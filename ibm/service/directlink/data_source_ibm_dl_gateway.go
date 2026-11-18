@@ -609,9 +609,11 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 				d.Set(dlResourceGroup, *rg.ID)
 			}
 
-			// if instance.AuthenticationKey != nil {
-			// 	d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
-			// }
+			if authenticationKeyCrn, ok := authenticationKeyCRN(instance.AuthenticationKey); ok {
+				d.Set(dlAuthenticationKey, authenticationKeyCrn)
+			} else {
+				d.Set(dlAuthenticationKey, nil)
+			}
 
 			if instance.ConnectionMode != nil {
 				d.Set(dlConnectionMode, *instance.ConnectionMode)

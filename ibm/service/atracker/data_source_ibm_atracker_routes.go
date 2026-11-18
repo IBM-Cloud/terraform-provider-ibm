@@ -140,7 +140,7 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 		name = v.(string)
 		suppliedFilter = true
 		for _, data := range routeList.Routes {
-			if *data.Name == name {
+			if data.Name != nil && *data.Name == name {
 				matchRoutes = append(matchRoutes, data)
 			}
 		}
@@ -180,9 +180,12 @@ func dataSourceIBMAtrackerRoutesID(d *schema.ResourceData) string {
 
 func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	modelMap["id"] = flex.StringValue(model.ID)
+	modelMap["name"] = flex.StringValue(model.Name)
+	modelMap["crn"] = flex.StringValue(model.CRN)
 	if model.Version != nil {
 		modelMap["version"] = flex.IntValue(model.Version)
 	}
@@ -195,8 +198,12 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 		rules = append(rules, rulesItemMap)
 	}
 	modelMap["rules"] = rules
-	modelMap["created_at"] = model.CreatedAt.String()
-	modelMap["updated_at"] = model.UpdatedAt.String()
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = flex.DateTimeToString(model.CreatedAt)
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = flex.DateTimeToString(model.UpdatedAt)
+	}
 	modelMap["api_version"] = flex.IntValue(model.APIVersion)
 	if model.Message != nil {
 		modelMap["message"] = *model.Message
@@ -209,6 +216,9 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 
 func DataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model == nil {
+		return modelMap, nil
+	}
 	modelMap["target_ids"] = model.TargetIds
 	modelMap["locations"] = model.Locations
 	return modelMap, nil

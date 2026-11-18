@@ -937,7 +937,9 @@ func Provider() *schema.Provider {
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
-			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_instance":     secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+			"ibm_sm_destination":  secretsmanagerinstancemanagement.DataSourceIbmSmDestination(),
+			"ibm_sm_destinations": secretsmanagerinstancemanagement.DataSourceIbmSmDestinations(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1731,6 +1733,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
 
 			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
+			"ibm_sm_destination": secretsmanagerinstancemanagement.ResourceIbmSmDestination(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
@@ -2413,6 +2416,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
+				"ibm_sm_destination":                                                 secretsmanagerinstancemanagement.ResourceIbmSmDestinationValidator(),
 
 				// // Added for Code Engine
 				"ibm_code_engine_allowed_outbound_destination": codeengine.ResourceIbmCodeEngineAllowedOutboundDestinationValidator(),

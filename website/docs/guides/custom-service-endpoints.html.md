@@ -100,6 +100,10 @@ provider "ibm" {
 |Usage Reports|IBMCLOUD_USAGE_REPORTS_API_ENDPOINT|Yes|
 |Virtual Private Cloud (VPC)|IBMCLOUD_IS_NG_API_ENDPOINT|Yes|
 
+## TLS verification for the Backup and Recovery Connector endpoint
+
+The Backup and Recovery Connector client (`IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT`) verifies the TLS certificate of the connector before it sends connector credentials. The certificate must chain to a certificate authority trusted by the host running Terraform. If the connector uses a self-signed certificate, add it to the host trust store. Setting `IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY=true` disables this verification for the connector client only. This is not recommended, because an on-path attacker could then impersonate the connector and capture the credentials.
+
 ## File structure for endpoints file
 
 To use public and private regional endpoints for a service, you must add these endpoints to a JSON file and categorize them as public or private service endpoints. 
