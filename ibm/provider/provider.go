@@ -825,15 +825,17 @@ func Provider() *schema.Provider {
 
 			// Added for private dns zones
 
-			"ibm_dns_zones":                            dnsservices.DataSourceIBMPrivateDNSZones(),
-			"ibm_dns_permitted_networks":               dnsservices.DataSourceIBMPrivateDNSPermittedNetworks(),
-			"ibm_dns_resource_records":                 dnsservices.DataSourceIBMPrivateDNSResourceRecords(),
-			"ibm_dns_glb_monitors":                     dnsservices.DataSourceIBMPrivateDNSGLBMonitors(),
-			"ibm_dns_glb_pools":                        dnsservices.DataSourceIBMPrivateDNSGLBPools(),
-			"ibm_dns_glbs":                             dnsservices.DataSourceIBMPrivateDNSGLBs(),
-			"ibm_dns_custom_resolvers":                 dnsservices.DataSourceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_custom_resolver_forwarding_rules": dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
-			"ibm_dns_custom_resolver_secondary_zones":  dnsservices.DataSourceIBMPrivateDNSSecondaryZones(),
+			"ibm_dns_zones":                               dnsservices.DataSourceIBMPrivateDNSZones(),
+			"ibm_dns_permitted_networks":                  dnsservices.DataSourceIBMPrivateDNSPermittedNetworks(),
+			"ibm_dns_resource_records":                    dnsservices.DataSourceIBMPrivateDNSResourceRecords(),
+			"ibm_dns_glb_monitors":                        dnsservices.DataSourceIBMPrivateDNSGLBMonitors(),
+			"ibm_dns_glb_pools":                           dnsservices.DataSourceIBMPrivateDNSGLBPools(),
+			"ibm_dns_glbs":                                dnsservices.DataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_custom_resolvers":                    dnsservices.DataSourceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_custom_resolver_forwarding_rules":    dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
+			"ibm_dns_custom_resolver_secondary_zones":     dnsservices.DataSourceIBMPrivateDNSSecondaryZones(),
+			"ibm_dns_custom_resolver_cache_clear_action":  dnsservices.DataSourceIBMPrivateDNSCustomResolverCacheClearAction(),
+			"ibm_dns_custom_resolver_cache_clear_actions": dnsservices.DataSourceIBMPrivateDNSCustomResolverCacheClearActions(),
 
 			// Added for Direct Link
 
