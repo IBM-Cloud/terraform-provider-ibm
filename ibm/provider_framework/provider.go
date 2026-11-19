@@ -12,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/watsonx"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -504,6 +505,7 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 // registered in only one of the two providers.
 func (p *frameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		watsonx.NewStorageDelegationResource,
 		// Red Hat AI Inference
 		rhaii.NewRhaiiProjectResource,
 	}
