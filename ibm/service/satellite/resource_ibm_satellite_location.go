@@ -65,7 +65,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return flex.ImmutableResourceCustomizeDiff([]string{satLocation, sateLocZone, "resource_group_id", "zones"}, diff)
+				return flex.ImmutableResourceCustomizeDiff([]string{sateLocZone, "resource_group_id", "zones"}, diff)
 			},
 		),
 
@@ -473,14 +473,14 @@ func resourceIBMSatelliteLocationUpdate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMSatelliteLocationDelete(d *schema.ResourceData, meta interface{}) error {
+	ID := d.Id()
 	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {
 		return err
 	}
 
 	removeSatLocOptions := &kubernetesserviceapiv1.RemoveSatelliteLocationOptions{}
-	name := d.Get(satLocation).(string)
-	removeSatLocOptions.Controller = &name
+	removeSatLocOptions.Controller = &ID
 
 	response, err := satClient.RemoveSatelliteLocation(removeSatLocOptions)
 	if err != nil && response.StatusCode != 404 {
@@ -488,7 +488,7 @@ func resourceIBMSatelliteLocationDelete(d *schema.ResourceData, meta interface{}
 	}
 
 	//Wait for location to delete
-	_, err = waitForLocationDelete(name, d, meta)
+	_, err = waitForLocationDelete(ID, d, meta)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for deleting location instance: %s", err)
 	}
