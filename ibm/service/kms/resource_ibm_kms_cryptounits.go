@@ -8,12 +8,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	keyprotect_dedicated "github.com/IBM/keyprotect-go-client/dedicated"
 )
@@ -25,6 +28,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 		UpdateContext: resourceIBMKmsCryptoUnitsUpdate,
 		DeleteContext: resourceIBMKmsCryptoUnitsDelete,
 		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: resourceIBMKmsCryptoUnitsCustomizeDiff,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
@@ -89,20 +93,23 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"signature_key": {
 				Type:        schema.TypeSet,
 				Required:    true,
+				MinItems:    1,
 				MaxItems:    1,
-				Description: "Credentials for the user will use to create sessions with the cryptounits",
+				Description: "Credentials for the initial administrator who will create sessions with the cryptounits. Use additional_admin blocks to register more administrators",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"filepath": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The filepath to store the signature key or find an exisiting signature key",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
+							Description:  "The filepath to store the signature key or find an exisiting signature key",
 						},
 						"passphrase": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Sensitive:        true,
-							Description:      "The passphrase of the signature_key",
+							ValidateFunc:     validateAdminPassphraseFunc,
+							Description:      "The passphrase of the signature_key. Empty or 4-255 characters",
 							DiffSuppressFunc: suppresspassphraseDiff,
 						},
 						"owner": {
@@ -110,6 +117,60 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Optional:    true,
 							Default:     "",
 							Description: "The owner of the signature_key",
+						},
+						"exists": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if the signature key file already exists at filepath, false to generate it",
+						},
+						"quorum_signer": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if this administrator is a quorum signer",
+						},
+					},
+				},
+			},
+			"additional_admin": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				MaxItems:    4,
+				Description: "Additional administrators to register on the cryptounits. Each additional_admin must have a unique name and filepath",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateAdminNameFunc,
+							Description:  "The name of the administrator. 1-255 characters, unique, must not be \"ADMIN\", must not match the reserved pattern ^(SO|USR)_\\d{4}$ and must differ from signature_key.owner",
+						},
+						"filepath": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
+							Description:  "The filepath to store the administrator's signature key or find an existing one",
+						},
+						"passphrase": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							ValidateFunc:     validateAdminPassphraseFunc,
+							Description:      "The passphrase of the administrator's signature key. Empty or 4-255 characters",
+							DiffSuppressFunc: suppresspassphraseDiff,
+						},
+						"exists": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if the signature key file already exists at filepath, false to generate it",
+						},
+						"quorum_signer": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if this administrator is a quorum signer",
 						},
 					},
 				},
@@ -124,6 +185,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 						"keysharefile": {
 							Type:        schema.TypeSet,
 							Required:    true,
+							MinItems:    2,
 							Description: "Key share file configuration with filepath and passphrase",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -142,10 +204,44 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 								},
 							},
 						},
+						"threshold": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntBetween(2, 255),
+							Description:  "The number of key shares (K) required to restore the master backup key. Must be at least 2 and no greater than the number of keysharefile blocks. Defaults to the number of keysharefile blocks (K = N)",
+						},
 						"keyname": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of the master backup key shown on the cryptounit",
+						},
+						"exists": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if the key share files already exist at their filepaths, false to generate them",
+						},
+					},
+				},
+			},
+			"quorum": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Set signature and revocation thresholds for crypto unit(s). Both thresholds must be between 1 and 5 and cannot exceed the number of administrators. Note: Crypto unit will restart when threshold is configured",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"signature_threshold": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 5),
+							Description:  "Signature threshold value (1-5, required)",
+						},
+						"revocation_threshold": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 5),
+							Description:  "Revocation threshold value (1-5, required)",
 						},
 					},
 				},
@@ -167,15 +263,50 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Parse and validate master backup key configuration
-	masterKeySpec, err := parseMasterKey(d)
+	masterKeySpec, err := parseMasterKey(ctx, d)
 	if err != nil {
 		return diag.Errorf("failed to parse master_key: %v", err)
 	}
 
-	// Parse and validate signature key configuration
-	sigKeySpec, err := parseSignatureKey(d)
+	// Parse and validate the initial administrator (signature_key)
+	primaryAdmin, err := parseSignatureKey(ctx, d)
 	if err != nil {
 		return diag.Errorf("failed to parse signature_key: %v", err)
+	}
+
+	// Parse and validate additional administrators
+	additionalAdmins, err := parseAdditionalAdmins(ctx, d)
+	if err != nil {
+		return diag.Errorf("failed to parse additional_admin: %v", err)
+	}
+	if err := validateAdminFilepaths(primaryAdmin, additionalAdmins); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := validateAdditionalAdminNames(primaryAdmin, additionalAdmins); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := validateAdminCount(1 + len(additionalAdmins)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Validate the quorum thresholds against the number of administrators
+	if err := validateQuorumAdminCount(d, 1+len(additionalAdmins)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Validate that enough administrators are quorum signers for the thresholds
+	allAdmins := append([]*adminKeySpec{primaryAdmin}, additionalAdmins...)
+	if err := validateQuorumSignerCount(d, allAdmins); err != nil {
+		return diag.FromErr(err)
+	}
+
+	sigKeySpec := primaryAdmin.Request
+
+	// Build the additional administrator and quorum threshold requests
+	adminReqs := buildAdditionalAdminRequests(additionalAdmins)
+	thresholdReq, err := buildThresholdRequest(d)
+	if err != nil {
+		return diag.Errorf("failed to parse quorum: %v", err)
 	}
 
 	// Inspect current unit states before deciding whether to initialize.
@@ -201,7 +332,7 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 
 	case allReserved:
 		// Clean slate — proceed with initialization.
-		err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, masterKeySpec, kpOpts.InstanceID)
+		err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, adminReqs, thresholdReq, masterKeySpec, kpOpts.InstanceID)
 		if err != nil {
 			return diag.Errorf("failed to initialize crypto units for instance %s: %s", kpOpts.InstanceID, err.Error())
 		}
@@ -235,7 +366,7 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 }
 
 // parseMasterKey extracts and validates master backup key configuration from TypeSet
-func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPartsSpec, error) {
+func parseMasterKey(ctx context.Context, d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPartsSpec, error) {
 	mbkSet, ok := d.GetOk("master_key")
 	if !ok {
 		return nil, fmt.Errorf("master_key is required but not provided")
@@ -268,8 +399,8 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 	}
 
 	keyShareFileList := keyShareFileSet.List()
-	if len(keyShareFileList) == 0 {
-		return nil, fmt.Errorf("keysharefile must contain at least one block")
+	if len(keyShareFileList) < 2 {
+		return nil, fmt.Errorf("keysharefile must contain at least 2 blocks, got %d", len(keyShareFileList))
 	}
 
 	// Track unique filepaths to ensure no duplicates
@@ -336,6 +467,16 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 			break
 		}
 	}
+	// Declaring exists = true while key share files are missing is a configuration error.
+	declaredExists, _ := mbkData["exists"].(bool)
+	if declaredExists && !keyExists {
+		return nil, fmt.Errorf("exists is true in master_key but one or more keysharefile paths were not found")
+	}
+	// The reverse is only warned about (see buildAdminKeySpec): the files are
+	// present on re-runs because an earlier run generated them.
+	if !declaredExists && keyExists {
+		tflog.Warn(ctx, "exists is false but all keysharefile paths are already on disk; the existing files will be used")
+	}
 
 	// Extract and validate keyname
 	keyNameRaw, ok := mbkData["keyname"]
@@ -354,16 +495,124 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 		return nil, fmt.Errorf("keyname must be 8 characters or less")
 	}
 
+	// Threshold K defaults to N (all shares required) when not specified
+	threshold := len(keyShareFiles)
+	if t, _ := mbkData["threshold"].(int); t != 0 {
+		if t > len(keyShareFiles) {
+			return nil, fmt.Errorf("threshold (%d) in master_key cannot be greater than the number of keysharefile blocks (%d)", t, len(keyShareFiles))
+		}
+		threshold = t
+	}
+
 	return keyprotect_dedicated.NewMasterKeyPartsSpec(
-		len(keyShareFiles),
+		threshold,
 		keyName,
 		keyShareFiles,
 		keyExists,
 	)
 }
 
-// parseSignatureKey extracts and validates signature key configuration from TypeSet
-func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureKeyRequest, error) {
+// buildAdditionalAdminRequests converts the validated additional_admin blocks
+// into the requests expected by InitializeCryptoUnits. It returns nil when no
+// additional administrators are configured.
+// NOTE: adjust the AdditionalAdminRequest fields to match the SDK definition.
+func buildAdditionalAdminRequests(admins []*adminKeySpec) []*keyprotect_dedicated.AdditionalAdminRequest {
+	if len(admins) == 0 {
+		return nil
+	}
+	reqs := make([]*keyprotect_dedicated.AdditionalAdminRequest, 0, len(admins))
+	for _, admin := range admins {
+		reqs = append(reqs, &keyprotect_dedicated.AdditionalAdminRequest{
+			Name:                admin.Name,
+			SignatureKeyRequest: admin.Request,
+		})
+	}
+	return reqs
+}
+
+// buildThresholdRequest converts the quorum block into the request expected by
+// InitializeCryptoUnits. It returns nil when no quorum block is configured.
+// NOTE: adjust the ThresholdRequest fields to match the SDK definition.
+func buildThresholdRequest(d quorumGetter) (*keyprotect_dedicated.ThresholdRequest, error) {
+	signature, revocation, configured, err := parseQuorum(d)
+	if err != nil {
+		return nil, err
+	}
+	if !configured {
+		return nil, nil
+	}
+	return &keyprotect_dedicated.ThresholdRequest{
+		SignatureThreshold:  signature,
+		RevocationThreshold: revocation,
+	}, nil
+}
+
+// adminKeySpec is an administrator signature key together with the quorum
+// settings declared for it in the configuration.
+type adminKeySpec struct {
+	// Name is the administrator name (the owner of the key).
+	Name string
+	// Request is the signature key request passed to keyprotect-go-client.
+	Request *keyprotect_dedicated.SignatureKeyRequest
+	// QuorumSigner is true when this administrator takes part in quorum signing.
+	QuorumSigner bool
+}
+
+// buildAdminKeySpec validates a single administrator block (signature_key or
+// additional_admin) and converts it into an adminKeySpec. label is used in
+// error messages, e.g. "signature_key" or "additional_admin[0]".
+func buildAdminKeySpec(ctx context.Context, data map[string]interface{}, label, name string) (*adminKeySpec, error) {
+	filePath, _ := data["filepath"].(string)
+	if filePath == "" {
+		return nil, fmt.Errorf("filepath in %s cannot be empty", label)
+	}
+
+	// Resolve relative path to absolute path based on terraform execution directory
+	resolvedFilePath, err := resolveRelativePath(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve filepath in %s: %v", label, err)
+	}
+	resolvedFilePath = filepath.Clean(resolvedFilePath)
+
+	passphrase, ok := data["passphrase"].(string)
+	if !ok {
+		return nil, fmt.Errorf("passphrase in %s must be a string", label)
+	}
+	if err := checkAdminPassphrase(passphrase); err != nil {
+		return nil, fmt.Errorf("invalid passphrase in %s: %v", label, err)
+	}
+
+	// The key is treated as existing when the file is on disk. Declaring
+	// exists = true for a file that is not there is a configuration error.
+	declaredExists, _ := data["exists"].(bool)
+	_, statErr := os.Stat(resolvedFilePath)
+	fileExists := !os.IsNotExist(statErr)
+	if declaredExists && !fileExists {
+		return nil, fmt.Errorf("exists is true in %s but the key file %s was not found", label, filePath)
+	}
+	// The reverse is only warned about: the file is legitimately present on
+	// re-runs (Update, or retry after a partial failure) because it was
+	// generated by an earlier run. The existing file is used, not regenerated.
+	if !declaredExists && fileExists {
+		tflog.Warn(ctx, "exists is false but the key file is already on disk; the existing file will be used",
+			map[string]interface{}{"block": label, "filepath": filePath})
+	}
+
+	req, err := keyprotect_dedicated.NewSignatureKeyRequest(resolvedFilePath, passphrase, name, fileExists)
+	if err != nil {
+		return nil, fmt.Errorf("invalid %s: %v", label, err)
+	}
+
+	// NewSignatureKeyRequest does not take quorum_signer, so set it on the
+	// request explicitly for the client to register the admin as a quorum signer.
+	quorumSigner, _ := data["quorum_signer"].(bool)
+	req.QuorumSigner = quorumSigner
+	return &adminKeySpec{Name: name, Request: req, QuorumSigner: quorumSigner}, nil
+}
+
+// parseSignatureKey extracts and validates the initial administrator from the
+// signature_key block.
+func parseSignatureKey(ctx context.Context, d *schema.ResourceData) (*adminKeySpec, error) {
 	sigKeySet, ok := d.GetOk("signature_key")
 	if !ok {
 		return nil, fmt.Errorf("signature_key is required but not provided")
@@ -384,52 +633,263 @@ func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureK
 		return nil, fmt.Errorf("signature_key[0] must be a map")
 	}
 
-	// Extract and validate filepath
-	filePathRaw, ok := sigKeyData["filepath"]
+	owner, _ := sigKeyData["owner"].(string)
+	return buildAdminKeySpec(ctx, sigKeyData, "signature_key", owner)
+}
+
+// parseAdditionalAdmins extracts and validates all additional_admin blocks.
+// Admins are returned sorted by name so the order is deterministic.
+// It returns an error if two blocks share the same name.
+func parseAdditionalAdmins(ctx context.Context, d *schema.ResourceData) ([]*adminKeySpec, error) {
+	adminSet, ok := d.GetOk("additional_admin")
 	if !ok {
-		return nil, fmt.Errorf("filepath is required in signature_key")
+		return nil, nil
 	}
 
-	filePath, ok := filePathRaw.(string)
+	adminSetTyped, ok := adminSet.(*schema.Set)
 	if !ok {
-		return nil, fmt.Errorf("filepath must be a string")
-	}
-	if filePath == "" {
-		return nil, fmt.Errorf("filepath cannot be empty")
+		return nil, fmt.Errorf("additional_admin must be a set")
 	}
 
-	// Resolve relative path to absolute path based on terraform execution directory
-	resolvedFilePath, err := resolveRelativePath(filePath)
+	adminList := adminSetTyped.List()
+	admins := make([]*adminKeySpec, 0, len(adminList))
+	names := make(map[string]bool, len(adminList))
+
+	for i, item := range adminList {
+		adminData, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("additional_admin[%d] must be a map", i)
+		}
+
+		name, _ := adminData["name"].(string)
+		if err := checkAdminName(name); err != nil {
+			return nil, fmt.Errorf("invalid name in additional_admin[%d]: %v", i, err)
+		}
+		if names[name] {
+			return nil, fmt.Errorf("duplicate name detected in additional_admin[%d]: %s", i, name)
+		}
+		names[name] = true
+
+		admin, err := buildAdminKeySpec(ctx, adminData, fmt.Sprintf("additional_admin[%d] (%s)", i, name), name)
+		if err != nil {
+			return nil, err
+		}
+		admins = append(admins, admin)
+	}
+
+	sort.Slice(admins, func(a, b int) bool { return admins[a].Name < admins[b].Name })
+
+	return admins, nil
+}
+
+// validateAdminFilepaths ensures every administrator key (signature_key and
+// additional_admin) resolves to a unique filepath.
+func validateAdminFilepaths(primary *adminKeySpec, additional []*adminKeySpec) error {
+	seen := map[string]bool{primary.Request.FilePath: true}
+	for _, admin := range additional {
+		if seen[admin.Request.FilePath] {
+			return fmt.Errorf("duplicate filepath detected for additional_admin %s: %s", admin.Name, admin.Request.FilePath)
+		}
+		seen[admin.Request.FilePath] = true
+	}
+	return nil
+}
+
+// maxAdminCount is the maximum number of administrators (signature_key plus
+// all additional_admin blocks).
+const maxAdminCount = 5
+
+// reservedAdminNamePattern matches administrator names reserved by the
+// cryptounit (security officer and user accounts such as SO_0001, USR_0002).
+var reservedAdminNamePattern = regexp.MustCompile(`^(SO|USR)_\d{4}$`)
+
+// initialAdminUsername is the name reserved for the initial administrator.
+// The keyprotect-go-client rejects it for any additional administrator.
+const initialAdminUsername = "ADMIN"
+
+// checkAdminName validates an additional_admin name: 1-255 characters, not the
+// reserved initial admin name and not matching the reserved pattern.
+func checkAdminName(name string) error {
+	if len(name) < 1 || len(name) > 255 {
+		return fmt.Errorf("name must be between 1 and 255 characters, got %d", len(name))
+	}
+	if name == initialAdminUsername {
+		return fmt.Errorf("name %q is reserved for the initial admin", name)
+	}
+	if reservedAdminNamePattern.MatchString(name) {
+		return fmt.Errorf("name %q matches the reserved pattern %s", name, reservedAdminNamePattern.String())
+	}
+	return nil
+}
+
+// validateAdminNameFunc is the schema-level form of checkAdminName.
+func validateAdminNameFunc(v interface{}, k string) ([]string, []error) {
+	s, ok := v.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("%s must be a string", k)}
+	}
+	if err := checkAdminName(s); err != nil {
+		return nil, []error{fmt.Errorf("%s: %v", k, err)}
+	}
+	return nil, nil
+}
+
+// checkAdminPassphrase validates an admin key passphrase: empty (no
+// passphrase) or 4-255 characters. The value is never included in the error.
+func checkAdminPassphrase(passphrase string) error {
+	if passphrase == "" {
+		return nil
+	}
+	if len(passphrase) < keyprotect_dedicated.SigKeyPassphraseMinLength ||
+		len(passphrase) > keyprotect_dedicated.SigKeyPassphraseMaxLength {
+		return fmt.Errorf("passphrase must be empty or between %d and %d characters",
+			keyprotect_dedicated.SigKeyPassphraseMinLength, keyprotect_dedicated.SigKeyPassphraseMaxLength)
+	}
+	return nil
+}
+
+// validateAdminPassphraseFunc is the schema-level form of checkAdminPassphrase.
+func validateAdminPassphraseFunc(v interface{}, k string) ([]string, []error) {
+	s, ok := v.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("%s must be a string", k)}
+	}
+	if err := checkAdminPassphrase(s); err != nil {
+		return nil, []error{fmt.Errorf("%s: %v", k, err)}
+	}
+	return nil, nil
+}
+
+// validateAdditionalAdminNames ensures no additional_admin name equals the
+// signature_key owner.
+func validateAdditionalAdminNames(primary *adminKeySpec, additional []*adminKeySpec) error {
+	if primary.Name == "" {
+		return nil
+	}
+	for _, admin := range additional {
+		if admin.Name == primary.Name {
+			return fmt.Errorf("additional_admin name %q must not be equal to signature_key.owner", admin.Name)
+		}
+	}
+	return nil
+}
+
+// validateAdminCount ensures the total number of administrators
+// (signature_key plus all additional_admin blocks) is at most maxAdminCount.
+func validateAdminCount(adminCount int) error {
+	if adminCount > maxAdminCount {
+		return fmt.Errorf("too many administrators: have %d (signature_key plus additional_admin), at most %d are allowed",
+			adminCount, maxAdminCount)
+	}
+	return nil
+}
+
+// quorumGetter is satisfied by both *schema.ResourceData and *schema.ResourceDiff.
+type quorumGetter interface {
+	GetOk(key string) (interface{}, bool)
+}
+
+// parseQuorum returns the signature and revocation thresholds, and whether
+// a quorum block is configured.
+func parseQuorum(d quorumGetter) (signature, revocation int, configured bool, err error) {
+	quorumSet, ok := d.GetOk("quorum")
+	if !ok {
+		return 0, 0, false, nil
+	}
+	quorumSetTyped, ok := quorumSet.(*schema.Set)
+	if !ok || quorumSetTyped.Len() == 0 {
+		return 0, 0, false, nil
+	}
+	quorumData, ok := quorumSetTyped.List()[0].(map[string]interface{})
+	if !ok {
+		return 0, 0, false, fmt.Errorf("quorum[0] must be a map")
+	}
+
+	signature, _ = quorumData["signature_threshold"].(int)
+	revocation, _ = quorumData["revocation_threshold"].(int)
+	return signature, revocation, true, nil
+}
+
+// validateQuorumAdminCount ensures the number of administrators (the
+// signature_key admin plus all additional_admin blocks) is at least
+// max(signature_threshold, revocation_threshold) when a quorum block is configured.
+func validateQuorumAdminCount(d quorumGetter, adminCount int) error {
+	signature, revocation, configured, err := parseQuorum(d)
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve signature_key filepath: %v", err)
+		return err
+	}
+	if !configured {
+		return nil
 	}
 
-	// Extract and validate passphrase
-	passphraseRaw, ok := sigKeyData["passphrase"]
-	if !ok {
-		return nil, fmt.Errorf("passphrase is required in signature_key")
+	maxThreshold := signature
+	if revocation > maxThreshold {
+		maxThreshold = revocation
 	}
 
-	passphrase, ok := passphraseRaw.(string)
-	if !ok {
-		return nil, fmt.Errorf("passphrase must be a string")
+	if adminCount < maxThreshold {
+		return fmt.Errorf("insufficient administrators: have %d (signature_key plus additional_admin), need at least %d (quorum.signature_threshold=%d, quorum.revocation_threshold=%d)",
+			adminCount, maxThreshold, signature, revocation)
+	}
+	return nil
+}
+
+// validateQuorumSignerCount validates the quorum_signer flags against the
+// quorum block:
+//   - without a quorum block, no administrator may set quorum_signer = true;
+//   - with a quorum block, at least signature_threshold administrators must
+//     set quorum_signer = true.
+func validateQuorumSignerCount(d quorumGetter, admins []*adminKeySpec) error {
+	signature, _, configured, err := parseQuorum(d)
+	if err != nil {
+		return err
 	}
 
-	// Extract and validate owner
-	ownerRaw, ok := sigKeyData["owner"]
-	if !ok {
-		return nil, fmt.Errorf("owner is required in signature_key")
+	signers := 0
+	for _, admin := range admins {
+		if admin.QuorumSigner {
+			signers++
+		}
 	}
 
-	owner, ok := ownerRaw.(string)
-	if !ok {
-		return nil, fmt.Errorf("owner must be a string")
+	if !configured {
+		if signers > 0 {
+			return fmt.Errorf("quorum_signer = true is set on %d administrator(s) but no quorum block is configured", signers)
+		}
+		return nil
 	}
-	// Check whether the resolved filepath actually exists on disk
-	_, statErr := os.Stat(resolvedFilePath)
-	fileExists := !os.IsNotExist(statErr)
 
-	return keyprotect_dedicated.NewSignatureKeyRequest(resolvedFilePath, passphrase, owner, fileExists)
+	if signers < signature {
+		return fmt.Errorf("insufficient quorum signers: have %d administrator(s) with quorum_signer = true, need at least %d (quorum.signature_threshold)",
+			signers, signature)
+	}
+	return nil
+}
+
+// resourceIBMKmsCryptoUnitsCustomizeDiff blocks changes to an existing
+// resource that the provider cannot apply safely:
+//   - quorum cannot be changed after the cryptounits are created;
+//   - additional_admin cannot be reduced so that the administrator count
+//     falls below max(signature_threshold, revocation_threshold).
+func resourceIBMKmsCryptoUnitsCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if d.Id() == "" {
+		return nil
+	}
+
+	if d.HasChange("quorum") {
+		return fmt.Errorf("quorum cannot be changed after the cryptounits are created")
+	}
+
+	if d.HasChange("additional_admin") && d.NewValueKnown("additional_admin") {
+		additionalCount := 0
+		if s, ok := d.Get("additional_admin").(*schema.Set); ok {
+			additionalCount = s.Len()
+		}
+		if err := validateQuorumAdminCount(d, 1+additionalCount); err != nil {
+			return fmt.Errorf("removing an administrator is blocked: %v", err)
+		}
+	}
+	return nil
 }
 
 // resolveRelativePath converts a path to be relative to the current working directory
@@ -513,6 +973,9 @@ func resourceIBMKmsCryptoUnitsRead(ctx context.Context, d *schema.ResourceData, 
 	}
 	if v, ok := d.GetOk("signature_key"); ok {
 		d.Set("signature_key", v)
+	}
+	if v, ok := d.GetOk("additional_admin"); ok {
+		d.Set("additional_admin", v)
 	}
 
 	return nil
