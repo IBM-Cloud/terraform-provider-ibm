@@ -483,6 +483,7 @@ func ResourceIBMISInstance() *schema.Resource {
 			isInstanceProfileRefreshTrigger: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "",
 				Description: "A revision label. Changing it to a new non-empty value re-applies the instance's current profile so that the latest profile limits (for example, the maximum vNIC count) take effect. The instance is stopped and restarted. Removing the argument does not trigger a refresh.",
 			},
 			isInstanceDefaultTrustedProfileAutoLink: {
