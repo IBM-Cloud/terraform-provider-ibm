@@ -252,3 +252,11 @@ variable "numOfBackupCopies" {
     description = "Specify the number of automatic backup copies to retain for the MultiCloud Object Gateway metadata database. Supported values are between 1 and 12."
 
 }
+
+variable "autoDetectFlexibleScaling" {
+
+    type = bool
+    default = true
+    description = "Automatically evaluates the cluster topology and enables Flexible Scaling for supported deployments. When disabled, Flexible Scaling is not automatically detected or configured."
+
+}
