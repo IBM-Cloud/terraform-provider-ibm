@@ -435,17 +435,17 @@ func TestAccIBMDatabaseInstancePostgresNanoFlavorValidation(t *testing.T) {
 
 	steps := []resource.TestStep{}
 	// Nano profiles are Gen2 only, so Classic/Gen1 must reject all of them
-	for _, flavor := range []string{"nxf-1x4", "nxf-1x8", "bxf-2x8", "mxf-2x16"} {
+	for _, flavor := range []string{"nxf.1x4", "nxf.1x8", "bxf.2x8", "mxf.2x16"} {
 		steps = append(steps, resource.TestStep{
 			Config:      testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard", acc.Region(), "public", flavor, 20480),
-			ExpectError: regexp.MustCompile("Nano profiles \\(nxf-\\*, bxf-\\*, mxf-\\*\\) are not supported for Classic/Gen1 databases"),
+			ExpectError: regexp.MustCompile(`Flex flavors \(bxf\.\*, nxf\.\*, mxf\.\*\) are not supported for Classic/Gen1 databases`),
 		})
 	}
 	// Nano profiles that are not supported at all must fail schema validation
-	for _, flavor := range []string{"nxf-1x1", "nxf-1x2"} {
+	for _, flavor := range []string{"nxf.1x1", "nxf.1x2"} {
 		steps = append(steps, resource.TestStep{
 			Config:      testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", flavor, 10240),
-			ExpectError: regexp.MustCompile("expected .*host_flavor.*\\.id to be one of"),
+			ExpectError: regexp.MustCompile(`expected .*host_flavor.*\.id to be one of`),
 		})
 	}
 
@@ -471,20 +471,20 @@ func TestAccIBMDatabaseInstancePostgresGen2NanoFlavor(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf-1x4", 10240),
+				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf.1x4", 10240),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
-					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf-1x4"),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf.1x4"),
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf-1x8", 10240),
+				Config: testAccCheckIBMDatabaseInstancePostgresWithHostFlavor(databaseResourceGroup, testName, "standard-gen2", "ca-mon", "private", "nxf.1x8", 10240),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf-1x8"),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "nxf.1x8"),
 				),
 			},
 		},

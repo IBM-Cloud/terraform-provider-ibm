@@ -592,11 +592,11 @@ func TestIsShardAttrConfigured(t *testing.T) {
 	})
 }
 
-var nanoHostFlavors = []string{"nxf-1x4", "nxf-1x8", "bxf-2x8", "mxf-2x16"}
+var nanoHostFlavors = []string{"nxf.1x4", "nxf.1x8", "bxf.2x8", "mxf.2x16"}
 
 func TestValidateFlexFlavorForClassic_NanoProfiles(t *testing.T) {
 	for _, id := range nanoHostFlavors {
-		requireErrContains(t, validateFlexFlavorForClassic("member", id), "Nano profiles (nxf-*, bxf-*, mxf-*)")
+		requireErrContains(t, validateFlexFlavorForClassic("member", id), "Flex flavors (bxf.*, nxf.*, mxf.*)")
 	}
 	if err := validateFlexFlavorForClassic("member", "b3c.4x16.encrypted"); err != nil {
 		t.Fatalf("expected no error for classic flavor, got %v", err)
@@ -638,7 +638,7 @@ func TestHostFlavorIDSchema_AcceptsNanoProfiles(t *testing.T) {
 
 func TestHostFlavorIDSchema_RejectsUnsupportedNanoProfiles(t *testing.T) {
 	validateFn := hostFlavorIDValidator(t)
-	for _, id := range []string{"nxf-1x1", "nxf-1x2", "nxf-2x4", "bxf-1x4", "mxf-1x8", "nxf-1x4 "} {
+	for _, id := range []string{"nxf.1x1", "nxf.1x2", "nxf.2x4", "bxf.1x4", "mxf.1x8", "nxf.1x4 "} {
 		if _, errs := validateFn(id, "group.0.host_flavor.0.id"); len(errs) == 0 {
 			t.Errorf("expected profile %q to be rejected by schema validation", id)
 		}
