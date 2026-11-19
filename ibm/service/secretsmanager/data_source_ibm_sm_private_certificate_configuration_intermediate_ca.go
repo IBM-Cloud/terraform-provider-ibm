@@ -201,6 +201,7 @@ func DataSourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Reso
 			"crypto_key": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
+				Deprecated:  "HPCS-backed PKI configurations have been deprecated and can no longer be created. Existing configurations will continue to work.",
 				Description: "The data that is associated with a cryptographic key.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

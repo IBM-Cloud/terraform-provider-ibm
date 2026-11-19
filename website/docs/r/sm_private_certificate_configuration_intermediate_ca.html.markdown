@@ -101,7 +101,7 @@ Review the argument reference that you can specify for your resource.
 * `ttl` - (Optional, String) Specifies the requested Time To Live (after which the certificate will be expired). The value can be provided as a string representation of a duration in hours (e.g. `24h`) or the number of seconds as a string (e.g. `86400`). The value cannot exceed the value of `max_ttl`.
 * `uri_sans` - (Optional, Forces new resource, String) The URI Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
     * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
-* `crypto_key` - (Optional, Forces new resource, List) The data that is associated with a cryptographic key.
+* `crypto_key` - (Deprecated, Optional, Forces new resource, List) The data that is associated with a cryptographic key.
   Nested scheme for **crypto_key**:
     * `provider` - (Required, Forces new resource, List) The data that is associated with a cryptographic provider.
       Nested scheme for **provider**:

@@ -221,6 +221,7 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			},
 			"crypto_key": &schema.Schema{
 				Type:        schema.TypeList,
+				Deprecated:  "HPCS-backed PKI configurations have been deprecated and can no longer be created. Existing configurations will continue to work.",
 				MaxItems:    1,
 				Optional:    true,
 				Computed:    true,
