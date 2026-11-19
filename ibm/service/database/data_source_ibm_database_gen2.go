@@ -67,6 +67,10 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 		return err
 	}
 
+	if err := d.Set("backups", flattenBackupsFromExtensions(instance.Extensions)); err != nil {
+		return fmt.Errorf("error setting backups: %w", err)
+	}
+
 	// Set maintenance window from instance extensions.
 	if ext := instance.Extensions; ext != nil {
 		if flat := flattenMaintenance(ext); flat != nil {
