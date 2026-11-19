@@ -1951,7 +1951,7 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 	if modelMap["data_mover_image_location"] != nil && modelMap["data_mover_image_location"].(string) != "" {
 		model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
 	}
-	if modelMap["datamover_hostport_number"] != nil {
+	if modelMap["datamover_hostport_number"] != nil && modelMap["datamover_hostport_number"].(int) > 0 {
 		model.DatamoverHostportNumber = core.Int64Ptr(int64(modelMap["datamover_hostport_number"].(int)))
 	}
 	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
