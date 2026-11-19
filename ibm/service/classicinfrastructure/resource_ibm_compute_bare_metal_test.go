@@ -113,13 +113,13 @@ func TestAccIBMComputeBareMetal_With_IPV6(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						configName, "secondary_ip_count", "4"),
 					resource.TestCheckResourceAttrSet(
+						configName, "secondary_ip_addresses.0"),
+					resource.TestCheckResourceAttrSet(
 						configName, "secondary_ip_addresses.1"),
 					resource.TestCheckResourceAttrSet(
 						configName, "secondary_ip_addresses.2"),
 					resource.TestCheckResourceAttrSet(
 						configName, "secondary_ip_addresses.3"),
-					resource.TestCheckResourceAttrSet(
-						configName, "secondary_ip_addresses.4"),
 					resource.TestCheckResourceAttr(
 						configName, "user_metadata", "{\"value\":\"newvalue\"}"),
 					resource.TestCheckResourceAttr(
