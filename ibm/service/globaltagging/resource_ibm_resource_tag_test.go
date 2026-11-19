@@ -237,11 +237,10 @@ func TestAccResourceTag_replace_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ibm_resource_tag.tag",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"replace"},
+				ResourceName:            "ibm_resource_tag.tag",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace"},
 			},
 		},
 	})

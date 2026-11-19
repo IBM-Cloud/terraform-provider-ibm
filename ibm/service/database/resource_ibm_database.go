@@ -193,7 +193,9 @@ type resourceIBMDatabaseBackend interface {
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMemberZonesDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMaintenanceWindowDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
@@ -235,10 +237,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
+			validateGen2SpecificMemberZonesDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateBackendSpecificMaintenanceWindowDiff,
 			validateShardsDiff,
 			validateBackendSpecificServiceEndpointsDiff,
 		),
@@ -375,7 +379,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"remote_leader_id": {
 				Description: "The CRN of the leader (source) database. " +
 					"Classic: creates a read-only replica at provisioning time; clear to promote the replica to a standalone instance. " +
-					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance.",
+					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance. " +
+					"Gen2 MongoDB (enterprise-sharding-gen2): the CRN of a Gen1 databases-for-mongodb Enterprise instance to migrate from using MongoSync; clear to stop synchronization and commit the migration (irreversible).",
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -536,6 +541,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"allocation_count": {
 										Type:     schema.TypeInt,
 										Required: true,
+									},
+									"member_zones": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 									},
 								},
 							},
@@ -752,6 +765,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"member_zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Availability zones for a single-member deployment. Gen2 only.",
+						},
 						"host_flavor": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -945,6 +966,50 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"maintenance": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Maintenance window configuration for Gen2 database instances. Applicable to Gen2 plans only.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"window": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"start_time": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										Description:  "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
+										ValidateFunc: validateMaintenanceStartTime,
+									},
+									"days": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Computed:    true,
+										Description: "Day(s) of the week on which maintenance can be initiated. Example: [\"Wednesday\",\"Thursday\"].",
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validateMaintenanceDays,
+										},
+									},
+									"system_assigned": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "When true, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set together with start_time or days.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			flex.DeletionProtection: {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -1064,12 +1129,13 @@ type Params struct {
 }
 
 type Group struct {
-	ID         string
-	Members    *GroupResource
-	Memory     *GroupResource
-	Disk       *GroupResource
-	CPU        *GroupResource
-	HostFlavor *HostFlavorGroupResource
+	ID          string
+	Members     *GroupResource
+	MemberZones []string
+	Memory      *GroupResource
+	Disk        *GroupResource
+	CPU         *GroupResource
+	HostFlavor  *HostFlavorGroupResource
 }
 
 type GroupResource struct {
@@ -2983,7 +3049,12 @@ func expandGroups(_groups []interface{}) []*Group {
 			if membersSet, ok := tfGroup["members"].(*schema.Set); ok {
 				members := membersSet.List()
 				if len(members) != 0 {
-					group.Members = &GroupResource{Allocation: members[0].(map[string]interface{})["allocation_count"].(int)}
+					if memberMap, ok := members[0].(map[string]interface{}); ok {
+						group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
+						if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
+							group.MemberZones = stringsFromInterfaceSlice(zonesRaw)
+						}
+					}
 				}
 			}
 
@@ -3123,6 +3194,10 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 
 func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
+}
+
+func validateGen2SpecificMemberZonesDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMemberZonesDiff(context, diff, meta)
 }
 
 func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
@@ -3429,12 +3504,59 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 
-	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
-		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	if remoteLeaderIdOk && !isRemoteLeaderIDSupported(service, plan) {
+		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb, databases-for-mysql and databases-for-mongodb with plan enterprise-sharding-gen2")
 	}
 
 	return nil
+}
+
+// isRemoteLeaderIDSupported reports whether remote_leader_id can be used with the given service and plan.
+// For databases-for-mongodb only enterprise-sharding-gen2 is supported (MongoSync migration).
+func isRemoteLeaderIDSupported(service, plan string) bool {
+	switch service {
+	case "databases-for-postgresql", "databases-for-mysql", "databases-for-enterprisedb":
+		return true
+	case "databases-for-mongodb":
+		return plan == "enterprise-sharding-gen2"
+	}
+	return false
+}
+
+// validateMaintenanceDays is a ValidateFunc for each element of maintenance.window.days.
+// Accepts a single full English day name (e.g. "Wednesday").
+func validateMaintenanceDays(v interface{}, k string) (warnings []string, errors []error) {
+	allowed := map[string]bool{
+		"Monday": true, "Tuesday": true, "Wednesday": true, "Thursday": true,
+		"Friday": true, "Saturday": true, "Sunday": true,
+	}
+	val := v.(string)
+	if !allowed[val] {
+		errors = append(errors, fmt.Errorf(
+			"%s: unrecognised day %q - must be a full English day name (e.g. \"Wednesday\")",
+			k, val,
+		))
+	}
+	return
+}
+
+// validateMaintenanceStartTime is a ValidateFunc for maintenance.window.start_time.
+// Ensures the time format matches ISO 8601 UTC format (hh:mmZ).
+func validateMaintenanceStartTime(v interface{}, k string) (warnings []string, errors []error) {
+	val := v.(string)
+	if val == "" {
+		return
+	}
+	return validation.StringMatch(
+		regexp.MustCompile(`^(2[0-3]|[01][0-9]):[0-5][0-9]Z$`),
+		"start_time must be in ISO 8601 UTC format hh:mmZ, e.g. \"05:00Z\"",
+	)(v, k)
+}
+
+func validateBackendSpecificMaintenanceWindowDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMaintenanceWindowDiff(context, diff, meta)
 }
 
 func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

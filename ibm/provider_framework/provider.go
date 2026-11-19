@@ -529,5 +529,6 @@ func (p *frameworkProvider) Actions(ctx context.Context) []func() action.Action 
 	return []func() action.Action{
 		codeengine.NewCodeEngineBuildRunAction,
 		kubernetes.NewContainerVpcBareMetalWorkerReloadAction,
+		kubernetes.NewContainerVpcWorkerReloadAction,
 	}
 }

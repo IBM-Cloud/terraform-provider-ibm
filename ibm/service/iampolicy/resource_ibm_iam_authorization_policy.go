@@ -551,7 +551,7 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 func resourceIBMIAMAuthorizationPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("source_service_name") || d.HasChange("target_service_name") || d.HasChange("roles") || d.HasChange("source_resource_instance_id") || d.HasChange("target_resource_instance_id") ||
 		d.HasChange("source_resource_group_id") || d.HasChange("source_resource_type") || d.HasChange("target_resource_type") || d.HasChange("source_service_account") ||
-		d.HasChange("subject_attributes") || d.HasChange("resource_attributes") {
+		d.HasChange("subject_attributes") || d.HasChange("resource_attributes") || d.HasChange("description") {
 		var sourceServiceName, targetServiceName string
 		policyType := "authorization"
 		policySubject := &iampolicymanagementv1.V2PolicySubject{}
