@@ -422,6 +422,23 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_database", "tags")},
 				Set:      flex.ResourceIBMVPCHash,
 			},
+			"automatic_backups": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Controls the daily automatic backup configuration for the instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether to enable or disable daily automatic backups. Default is true. If set to false, daily automatic backups are not created, making backups optional. The update to this configuration applies only to new backups created thereafter. Disabling the automatic backups does not delete any existing backups.",
+						},
+					},
+				},
+			},
 			"point_in_time_recovery_deployment_id": {
 				Description:      "The CRN of source instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,

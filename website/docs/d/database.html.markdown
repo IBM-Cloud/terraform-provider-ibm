@@ -55,6 +55,11 @@ In addition to all argument references list, you can access the following attrib
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
 - `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
+- `automatic_backups` - (List) Controls the daily automatic backup configuration for the instance. Applicable to Gen2 plans only.
+
+  Nested scheme for `automatic_backups`:
+  - `enabled` - (Boolean) Whether daily automatic backups are enabled.
+
 - `maintenance` - (List) Maintenance window configuration. Applicable to Gen2 plans only.
 
   Nested scheme for `maintenance`:
@@ -141,11 +146,12 @@ If this authorization is missing or incomplete, Terraform emits a **non-blocking
 ╵
 ```
 
-The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans, Gen2 instances not enrolled in Independent Backups, and when automatic backups are disabled (`enabled = false`).
 
 To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 ### Gen2 Specific Attributes
 The following attributes are only populated for Gen2 instances:
+- `automatic_backups` - Daily automatic backup configuration from instance extensions (only populated for Gen2 instances).
 - `shards` - The live shard count, populated only for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Returns `1` for a single-shard instance. Not set for any other service or plan.
 - `maintenance` - Maintenance window configuration from instance extensions (only populated for Gen2 instances).
 

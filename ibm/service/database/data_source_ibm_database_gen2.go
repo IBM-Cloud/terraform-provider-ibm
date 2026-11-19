@@ -76,6 +76,11 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 		}
 	}
 
+	// Set automatic_backups from instance extensions
+	if err := d.Set("automatic_backups", flattenAutomaticBackupsFromExtensions(instance.Extensions)); err != nil {
+		return fmt.Errorf("error setting automatic_backups: %w", err)
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 

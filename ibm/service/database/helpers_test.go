@@ -782,6 +782,45 @@ func TestHasIndependentBackups(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "automatic_backups enabled is false",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": false,
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "automatic_backups enabled is string false",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": "false",
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "automatic_backups enabled is true",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": true,
+						},
+					},
+				},
+			},
+			want: true,
+		},
 	}
 
 	for _, c := range cases {
@@ -1325,5 +1364,102 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		if v := d.Get("shards").(int); v != 0 {
 			t.Fatalf("expected shards unset (0) when key absent, got %d", v)
 		}
+	})
+}
+
+func TestBuildAutomaticBackupsConfig(t *testing.T) {
+	t.Run("returns nil when automatic_backups is not configured", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{})
+		require.Nil(t, buildAutomaticBackupsConfig(d, false))
+	})
+
+	t.Run("returns map when automatic_backups is configured on create", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"automatic_backups": []interface{}{
+				map[string]interface{}{
+					"enabled": false,
+				},
+			},
+		})
+		got := buildAutomaticBackupsConfig(d, false)
+		require.Equal(t, map[string]interface{}{
+			"enabled": false,
+		}, got)
+	})
+
+	t.Run("returns map when automatic_backups enabled is true", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"automatic_backups": []interface{}{
+				map[string]interface{}{
+					"enabled": true,
+				},
+			},
+		})
+		got := buildAutomaticBackupsConfig(d, false)
+		require.Equal(t, map[string]interface{}{
+			"enabled": true,
+		}, got)
+	})
+}
+
+func TestFlattenAutomaticBackupsFromExtensions(t *testing.T) {
+	t.Run("returns nil for nil extensions", func(t *testing.T) {
+		require.Nil(t, flattenAutomaticBackupsFromExtensions(nil))
+	})
+
+	t.Run("returns nil when dataservices is missing", func(t *testing.T) {
+		require.Nil(t, flattenAutomaticBackupsFromExtensions(map[string]interface{}{}))
+	})
+
+	t.Run("returns nil when backups is missing", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{},
+		}
+		require.Nil(t, flattenAutomaticBackupsFromExtensions(ext))
+	})
+
+	t.Run("returns nil when automatic_backups is missing", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"backups": map[string]interface{}{},
+			},
+		}
+		require.Nil(t, flattenAutomaticBackupsFromExtensions(ext))
+	})
+
+	t.Run("flattens enabled false correctly", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"backups": map[string]interface{}{
+					"automatic_backups": map[string]interface{}{
+						"enabled": false,
+					},
+				},
+			},
+		}
+		got := flattenAutomaticBackupsFromExtensions(ext)
+		require.Equal(t, []interface{}{
+			map[string]interface{}{
+				"enabled": false,
+			},
+		}, got)
+	})
+
+	t.Run("flattens enabled true correctly", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"backups": map[string]interface{}{
+					"automatic_backups": map[string]interface{}{
+						"enabled": true,
+					},
+				},
+			},
+		}
+		got := flattenAutomaticBackupsFromExtensions(ext)
+		require.Equal(t, []interface{}{
+			map[string]interface{}{
+				"enabled": true,
+			},
+		}, got)
 	})
 }
