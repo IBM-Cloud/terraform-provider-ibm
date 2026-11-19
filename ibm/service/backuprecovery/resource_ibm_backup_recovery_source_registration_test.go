@@ -5,14 +5,18 @@ package backuprecovery_test
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -178,4 +182,115 @@ func testAccCheckIbmBackupRecoverySourceRegistrationDestroy(s *terraform.State) 
 	}
 
 	return nil
+}
+
+func TestKubernetesSourceRegistrationParamsDatamoverHostportNumber(t *testing.T) {
+	cases := []struct {
+		name     string
+		hcl      map[string]interface{}
+		expected *int64
+	}{
+		{
+			name: "hostport number omitted with kNodePort",
+			hcl: map[string]interface{}{
+				"endpoint":                "https://example.com:443",
+				"kubernetes_distribution": "kROKS",
+				"client_private_key":      "token", // pragma: allowlist secret
+				"datamover_service_type":  "kNodePort",
+			},
+			expected: nil,
+		},
+		{
+			name: "hostport number set with kHostPort",
+			hcl: map[string]interface{}{
+				"endpoint":                  "https://example.com:443",
+				"kubernetes_distribution":   "kROKS",
+				"client_private_key":        "token", // pragma: allowlist secret
+				"datamover_service_type":    "kHostPort",
+				"datamover_hostport_number": 31000,
+			},
+			expected: core.Int64Ptr(31000),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := backuprecovery.ResourceIbmBackupRecoverySourceRegistration()
+			d := schema.TestResourceDataRaw(t, res.Schema, map[string]interface{}{
+				"x_ibm_tenant_id":   "tenant/",
+				"environment":       "kKubernetes",
+				"connection_id":     "123",
+				"kubernetes_params": []interface{}{tc.hcl},
+			})
+
+			modelMap := d.Get("kubernetes_params").([]interface{})[0].(map[string]interface{})
+			model, err := backuprecovery.ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistrationParams(modelMap)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if tc.expected == nil {
+				if model.DatamoverHostportNumber != nil {
+					t.Fatalf("expected DatamoverHostportNumber to be nil, got %d", *model.DatamoverHostportNumber)
+				}
+				return
+			}
+			if model.DatamoverHostportNumber == nil || *model.DatamoverHostportNumber != *tc.expected {
+				t.Fatalf("expected DatamoverHostportNumber %d, got %v", *tc.expected, model.DatamoverHostportNumber)
+			}
+		})
+	}
+}
+
+// Verifies registering a Kubernetes source with a non-kHostPort datamover service type
+// and no datamover_hostport_number succeeds (datamoverHostportNumber must not be sent).
+func TestAccIbmBackupRecoveryKubernetesSourceRegistrationNodePort(t *testing.T) {
+	tenantId := os.Getenv("BRS_TENANT_ID")
+	connectionId := os.Getenv("BRS_CONNECTION_ID")
+	instanceId := os.Getenv("BRS_INSTANCE_ID")
+	region := os.Getenv("BRS_REGION")
+	clusterEndpoint := os.Getenv("BRS_K8S_ENDPOINT")
+	clusterToken := os.Getenv("BRS_K8S_TOKEN")
+	serviceName := os.Getenv("BRS_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "backup-recovery"
+	}
+	distribution := os.Getenv("BRS_K8S_DISTRIBUTION")
+	if distribution == "" {
+		distribution = "kROKS"
+	}
+	if tenantId == "" || connectionId == "" || instanceId == "" || region == "" || clusterEndpoint == "" || clusterToken == "" {
+		t.Skip("set BRS_TENANT_ID, BRS_CONNECTION_ID, BRS_INSTANCE_ID, BRS_REGION, BRS_K8S_ENDPOINT, BRS_K8S_TOKEN to run")
+	}
+	name := "ibm_backup_recovery_source_registration.k8s_nodeport"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "ibm_backup_recovery_source_registration" "k8s_nodeport" {
+					x_ibm_tenant_id = "%s"
+					environment     = "kKubernetes"
+					connection_id   = "%s"
+					endpoint_type   = "public"
+					instance_id     = "%s"
+					region          = "%s"
+					service_name    = "%s"
+					kubernetes_params {
+						endpoint                = "%s"
+						kubernetes_distribution = "%s"
+						kubernetes_type         = "kCluster"
+						client_private_key      = "%s" # pragma: allowlist secret
+						datamover_service_type  = "kNodePort"
+					}
+				}`, tenantId, connectionId, instanceId, region, serviceName, clusterEndpoint, distribution, clusterToken),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(name, "id"),
+					resource.TestCheckResourceAttr(name, "kubernetes_params.0.datamover_service_type", "kNodePort"),
+				),
+			},
+		},
+	})
 }
