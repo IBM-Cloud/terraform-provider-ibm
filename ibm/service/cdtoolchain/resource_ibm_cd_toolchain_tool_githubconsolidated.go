@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2025, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package cdtoolchain
@@ -157,16 +157,35 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Description: "The ID of the GitHub repository.",
 						},
 						"auth_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{"oauth", "pat", "github_app"}),
+							Description:  "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
 						},
 						"api_token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
+							Description:      "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
+						},
+						"github_app_auth_method": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{"managed", "custom"}),
+							Description:  "Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise. Note that the GitHub App must be installed on the target organization or repository prior to applying.",
+						},
+						"github_app_credential_app_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The numeric GitHub App ID, found in the About section of the GitHub App's General settings tab. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.",
+						},
+						"github_app_credential_private_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "RSA private key contents (PEM format). Encrypted at rest. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -675,6 +694,18 @@ func ResourceIBMCdToolchainToolGithubconsolidatedToolModelParametersAsPatch(patc
 	path = "parameters.0.api_token"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["api_token"] = nil
+	}
+	path = "parameters.0.github_app_auth_method"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_auth_method"] = nil
+	}
+	path = "parameters.0.github_app_credential_app_id"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_credential_app_id"] = nil
+	}
+	path = "parameters.0.github_app_credential_private_key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["github_app_credential_private_key"] = nil
 	}
 	path = "parameters.0.toolchain_issues_enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {

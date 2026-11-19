@@ -14,6 +14,8 @@ See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=C
 
 ## Example Usage
 
+### Personal Access Token (PAT) Authentication
+
 ```hcl
 resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
   initialization {
@@ -29,6 +31,46 @@ resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubcon
 		auth_type = "pat"
 		api_token = "<api_token>"
 		toolchain_issues_enabled = true
+  }
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+}
+```
+
+### GitHub App Authentication (Managed)
+
+~> **Note:** The GitHub App must be installed on the target GitHub repository or organization before running `terraform apply`.
+
+```hcl
+resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
+  initialization {
+		git_id = "github"
+		repo_url = "https://github.com/my-org/my-repo"
+		type = "link"
+  }
+  parameters {
+		auth_type = "github_app"
+		github_app_auth_method = "managed"
+  }
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+}
+```
+
+### GitHub App Authentication (Custom)
+
+~> **Note:** The GitHub App must be installed on the target GitHub repository or organization before running `terraform apply`.
+
+```hcl
+resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubconsolidated_instance" {
+  initialization {
+		git_id = "github"
+		repo_url = "https://github.com/my-org/my-repo"
+		type = "link"
+  }
+  parameters {
+		auth_type = "github_app"
+		github_app_auth_method = "custom"
+		github_app_credential_app_id = "<github_app_id>"
+		github_app_credential_private_key = file("path/to/private-key.pem")
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -60,9 +102,9 @@ Nested schema for **initialization**:
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested schema for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitHub server.
-	* `api_token` - (Optional, String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
+	* `api_token` - (Optional, String) Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.
 	* `auth_type` - (Optional, String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
-	  * Constraints: Allowable values are: `oauth`, `pat`.
+	  * Constraints: Allowable values are: `oauth`, `pat`, `github_app`.
 	* `auto_init` - (Computed, Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
 	* `blind_connection` - (Computed, Boolean) Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.
@@ -71,6 +113,10 @@ Nested schema for **parameters**:
 	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'github' for github.com, or 'githubcustom' for a custom GitHub Enterprise server.
+	* `github_app_auth_method` - (Optional, String) Whether to use IBM's managed GitHub App or a custom one. One of 'managed' or 'custom'. Required if 'auth_type' is set to 'github_app', ignored otherwise. Note that the GitHub App must be installed on the target organization or repository prior to applying.
+	  * Constraints: Allowable values are: `managed`, `custom`.
+	* `github_app_credential_app_id` - (Optional, String) The numeric GitHub App ID, found in the About section of the GitHub App's General settings tab. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.
+	* `github_app_credential_private_key` - (Optional, String) RSA private key contents (PEM format). Encrypted at rest. Required if 'auth_type' is set to 'github_app' and 'github_app_auth_method' is set to 'custom', ignored otherwise.
 	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
 	* `owner_id` - (Computed, String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
@@ -87,7 +133,7 @@ Nested schema for **parameters**:
 	* `type` - (Computed, String) The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`, `new_if_not_exists`, `clone_if_not_exists`, `fork_if_not_exists`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
 
@@ -104,7 +150,7 @@ Nested schema for **referent**:
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `tool_id` - (String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 * `updated_at` - (String) Latest tool update timestamp.
 

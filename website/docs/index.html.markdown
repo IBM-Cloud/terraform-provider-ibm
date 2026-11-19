@@ -304,13 +304,6 @@ By default provider targets to cse endpoints when the `visibility` is set to `pr
 
 * `ibmcloud_account_id` -  - (optional) The IBM Cloud IAM trusted profile name. You must either add it as a credential in the provider block or source it from the `IC_ACCOUNT_ID`  or `IBMCLOUD_IAM_PROFILE_NAME` environment variable.
 
-***Note***
-The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below
-
-```shell
-export IBMCLOUD_UAA_ENDPOINT="https://iam.cloud.ibm.com/cloudfoundry/login/<region>/"
-```
-
 ## References 
 
 * [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-resources-datasource-list)

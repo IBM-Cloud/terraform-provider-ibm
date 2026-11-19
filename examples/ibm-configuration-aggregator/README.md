@@ -29,6 +29,7 @@ Run `terraform destroy` when you don't need these resources.
 ```hcl
 resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
   resource_collection_enabled = var.config_aggregator_settings_resource_collection_enabled
+  realtime_config_enabled = var.config_aggregator_settings_realtime_config_enabled
   trusted_profile_id = var.config_aggregator_settings_trusted_profile_id
   regions = var.config_aggregator_settings_regions
   additional_scope = var.config_aggregator_settings_additional_scope
@@ -41,6 +42,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | resource_collection_enabled | The field denoting if the resource collection is enabled. | `bool` | false |
+| realtime_config_enabled | The field denoting if the realtime collection is enabled. | `bool` | false |
 | trusted_profile_id | The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata. | `string` | false |
 | regions | The list of regions across which the resource collection is enabled. | `list(string)` | false |
 | additional_scope | The additional scope that enables resource collection for Enterprise acccounts. | `list()` | false |
@@ -88,6 +90,7 @@ data "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
 | Name | Description |
 |------|-------------|
 | resource_collection_enabled | The field to check if the resource collection is enabled. |
+| realtime_config_enabled | The field to check if the realtime collection is enabled. |
 | trusted_profile_id | The trusted profile ID that provides access to App Configuration instance to retrieve resource metadata. |
 | last_updated | The last time the settings was last updated. |
 | regions | Regions for which the resource collection is enabled. |
@@ -105,6 +108,8 @@ data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resou
 | Name | Description |
 |------|-------------|
 | last_config_refresh_time | The timestamp at which the configuration was last refreshed. |
+| latest_reconciliation_mode | Latest collection mode (`automatic`, `manual` or `realtime`). |
+| reconciliation_modes | Per reconciliation mode details (`automatic`, `manual`, `realtime`), each with `last_refresh_time`. |
 | status | Status of the resource collection. |
 
 ## Assumptions

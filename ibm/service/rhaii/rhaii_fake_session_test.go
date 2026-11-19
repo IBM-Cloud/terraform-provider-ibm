@@ -4,6 +4,7 @@
 package rhaii
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,10 +15,12 @@ import (
 	"testing"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/rhaii/rhaiiv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // fakeSession is a conns.ClientSession for unit tests. It embeds the interface
@@ -104,9 +107,12 @@ func TestRhaiiUpdateTagsDoesNotDeleteTags(t *testing.T) {
 		client, search, calls := newTaggingServer(t, []string{"keep:1", "new:1"})
 		meta := fakeSession{tagging: client, search: search}
 
-		err := rhaiiUpdateTags(meta, "crn:v1:project", tagType, []string{"keep:1", "drop:1"}, []string{"keep:1", "new:1"})
+		ctx := context.Background()
+		oldTags, _ := types.SetValueFrom(ctx, types.StringType, []string{"keep:1", "drop:1"})
+		newTags, _ := types.SetValueFrom(ctx, types.StringType, []string{"keep:1", "new:1"})
+		err := flex.FrameworkUpdateTagsUsingCRN(ctx, meta, "crn:v1:project", "", tagType, oldTags, newTags)
 		if err != nil {
-			t.Fatalf("%s: rhaiiUpdateTags() error: %s", tagType, err)
+			t.Fatalf("%s: FrameworkUpdateTagsUsingCRN() error: %s", tagType, err)
 		}
 
 		var attached, detached []string
