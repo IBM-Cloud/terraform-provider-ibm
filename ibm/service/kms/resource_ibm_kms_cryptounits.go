@@ -144,7 +144,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validateAdminNameFunc,
-							Description:  "The name of the administrator. 1-255 characters, unique, must not match the reserved pattern ^(SO|USR)_\\d{4}$ and must differ from signature_key.owner",
+							Description:  "The name of the administrator. 1-255 characters, unique, must not be \"ADMIN\", must not match the reserved pattern ^(SO|USR)_\\d{4}$ and must differ from signature_key.owner",
 						},
 						"filepath": {
 							Type:         schema.TypeString,
@@ -203,6 +203,12 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 									},
 								},
 							},
+						},
+						"threshold": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntBetween(2, 255),
+							Description:  "The number of key shares (K) required to restore the master backup key. Must be at least 2 and no greater than the number of keysharefile blocks. Defaults to the number of keysharefile blocks (K = N)",
 						},
 						"keyname": {
 							Type:        schema.TypeString,
@@ -294,19 +300,14 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	// TODO: keyprotect-go-client does not yet support registering additional
-	// administrators or configuring quorum thresholds. InitializeCryptoUnits
-	// only accepts the initial signature key. Apply additional_admin,
-	// quorum_signer and quorum once the client supports them.
-	if len(additionalAdmins) > 0 {
-		tflog.Warn(ctx, "additional_admin is validated but not yet applied to the crypto units",
-			map[string]interface{}{"instance_id": kpOpts.InstanceID, "additional_admins": len(additionalAdmins)})
-	}
-	if _, _, configured, _ := parseQuorum(d); configured {
-		tflog.Warn(ctx, "quorum is validated but not yet applied to the crypto units",
-			map[string]interface{}{"instance_id": kpOpts.InstanceID})
-	}
 	sigKeySpec := primaryAdmin.Request
+
+	// Build the additional administrator and quorum threshold requests
+	adminReqs := buildAdditionalAdminRequests(additionalAdmins)
+	thresholdReq, err := buildThresholdRequest(d)
+	if err != nil {
+		return diag.Errorf("failed to parse quorum: %v", err)
+	}
 
 	// Inspect current unit states before deciding whether to initialize.
 	cryptoUnitsResponse, _, err := kmsCryptoUnitClient.ListCryptoUnitsWithContext(ctx)
@@ -331,7 +332,7 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 
 	case allReserved:
 		// Clean slate — proceed with initialization.
-		err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, masterKeySpec, kpOpts.InstanceID)
+		err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, adminReqs, thresholdReq, masterKeySpec, kpOpts.InstanceID)
 		if err != nil {
 			return diag.Errorf("failed to initialize crypto units for instance %s: %s", kpOpts.InstanceID, err.Error())
 		}
@@ -494,12 +495,56 @@ func parseMasterKey(ctx context.Context, d *schema.ResourceData) (*keyprotect_de
 		return nil, fmt.Errorf("keyname must be 8 characters or less")
 	}
 
+	// Threshold K defaults to N (all shares required) when not specified
+	threshold := len(keyShareFiles)
+	if t, _ := mbkData["threshold"].(int); t != 0 {
+		if t > len(keyShareFiles) {
+			return nil, fmt.Errorf("threshold (%d) in master_key cannot be greater than the number of keysharefile blocks (%d)", t, len(keyShareFiles))
+		}
+		threshold = t
+	}
+
 	return keyprotect_dedicated.NewMasterKeyPartsSpec(
-		len(keyShareFiles),
+		threshold,
 		keyName,
 		keyShareFiles,
 		keyExists,
 	)
+}
+
+// buildAdditionalAdminRequests converts the validated additional_admin blocks
+// into the requests expected by InitializeCryptoUnits. It returns nil when no
+// additional administrators are configured.
+// NOTE: adjust the AdditionalAdminRequest fields to match the SDK definition.
+func buildAdditionalAdminRequests(admins []*adminKeySpec) []*keyprotect_dedicated.AdditionalAdminRequest {
+	if len(admins) == 0 {
+		return nil
+	}
+	reqs := make([]*keyprotect_dedicated.AdditionalAdminRequest, 0, len(admins))
+	for _, admin := range admins {
+		reqs = append(reqs, &keyprotect_dedicated.AdditionalAdminRequest{
+			Name:                admin.Name,
+			SignatureKeyRequest: admin.Request,
+		})
+	}
+	return reqs
+}
+
+// buildThresholdRequest converts the quorum block into the request expected by
+// InitializeCryptoUnits. It returns nil when no quorum block is configured.
+// NOTE: adjust the ThresholdRequest fields to match the SDK definition.
+func buildThresholdRequest(d quorumGetter) (*keyprotect_dedicated.ThresholdRequest, error) {
+	signature, revocation, configured, err := parseQuorum(d)
+	if err != nil {
+		return nil, err
+	}
+	if !configured {
+		return nil, nil
+	}
+	return &keyprotect_dedicated.ThresholdRequest{
+		SignatureThreshold:  signature,
+		RevocationThreshold: revocation,
+	}, nil
 }
 
 // adminKeySpec is an administrator signature key together with the quorum
@@ -558,7 +603,10 @@ func buildAdminKeySpec(ctx context.Context, data map[string]interface{}, label, 
 		return nil, fmt.Errorf("invalid %s: %v", label, err)
 	}
 
+	// NewSignatureKeyRequest does not take quorum_signer, so set it on the
+	// request explicitly for the client to register the admin as a quorum signer.
 	quorumSigner, _ := data["quorum_signer"].(bool)
+	req.QuorumSigner = quorumSigner
 	return &adminKeySpec{Name: name, Request: req, QuorumSigner: quorumSigner}, nil
 }
 
@@ -655,11 +703,18 @@ const maxAdminCount = 5
 // cryptounit (security officer and user accounts such as SO_0001, USR_0002).
 var reservedAdminNamePattern = regexp.MustCompile(`^(SO|USR)_\d{4}$`)
 
-// checkAdminName validates an additional_admin name: 1-255 characters and not
-// matching the reserved pattern.
+// initialAdminUsername is the name reserved for the initial administrator.
+// The keyprotect-go-client rejects it for any additional administrator.
+const initialAdminUsername = "ADMIN"
+
+// checkAdminName validates an additional_admin name: 1-255 characters, not the
+// reserved initial admin name and not matching the reserved pattern.
 func checkAdminName(name string) error {
 	if len(name) < 1 || len(name) > 255 {
 		return fmt.Errorf("name must be between 1 and 255 characters, got %d", len(name))
+	}
+	if name == initialAdminUsername {
+		return fmt.Errorf("name %q is reserved for the initial admin", name)
 	}
 	if reservedAdminNamePattern.MatchString(name) {
 		return fmt.Errorf("name %q matches the reserved pattern %s", name, reservedAdminNamePattern.String())
