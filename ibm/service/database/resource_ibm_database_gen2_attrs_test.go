@@ -684,10 +684,11 @@ func TestBuildDBConfig_NanoHostFlavor(t *testing.T) {
 			if config["host_flavor"] != id {
 				t.Fatalf("expected host_flavor=%s, got %v", id, config["host_flavor"])
 
-				}
+			}
 		})
 	}
 }
+
 // TestMongodbeesSingleMemberUsecases verifies the payload built by buildDBConfig for all
 // single-member / multi-member / sharding combinations for mongodbees.
 // UC2 (members=2) and UC6 (member_zones + shards>1) are rejected by the DB API, not Terraform.
