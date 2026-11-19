@@ -38,7 +38,7 @@ resource "ibm_resource_instance" "key_protect_instance" {
 }
 
 resource "ibm_kms_cryptounits" "st-dedicated" {
-  region = "us-south"
+  region      = "us-south"
   instance_id = ibm_resource_instance.key_protect_instance.guid
 
   signature_key {
@@ -48,14 +48,14 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
     exists     = true
   }
 
-  master_key  {
+  master_key {
     keysharefile {
-      filepath = "tf-mbk-1.key"
-      passphrase    = var.kms_key_passphrase
+      filepath   = "tf-mbk-1.key"
+      passphrase = var.kms_key_passphrase
     }
     keysharefile {
-      filepath = "tf-mbk-2.key"
-      passphrase    = var.kms_key_passphrase
+      filepath   = "tf-mbk-2.key"
+      passphrase = var.kms_key_passphrase
     }
     keyname = "mbkkey"
     exists  = true
@@ -77,7 +77,7 @@ resource "ibm_resource_instance" "key_protect_instance" {
 }
 
 resource "ibm_kms_cryptounits" "st-dedicated" {
-  url = ibm_resource_instance.key_protect_instance.extensions["endpoints.public"]
+  url         = ibm_resource_instance.key_protect_instance.extensions["endpoints.public"]
   instance_id = ibm_resource_instance.key_protect_instance.guid
 
   signature_key {
@@ -87,17 +87,87 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
     exists     = true
   }
 
-  master_key  {
+  master_key {
     keysharefile {
-      filepath = "tf-mbk-1.key"
-      passphrase    = var.kms_key_passphrase
+      filepath   = "tf-mbk-1.key"
+      passphrase = var.kms_key_passphrase
     }
     keysharefile {
-      filepath = "tf-mbk-2.key"
-      passphrase    = var.kms_key_passphrase
+      filepath   = "tf-mbk-2.key"
+      passphrase = var.kms_key_passphrase
     }
     keyname = "mbkkey"
     exists  = true
+  }
+}
+```
+
+## Example usage to configure quorum authentication with multiple administrators
+
+```terraform
+variable "kms_key_passphrase" {
+  description = "Passphrase for the KMS key share files and signature keys."
+  type        = string
+  sensitive   = true
+}
+
+resource "ibm_resource_instance" "key_protect_instance" {
+  name              = "dedicated-quorum-instance"
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  service           = "kms"
+  plan              = "dedicated"
+  location          = "us-south"
+  tags              = ["env:prod"]
+  parameters = {
+    crypto_units = "3"
+  }
+}
+
+resource "ibm_kms_cryptounits" "st-dedicated" {
+  region      = "us-south"
+  instance_id = ibm_resource_instance.key_protect_instance.guid
+
+  signature_key {
+    filepath      = "admin-initial.key"
+    passphrase    = var.kms_key_passphrase
+    owner         = "ADMIN"
+    quorum_signer = true
+  }
+
+  additional_admin {
+    name          = "admin2"
+    filepath      = "admin-2.key"
+    passphrase    = var.kms_key_passphrase
+    quorum_signer = true
+  }
+
+  additional_admin {
+    name          = "admin3"
+    filepath      = "admin-3.key"
+    passphrase    = var.kms_key_passphrase
+    quorum_signer = true
+  }
+
+  master_key {
+    keysharefile {
+      filepath   = "tf-mbk-1.key"
+      passphrase = var.kms_key_passphrase
+    }
+    keysharefile {
+      filepath   = "tf-mbk-2.key"
+      passphrase = var.kms_key_passphrase
+    }
+    keysharefile {
+      filepath   = "tf-mbk-3.key"
+      passphrase = var.kms_key_passphrase
+    }
+    threshold = 2
+    keyname   = "mbkkey"
+  }
+
+  quorum {
+    signature_threshold  = 2
+    revocation_threshold = 2
   }
 }
 ```
@@ -109,26 +179,49 @@ Review the argument references that you can specify for your resource.
 - `region` - (Optional, Forces new resource, String) The region where the Key Protect Dedicated instance resides (e.g., "us-south"). Required if `url` is not provided.
 - `url` - (Optional, String) The URL to use when targeting the resource. If not provided, the URL will be constructed from `instance_id` and `region`.
 - `use_private_endpoint` - (Optional, Bool) Set to **true** to use the private endpoint, otherwise **false**. Default is **false**.
-- `signature_key` - (Required, Set, MaxItems: 1) Credentials for the administrator who will create sessions with the cryptounits.
-  ~> **IMPORTANT:** This field will create a signature key or use an existing one found in the filepath. 
+- `should_zeroize` - (Optional, Bool) Set to **true** if the resource should be zeroized. Zeroizing is harmful if not understood. Set to **false** as a safe default. Default is **false**.
+- `signature_key` - (Required, Set, MaxItems: 1) Credentials for the initial administrator who will create sessions with the cryptounits. Use `additional_admin` blocks to register more administrators.
 
   Nested scheme for `signature_key`:
-  - `filepath` - (Required, String) The filepath to the signature key file. Can be relative (resolved from Terraform execution directory) or absolute.
-  - `passphrase` - (Required, String, Sensitive) The passphrase for the signature key. This value is sensitive and will not be stored in state.
+  - `filepath` - (Required, String) The filepath to store the signature key or find an existing signature key. Can be relative (resolved from Terraform execution directory) or absolute.
+  - `passphrase` - (Optional, Sensitive, String) The passphrase of the signature key. Can be between 4-255 characters. This value is sensitive and will not be stored in state.
+  - `owner` - (Optional, String) The owner of the signature key. Default is an empty string (defaults to "ADMIN" on the cryptounit).
+  - `exists` - (Optional, Bool) Set to **true** if the signature key file already exists at `filepath`, **false** to generate it. Default is **false**.
+  - `quorum_signer` - (Optional, Bool) Set to **true** if this administrator is a quorum signer. Default is **false**. Cannot be set to **true** if no `quorum` block is configured.
 
-- `master_key` - (Required, Set, MaxItems: 1) Configuration for the master backup key.
+- `additional_admin` - (Optional, Set, MaxItems: 4) Additional administrators to register on the cryptounits. Each `additional_admin` must have a unique name and filepath. At most 4 additional administrators can be configured (total of 5 administrators including the initial administrator in `signature_key`).
+
+  Nested scheme for `additional_admin`:
+  - `name` - (Required, String) The name of the administrator. 1-255 characters, unique, must not be "ADMIN", must not match the reserved pattern `^(SO|USR)_\d{4}$`, and must differ from `signature_key.owner`.
+  - `filepath` - (Required, String) The filepath to store the administrator's signature key or find an existing one. Can be relative (resolved from Terraform execution directory) or absolute. Must be unique across all administrators.
+  - `passphrase` - (Optional, Sensitive, String) The passphrase of the administrator's signature key. Can be between 4-255 characters. This value is sensitive and will not be stored in state.
+  - `exists` - (Optional, Bool) Set to **true** if the signature key file already exists at `filepath`, **false** to generate it. Default is **false**.
+  - `quorum_signer` - (Optional, Bool) Set to **true** if this administrator is a quorum signer. Default is **false**. Cannot be set to **true** if no `quorum` block is configured.
+
+- `master_key` - (Required, Set, MaxItems: 1) Configuration and attributes related to the master backup key.
 
   Nested scheme for `master_key`:
-  - `keysharefile` - (Required, Set, MinItems: 2) two or more key share file configurations. Each key share file represents a part of the master key.
-  ~> **IMPORTANT:** This field will create a signature key or use an existing one found in the filepaths of the keysharefile. 
-  ~> **WARNING:** This field currently enforces K = N for master key generation, requiring all generated key shares to reconstruct or use the master key.
+  - `keysharefile` - (Required, Set, MinItems: 2) Two or more key share file configurations. Each key share file represents a part of the master key.
     
     Nested scheme for `keysharefile`:
-    - `filepath` - (Required, String) The filepath to store the key share file. Can be relative (resolved from Terraform execution directory) or absolute. Each filepath must be unique.
-    - `passphrase` - (Required, String, Sensitive) The passphrase associated with the key share file. This value is sensitive and will not be stored in state.
+    - `filepath` - (Required, String) The filepath to store the key share file or find an existing one. Can be relative (resolved from Terraform execution directory) or absolute. Each filepath must be unique.
+    - `passphrase` - (Required, Sensitive, String) The passphrase associated with the key share file. This value is sensitive and will not be stored in state.
   
-  - `keyname` - (Required, String) The name of the master backup key as shown on the cryptounit. Must be 8 characters or less.
+  - `threshold` - (Optional, Integer) The number of key shares (K) required to restore the master backup key, for example `2` for a 2-of-3 scheme. Must be at least 2 and no greater than the number of `keysharefile` blocks. If not specified, defaults to the number of `keysharefile` blocks (K = N), so all key shares are required.
+  - `keyname` - (Required, String) The name of the master backup key shown on the cryptounit. Must be 8 characters or less.
+  - `exists` - (Optional, Bool) Set to **true** if the key share files already exist at their filepaths, **false** to generate them. Default is **false**.
 
+- `quorum` - (Optional, Set, MaxItems: 1) Set signature and revocation thresholds for the cryptounits. Both thresholds must be between 1 and 5 and cannot exceed the total number of administrators (`signature_key` plus all `additional_admin` blocks).
+  ~> **IMPORTANT:**
+  - The cryptounits restart when the thresholds are configured.
+  - Quorum configuration cannot be changed after the cryptounits are created.
+  - The total number of administrators must be at least the greater of `signature_threshold` and `revocation_threshold`.
+  - At least `signature_threshold` administrators across `signature_key` and `additional_admin` blocks must set `quorum_signer = true`.
+  - You cannot remove administrators (`additional_admin`) if the remaining administrator count would fall below `max(signature_threshold, revocation_threshold)`.
+
+  Nested scheme for `quorum`:
+  - `signature_threshold` - (Required, Integer) Signature threshold value (1-5). The number of signatures required to authorize administrative commands.
+  - `revocation_threshold` - (Required, Integer) Revocation threshold value (1-5). The number of signatures required to revoke an administrator.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -155,4 +248,18 @@ In addition to all argument reference list, you can access the following attribu
 - **File Path Resolution**: Relative file paths are resolved from the directory where Terraform is executed. Absolute paths are used as-is.
 - **Sensitive Data**: Passphrases are marked as sensitive and will not be stored in Terraform state. Changes to these values will always be suppressed in diffs.
 - **Key Name Length**: The `keyname` in `master_key` must be 8 characters or less.
-- **Unique Filepaths**: Each `keysharefile` must have a unique filepath. Duplicate filepaths will result in an error.
+- **Admin Naming Constraints**:
+  - A maximum of 5 administrators can be registered (1 `signature_key` and up to 4 `additional_admin` blocks).
+  - For the initial administrator (`signature_key`), `owner` is optional and defaults to `"ADMIN"`.
+  - For each `additional_admin`, `name` is required (1–255 characters) and must be unique.
+  - An `additional_admin` name must not be `"ADMIN"`.
+  - An `additional_admin` name must not match the cryptounit reserved pattern `^(SO|USR)_\d{4}$` (e.g., `SO_0001`, `USR_0002`).
+  - An `additional_admin` name must not match the initial administrator's `signature_key.owner`.
+- **Additional Admin Lifecycle & Diff Rules**:
+  - `quorum` settings cannot be modified or added after the cryptounits are created.
+  - Removing `additional_admin` blocks is blocked if the remaining administrator count (`signature_key` + `additional_admin`) falls below `max(signature_threshold, revocation_threshold)`.
+- **Unique Filepaths**: Each `keysharefile`, `signature_key`, and `additional_admin` must have a unique filepath. Duplicate filepaths will result in an error.
+- **Quorum Validation and Immutability**:
+  - When `quorum` is configured, the total number of administrators (`signature_key` + `additional_admin`) must be greater than or equal to `max(signature_threshold, revocation_threshold)`.
+  - At least `signature_threshold` administrators must have `quorum_signer = true`.
+  - If no `quorum` block is configured, no administrator can have `quorum_signer = true`.
