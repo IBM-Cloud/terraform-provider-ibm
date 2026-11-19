@@ -1,4 +1,20 @@
-# 2.10.0-beta0
+# 2.10.0 (November 19, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* omit datamover_hostport_number when unset for kubernetes source registration ([7118](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7118))
+
+## Enhancements
+
+### CD Toolchain
+* add support for github app auth ([7113](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7113))
+
+### Kubernetes
+* Add a new `delete-openshift-registry-cos-bucket` attribute to cluster deletion ([7101](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7101))
+
+
+# 2.10.0-beta0 (November 16, 2026)
 
 ## Bug Fixes
 
