@@ -1797,7 +1797,8 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 
 	share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
+		if response != nil && (response.StatusCode == 404 || response.StatusCode == 301) {
+			// 301 (share_moved_permanently) is returned for a replica share that is already deleted.
 			d.SetId("")
 			return nil
 		}
@@ -1909,6 +1910,21 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(tfErr)
 	}
+	// A replica deleted in the same run (as its own resource or inline) can still be
+	// listed on the source for a short time. Deleting the source at that point fails
+	// with shares_with_replica_cannot_be_deleted, so wait for the link to clear first.
+	if share.ReplicaShare != nil && share.ReplicaShare.ID != nil {
+		share, response, err = isWaitForShareReplicaDetached(context, vpcClient, d, d.Id())
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for replica share to detach failed: %s", err.Error()), "ibm_is_share", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
 	ETag := response.Headers.Get("ETag")
 	deleteShareOptions := &vpcv1.DeleteShareOptions{}
 
@@ -1980,7 +1996,10 @@ func isWaitForShareDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *sc
 
 			share, response, err := vpcClient.GetShareWithContext(context, shareOptions)
 			if err != nil {
-				if response != nil && response.StatusCode == 404 {
+				// 404 means the share is gone. After a replica share is deleted, the
+				// API can briefly answer 301 (share_moved_permanently) with no target
+				// instead of 404. The share no longer exists at this ID, so treat it as deleted.
+				if response != nil && (response.StatusCode == 404 || response.StatusCode == 301) {
 					return share, "done", nil
 				}
 				return nil, "", fmt.Errorf("Error Getting Target: %s\n%s", err, response)
@@ -1996,6 +2015,48 @@ func isWaitForShareDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *sc
 	}
 
 	return stateConf.WaitForState()
+}
+
+// isWaitForShareReplicaDetached waits while the source share still lists a replica that
+// is deleted or being deleted. It stops as soon as the replica link is gone, or when the
+// listed replica is alive and not deleting (then the delete call reports the API error
+// right away instead of waiting for the timeout). It returns the latest source share and
+// the response of the last source GET, so the caller can use its ETag for the delete call.
+func isWaitForShareReplicaDetached(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid string) (*vpcv1.Share, *core.DetailedResponse, error) {
+	log.Printf("Waiting for replica share to detach from share (%s).", shareid)
+	var share *vpcv1.Share
+	var response *core.DetailedResponse
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"attached"},
+		Target:  []string{"detached"},
+		Refresh: func() (interface{}, string, error) {
+			var err error
+			share, response, err = vpcClient.GetShareWithContext(context, &vpcv1.GetShareOptions{ID: &shareid})
+			if err != nil {
+				return nil, "", fmt.Errorf("Error Getting share: %s\n%s", err, response)
+			}
+			if share.ReplicaShare == nil || share.ReplicaShare.ID == nil {
+				return share, "detached", nil
+			}
+			replica, replicaResponse, err := vpcClient.GetShareWithContext(context, &vpcv1.GetShareOptions{ID: share.ReplicaShare.ID})
+			if err != nil {
+				// 404 or 301 (share_moved_permanently): the replica is gone, but the
+				// source still lists it. Keep waiting for the link to clear.
+				if replicaResponse != nil && (replicaResponse.StatusCode == 404 || replicaResponse.StatusCode == 301) {
+					return share, "attached", nil
+				}
+				return nil, "", fmt.Errorf("Error Getting replica share: %s\n%s", err, replicaResponse)
+			}
+			if replica.LifecycleState != nil && *replica.LifecycleState == "deleting" {
+				return share, "attached", nil
+			}
+			return share, "detached", nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		MinTimeout: 10 * time.Second,
+	}
+	_, err := stateConf.WaitForState()
+	return share, response, err
 }
 
 func suppressCronSpecDiff(k, old, new string, d *schema.ResourceData) bool {

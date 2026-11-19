@@ -26,6 +26,7 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmConfigAggregatorSettingsCreate,
 		ReadContext:   resourceIbmConfigAggregatorSettingsRead,
+		UpdateContext: resourceIbmConfigAggregatorSettingsUpdate,
 		DeleteContext: resourceIbmConfigAggregatorSettingsDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -35,6 +36,12 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The field denoting if the resource collection is enabled.",
+			},
+			"realtime_config_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "The field denoting if the realtime collection is enabled. If omitted, the value currently set on the service is retained; on initial creation the service treats realtime collection as disabled. This value can be updated in place.",
 			},
 			"trusted_profile_id": &schema.Schema{
 				Type:         schema.TypeString,
@@ -113,18 +120,31 @@ func ResourceIbmConfigAggregatorSettingsValidator() *validate.ResourceValidator 
 }
 
 func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceIbmConfigAggregatorSettingsReplace(context, d, meta, "create")
+}
+
+func resourceIbmConfigAggregatorSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceIbmConfigAggregatorSettingsReplace(context, d, meta, "update")
+}
+
+// resourceIbmConfigAggregatorSettingsReplace sends the complete settings to the service.
+// The ReplaceSettings API replaces all settings on every request (omitted fields are reset),
+// so both create and update must send every configured field, not only the changed ones.
+// The operation argument ("create" or "update") is used for error reporting.
+func resourceIbmConfigAggregatorSettingsReplace(context context.Context, d *schema.ResourceData, meta interface{}, operation string) diag.Diagnostics {
 	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
-	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
-	instanceId := d.Get("instance_id").(string)
-	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", operation)
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	instanceId := d.Get("instance_id").(string)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
 	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
 	replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
+	replaceSettingsOptions.SetRealtimeConfigEnabled(d.Get("realtime_config_enabled").(bool))
 	if _, ok := d.GetOk("trusted_profile_id"); ok {
 		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
 	}
@@ -142,15 +162,15 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 			value := v.(map[string]interface{})
 			additionalScopeItem, err := ResourceIbmConfigAggregatorSettingsMapToAdditionalScope(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create", "parse-additional_scope").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", operation, "parse-additional_scope").GetDiag()
 			}
 			additionalScope = append(additionalScope, *additionalScopeItem)
 		}
 		replaceSettingsOptions.SetAdditionalScope(additionalScope)
 	}
-	_, _, err = configurationAggregatorClient.ReplaceSettings(replaceSettingsOptions)
+	_, _, err = configurationAggregatorClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", operation)
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -197,6 +217,12 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 		if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
 			err = fmt.Errorf("Error setting resource_collection_enabled: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
+		}
+	}
+	if !core.IsNil(settingsResponse.RealtimeConfigEnabled) {
+		if err = d.Set("realtime_config_enabled", settingsResponse.RealtimeConfigEnabled); err != nil {
+			err = fmt.Errorf("Error setting realtime_config_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-realtime_config_enabled").GetDiag()
 		}
 	}
 	if !core.IsNil(settingsResponse.TrustedProfileID) {

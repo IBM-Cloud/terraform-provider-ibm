@@ -92,6 +92,16 @@ Thank you for contributing! Here you will find the information on what to includ
 - Normalize unordered results in **Read** using sorted lists/sets.
 - Don’t ignore user changes unless API truly ignores them.
 
+### Environment tags (IC_ENV_TAGS)
+- `IC_ENV_TAGS` holds comma-separated tags that are attached to every resource, on top of the configured `tags`. Do not read it in a resource; use the helpers in `ibm/flex/env_tags.go`.
+- `flex.UpdateGlobalTagsUsingCRN` and `flex.UpdateTagsUsingCRN` already attach these tags in Create/Update.
+- The tags must not show up in the plan. The Global Tagging service lower-cases tags, so compare ignoring case.
+- **SDKv2:** use `flex.ResourceTagsCustomizeDiff` and `flex.ResourceIBMVPCHash` for the `tags` set (see `ibm_is_vpc`).
+- **Plugin Framework:** use the helpers in `ibm/flex/framework_tags.go` (see `ibm_rhaii_project`):
+  - `flex.FrameworkValidateAccessTags` in `ModifyPlan`, to fail on access tags that do not exist.
+  - `flex.FrameworkUpdateTagsUsingCRN` in `Create` (null old set) and `Update`; it attaches the environment tags too.
+  - `flex.FrameworkReadTagsUsingCRN` in `Read`; it leaves the environment tags out, so the state matches the config.
+
 ### Validation
 - Always use validators for string length, patterns, enums.
 - Fail early when invalid input is easier for user to correct.
@@ -128,6 +138,8 @@ Working on an existing resources is a great way to start as a Terraform contribu
 
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
 
+ - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys. Known false positives are tracked in `.secrets.baseline`. If CI reports a false positive, run `make detect-secrets` to refresh the baseline, then `detect-secrets audit .secrets.baseline` to mark the entry as not a secret, and commit the updated baseline.
+
 #### New resource
 
 Implementing a new resource is a good way to learn more about how Terraform interacts with upstream APIs. There are plenty of examples to draw from in the existing resources, but you still get to implement something completely new.
@@ -139,6 +151,7 @@ Implementing a new resource is a good way to learn more about how Terraform inte
  - [ ] __Run go mod tidy__: If you add new dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
  - [ ] __Run go vet__: Before submitting your PR, run `go vet ./...` to catch common Go programming errors. The CI build will fail if `go vet` reports any issues.
  - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
+ - [ ] __No committed secrets__: GitHub Actions runs IBM `detect-secrets` on every pull request and push to `master`. Do not check in API keys, tokens, or private keys.
 
 ### Writing acceptance tests
 
@@ -422,4 +435,3 @@ Note: You can use the existing GitHub actions to run the release workflows, in y
     }
   } 
   ```
-

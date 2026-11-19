@@ -16,6 +16,7 @@ import (
 	gohttp "net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -355,6 +356,7 @@ type ClientSession interface {
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
+	CloudMonitoringV1() (*core.BaseService, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
 	RhaiiV1() (*rhaiiv1.RhaiiV1, error)
@@ -733,6 +735,9 @@ type clientSession struct {
 	// Cloud Logs
 	logsClient    *logsv0.LogsV0
 	logsClientErr error
+
+	cloudMonitoringClient    *core.BaseService
+	cloudMonitoringClientErr error
 
 	// Logs Routing v1
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
@@ -1323,6 +1328,15 @@ func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecover
 	return session.backupRecoveryClient, session.backupRecoveryClientErr
 }
 
+// backupRecoveryConnectorSkipTLSVerify reports whether the user has explicitly
+// opted out of TLS certificate verification for the Backup Recovery connector
+// client by setting IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY to a
+// true value. Verification is enabled by default.
+func backupRecoveryConnectorSkipTLSVerify() bool {
+	skipVerify, err := strconv.ParseBool(os.Getenv("IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY"))
+	return err == nil && skipVerify
+}
+
 func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error) {
 	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
 }
@@ -1480,6 +1494,11 @@ func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
 // Cloud Logs
 func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
 	return session.logsClient, session.logsClientErr
+}
+
+// IBM Cloud Monitoring instance API (no Go SDK, so a go-sdk-core BaseService is used)
+func (session clientSession) CloudMonitoringV1() (*core.BaseService, error) {
+	return session.cloudMonitoringClient, session.cloudMonitoringClientErr
 }
 
 // IBM Cloud Logs Routing V1
@@ -1693,6 +1712,7 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		session.projectClientErr = errEmptyBluemixCredentials
 		session.mqcloudClientErr = errEmptyBluemixCredentials
 		session.logsClientErr = errEmptyBluemixCredentials
+		session.cloudMonitoringClientErr = errEmptyBluemixCredentials
 		session.ibmCloudLogsRoutingClientErr = errEmptyBluemixCredentials
 		session.rhaiiClientErr = errEmptyBluemixCredentials
 
@@ -1891,11 +1911,18 @@ func (c *Config) ClientSession() (*clientSession, error) {
 
 	// Construct the service connector client.
 	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
-	session.backupRecoveryConnectorClient.Service.DisableSSLVerification()
 	if err != nil {
 		session.backupRecoveryConnectorClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API connector service: %q", err)
 	}
 	if session.backupRecoveryConnectorClient != nil && session.backupRecoveryConnectorClient.Service != nil {
+		// TLS certificate verification is enabled by default. The connector client
+		// sends connector credentials (username/password) to the connector endpoint,
+		// so the peer certificate must chain to a trusted authority unless the user
+		// explicitly opts out via IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY.
+		if backupRecoveryConnectorSkipTLSVerify() {
+			log.Println("[WARN] IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_SKIP_TLS_VERIFY is set: TLS certificate verification is disabled for the Backup Recovery connector client. Connector credentials may be exposed to an on-path attacker.")
+			session.backupRecoveryConnectorClient.Service.DisableSSLVerification()
+		}
 		// Enable retries for API calls
 		session.backupRecoveryConnectorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
@@ -1977,6 +2004,29 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		})
 	} else {
 		session.logsClientErr = fmt.Errorf("Error occurred while configuring Cloud Logs API service: %q", err)
+	}
+
+	// IBM Cloud Monitoring instance API
+	cloudMonitoringEndpoint := ContructEndpoint(fmt.Sprintf("%s.monitoring", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cloudMonitoringEndpoint = ContructEndpoint(fmt.Sprintf("private.%s.monitoring", c.Region), cloudEndpoint)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cloudMonitoringEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_MONITORING_API_ENDPOINT", c.Region, cloudMonitoringEndpoint)
+	}
+	session.cloudMonitoringClient, err = core.NewBaseService(&core.ServiceOptions{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_MONITORING_API_ENDPOINT"}, cloudMonitoringEndpoint),
+	})
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudMonitoringClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudMonitoringClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudMonitoringClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Monitoring API service: %q", err)
 	}
 
 	// LOGS ROUTER Version 0

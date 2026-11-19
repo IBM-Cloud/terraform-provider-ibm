@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_instance"
 description: |-
   Get information about sm_instance
-subcategory: "IBM Cloud Secrets Manager Instance Management API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_instance
@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a sm_instance. Yo
 
 ```hcl
 data "ibm_sm_instance" "sm_instance" {
-	instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+	instance_id = "fe5c5c27-3e44-474a-9484-55892e12d6d1"
 }
 ```
 

@@ -2,18 +2,18 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package secretsmanagerinstancemanagement_test
 
 import (
 	"fmt"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
@@ -45,9 +45,9 @@ func TestAccIbmSmInstanceDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSmInstanceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_sm_instance" "sm_instance_instance" {
-			instance_id = "bfc50c2e-d66d-4f37-9ccf-9713f8325b39"
+			instance_id = "%s"
 		}
-	`)
+	`, acc.SecretsManagerDedicatedInstanceID)
 }
 
 func TestDataSourceIbmSmInstanceVaultDedicatedClusterToMap(t *testing.T) {

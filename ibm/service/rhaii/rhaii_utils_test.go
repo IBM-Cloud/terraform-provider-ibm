@@ -264,10 +264,3 @@ func TestFlattenRhaiiInferenceModelMetadata(t *testing.T) {
 		t.Errorf("nil metadata must flatten to empty values, got %+v", empty)
 	}
 }
-
-func TestRhaiiMergeTags(t *testing.T) {
-	got := rhaiiMergeTags([]string{"b", "a"}, []string{"a", "env:schematics"})
-	if strings.Join(got, ",") != "a,b,env:schematics" {
-		t.Errorf("rhaiiMergeTags() = %v", got)
-	}
-}

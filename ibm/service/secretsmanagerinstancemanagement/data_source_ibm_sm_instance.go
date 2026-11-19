@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
+ * IBM OpenAPI Terraform Generator Version: 3.117.3-3e91ab11-20261028-182643
  */
 
 package secretsmanagerinstancemanagement
@@ -164,18 +164,18 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 		return tfErr.GetDiag()
 	}
 
-	d.SetId((*instance.ID).String())
+	d.SetId(string(*instance.ID))
 
 	if err = d.Set("name", instance.Name); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_sm_instance", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting name: %s", err), "(Data) ibm_sm_instance", "read", "set-name").GetDiag()
 	}
 
 	if err = d.Set("instance_crn", instance.InstanceCrn); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_crn: %s", err), "(Data) ibm_sm_instance", "read", "set-instance_crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting instance_crn: %s", err), "(Data) ibm_sm_instance", "read", "set-instance_crn").GetDiag()
 	}
 
 	if err = d.Set("plan", instance.Plan); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting plan: %s", err), "(Data) ibm_sm_instance", "read", "set-plan").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting plan: %s", err), "(Data) ibm_sm_instance", "read", "set-plan").GetDiag()
 	}
 
 	vaultCluster := []map[string]interface{}{}
@@ -185,7 +185,7 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 	}
 	vaultCluster = append(vaultCluster, vaultClusterMap)
 	if err = d.Set("vault_cluster", vaultCluster); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vault_cluster: %s", err), "(Data) ibm_sm_instance", "read", "set-vault_cluster").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting vault_cluster: %s", err), "(Data) ibm_sm_instance", "read", "set-vault_cluster").GetDiag()
 	}
 
 	endpoints := []map[string]interface{}{}
@@ -195,7 +195,7 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 	}
 	endpoints = append(endpoints, endpointsMap)
 	if err = d.Set("endpoints", endpoints); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting endpoints: %s", err), "(Data) ibm_sm_instance", "read", "set-endpoints").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting endpoints: %s", err), "(Data) ibm_sm_instance", "read", "set-endpoints").GetDiag()
 	}
 
 	encryption := []map[string]interface{}{}
@@ -205,12 +205,12 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 	}
 	encryption = append(encryption, encryptionMap)
 	if err = d.Set("encryption", encryption); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting encryption: %s", err), "(Data) ibm_sm_instance", "read", "set-encryption").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting encryption: %s", err), "(Data) ibm_sm_instance", "read", "set-encryption").GetDiag()
 	}
 
 	if !core.IsNil(instance.Href) {
 		if err = d.Set("href", instance.Href); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_sm_instance", "read", "set-href").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting href: %s", err), "(Data) ibm_sm_instance", "read", "set-href").GetDiag()
 		}
 	}
 
