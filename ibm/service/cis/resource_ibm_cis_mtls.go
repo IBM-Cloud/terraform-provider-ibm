@@ -325,6 +325,9 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 			return tfErr.GetDiag()
 		}
 		current, resp, err := sess.GetAccessCertificate(sess.NewGetAccessCertificateOptions(zoneID, certID))
+		if err == nil && (current == nil || current.Result == nil) {
+			err = fmt.Errorf("empty result")
+		}
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err,
 				fmt.Sprintf("resourceIBMCISMtlsUpdate GetAccessCertificate failed: %s \nResponse: %v", err.Error(), resp),
@@ -518,6 +521,9 @@ func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, m
 
 	// The API refuses to delete a certificate that still has associated hostnames.
 	current, getResp, err := sess.GetAccessCertificate(sess.NewGetAccessCertificateOptions(zoneID, certID))
+	if err == nil && (current == nil || current.Result == nil) {
+		err = fmt.Errorf("empty result")
+	}
 	if err != nil {
 		if getResp != nil && getResp.StatusCode == 404 {
 			return nil
@@ -542,7 +548,11 @@ func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, m
 			}
 			calls = planCisMtlsZoneUpdates(current.Result.AssociatedHostnames, zones, owners)
 		}
-		if err := applyCisMtlsZoneUpdates(sess, certID, *current.Result.Name, calls); err != nil {
+		name := d.Get(cisMtlsCertName).(string)
+		if current.Result.Name != nil {
+			name = *current.Result.Name
+		}
+		if err := applyCisMtlsZoneUpdates(sess, certID, name, calls); err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cis_mtls", "delete")
 			return tfErr.GetDiag()
 		}
