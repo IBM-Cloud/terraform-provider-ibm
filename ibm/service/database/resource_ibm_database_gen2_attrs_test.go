@@ -592,6 +592,103 @@ func TestIsShardAttrConfigured(t *testing.T) {
 	})
 }
 
+var nanoHostFlavors = []string{"nxf.1x4", "nxf.1x8", "bxf.2x8", "mxf.2x16"}
+
+func TestValidateFlexFlavorForClassic_NanoProfiles(t *testing.T) {
+	for _, id := range nanoHostFlavors {
+		requireErrContains(t, validateFlexFlavorForClassic("member", id), "Flex flavors (bxf.*, nxf.*, mxf.*)")
+	}
+	if err := validateFlexFlavorForClassic("member", "b3c.4x16.encrypted"); err != nil {
+		t.Fatalf("expected no error for classic flavor, got %v", err)
+	}
+}
+
+func TestDbConfigToMap_NanoHostFlavor(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	for _, id := range nanoHostFlavors {
+		t.Run(id, func(t *testing.T) {
+			result := g.dbConfigToMap(DBConfig{Members: 1, StorageGB: 5, HostFlavor: id}, "postgresql")
+			if result["host_flavor"] != id {
+				t.Fatalf("expected host_flavor=%s, got %v", id, result["host_flavor"])
+			}
+		})
+	}
+}
+
+// hostFlavorIDValidator returns the ValidateFunc of group.host_flavor.id from the resource schema.
+func hostFlavorIDValidator(t *testing.T) schema.SchemaValidateFunc {
+	t.Helper()
+	group := ResourceIBMDatabaseInstance().Schema["group"].Elem.(*schema.Resource)
+	hostFlavor := group.Schema["host_flavor"].Elem.(*schema.Resource)
+	validateFn := hostFlavor.Schema["id"].ValidateFunc
+	if validateFn == nil {
+		t.Fatal("expected group.host_flavor.id to have a ValidateFunc")
+	}
+	return validateFn
+}
+
+func TestHostFlavorIDSchema_AcceptsNanoProfiles(t *testing.T) {
+	validateFn := hostFlavorIDValidator(t)
+	for _, id := range nanoHostFlavors {
+		if _, errs := validateFn(id, "group.0.host_flavor.0.id"); len(errs) != 0 {
+			t.Errorf("expected nano profile %q to be accepted, got %v", id, errs)
+		}
+	}
+}
+
+func TestHostFlavorIDSchema_RejectsUnsupportedNanoProfiles(t *testing.T) {
+	validateFn := hostFlavorIDValidator(t)
+	for _, id := range []string{"nxf.1x1", "nxf.1x2", "nxf.2x4", "bxf.1x4", "mxf.1x8", "nxf.1x4 "} {
+		if _, errs := validateFn(id, "group.0.host_flavor.0.id"); len(errs) == 0 {
+			t.Errorf("expected profile %q to be rejected by schema validation", id)
+		}
+	}
+}
+
+func TestHostFlavorIDSchema_KeepsExistingFlavors(t *testing.T) {
+	validateFn := hostFlavorIDValidator(t)
+	for _, id := range []string{"multitenant", "b3c.4x16.encrypted", "bx3d.4x20", "bxf.4x16", "bxf.48x192"} {
+		if _, errs := validateFn(id, "group.0.host_flavor.0.id"); len(errs) != 0 {
+			t.Errorf("expected existing flavor %q to remain accepted, got %v", id, errs)
+		}
+	}
+}
+
+func TestBuildDBConfig_NanoHostFlavor(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	for _, id := range nanoHostFlavors {
+		t.Run(id, func(t *testing.T) {
+			d := testGen2DatabaseResourceData(t, map[string]interface{}{
+				"group": []interface{}{
+					map[string]interface{}{
+						"group_id": "member",
+						// members must be set explicitly so getMembersCount doesn't
+						// fall back to the catalog API (which requires a real client)
+						"members": []interface{}{
+							map[string]interface{}{"allocation_count": 1},
+						},
+						"disk": []interface{}{
+							map[string]interface{}{"allocation_mb": 10240},
+						},
+						"host_flavor": []interface{}{
+							map[string]interface{}{"id": id},
+						},
+					},
+				},
+			})
+
+			config, err := g.buildDBConfig(d, "", nil, "postgresql")
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+			if config["host_flavor"] != id {
+				t.Fatalf("expected host_flavor=%s, got %v", id, config["host_flavor"])
+
+			}
+		})
+	}
+}
+
 // TestMongodbeesSingleMemberUsecases verifies the payload built by buildDBConfig for all
 // single-member / multi-member / sharding combinations for mongodbees.
 // UC2 (members=2) and UC6 (member_zones + shards>1) are rejected by the DB API, not Terraform.

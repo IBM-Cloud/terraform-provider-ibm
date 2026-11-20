@@ -966,6 +966,12 @@ Review the argument reference that you can specify for your resource.
           - `bxf.48x192`
           - `bxf.4x16`
           - `bxf.8x32`
+          - `nxf.1x4`
+          - `nxf.1x8`
+          - `bxf.2x8`
+          - `mxf.2x16`
+
+          The `nxf.*`, `bxf.*` and `mxf.*` flavors are flex and nano profiles and are supported for Gen2 plans only. A Gen2 instance can be updated to a larger supported profile, but downgrading to a smaller profile is not supported.
 
 - `maintenance` - (Optional, List) Maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
   - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
