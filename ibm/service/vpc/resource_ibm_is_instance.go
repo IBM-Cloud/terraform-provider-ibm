@@ -72,6 +72,7 @@ const (
 	isInstanceStatus                  = "status"
 	isInstanceStatusReasons           = "status_reasons"
 	isInstanceThreadsPerCore          = "threads_per_core"
+	isInstanceProfileRefreshTrigger   = "profile_refresh_trigger"
 	isInstanceStatusReasonsCode       = "code"
 	isInstanceStatusReasonsMessage    = "message"
 	isInstanceStatusReasonsMoreInfo   = "more_info"
@@ -478,6 +479,12 @@ func ResourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				Description: "Profile info",
+			},
+			isInstanceProfileRefreshTrigger: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A revision label. Changing it to a new non-empty value re-applies the instance's current profile so that the latest profile limits (for example, the maximum vNIC count) take effect. The instance is stopped and restarted. Removing the argument does not trigger a refresh.",
 			},
 			isInstanceDefaultTrustedProfileAutoLink: {
 				Type:         schema.TypeBool,
@@ -7928,15 +7935,20 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 	// change simultaneously the new value is validated against the new profile,
 	// not the old one. A single stop/start cycle covers all three.
 	profileChanged := d.HasChange(isInstanceProfile)
+	// profile_refresh_trigger re-applies the current profile (same value) so that
+	// updated profile limits, such as the maximum vNIC count, are picked up.
+	// Removing the argument (new value is empty) does not trigger a refresh.
+	profileRefreshRequested := d.HasChange(isInstanceProfileRefreshTrigger) &&
+		d.Get(isInstanceProfileRefreshTrigger).(string) != ""
 	bandwidthChanged := d.HasChange(isInstanceTotalVolumeBandwidth)
 	threadsPerCoreChanged := d.HasChange(isInstanceThreadsPerCore)
 
-	if (profileChanged || bandwidthChanged || threadsPerCoreChanged) && !d.IsNewResource() {
+	if (profileChanged || profileRefreshRequested || bandwidthChanged || threadsPerCoreChanged) && !d.IsNewResource() {
 		var needsRestart bool = false
 
-		// Profile and threads_per_core both require a stop/start cycle;
-		// bandwidth alone does not.
-		if profileChanged || threadsPerCoreChanged {
+		// Profile, profile refresh and threads_per_core all require a stop/start
+		// cycle; bandwidth alone does not.
+		if profileChanged || profileRefreshRequested || threadsPerCoreChanged {
 			needsRestart = true
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
@@ -7983,8 +7995,9 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 		instancePatchModel := &vpcv1.InstancePatch{}
 
-		// Add profile to patch if it's changing
-		if profileChanged {
+		// Add profile to patch if it's changing, or if a refresh of the current
+		// profile was requested
+		if profileChanged || profileRefreshRequested {
 			instanceProfile := d.Get(isInstanceProfile).(string)
 			profile := &vpcv1.InstancePatchProfile{
 				Name: &instanceProfile,

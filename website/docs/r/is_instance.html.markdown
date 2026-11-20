@@ -971,6 +971,15 @@ Review the argument references that you can specify for your resource.
     5. Have the `volume_bandwidth_qos_mode` listed in its `volume_bandwidth_qos_modes`.
     6. **When downsizing to a profile with lower bandwidth capacity, you must also adjust `total_volume_bandwidth` to fit within the new profile's limits.** The instance's storage bandwidth must be at least 500 Mbps less than the target profile's total bandwidth. Both `profile` and `total_volume_bandwidth` can be updated in the same Terraform apply operation.
 
+- `profile_refresh_trigger` - (Optional, String) A revision label that, when changed to a new non-empty value, re-applies the instance's current `profile` so that the latest limits of that profile (for example, the maximum number of vNICs of a Flex profile) take effect on an existing instance. The instance is stopped, the current profile is patched back onto it, and the instance is started again. The provider does not interpret the value; it only checks whether it differs from the value in the Terraform state.
+
+  Use a simple counter (`"1"`, `"2"`, ...) or a fixed label (for example `"2026-11-vnic-limits"`). Bump it each time you want to refresh the instance. This argument is ignored when the instance is created, and removing it from the configuration does not trigger a refresh.
+
+  **NOTE:**
+  - Terraform only sends an update when a value changes, so this argument is the way to apply new profile limits without switching to another profile and back. Changing it causes the instance to be stopped and restarted.
+  - Do not set it to a value that changes on every plan, such as `timestamp()`. That would restart the instance on every `terraform apply`.
+  - Setting it for the first time on an existing instance counts as a change and triggers one refresh.
+
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
