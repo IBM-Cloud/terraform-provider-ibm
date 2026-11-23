@@ -839,6 +839,19 @@ func TestClassicBackendValidateUnsupportedAttrsDiff(t *testing.T) {
 			expectError:   true,
 			errorContains: "shards",
 		},
+		{
+			name:        "automatic_backups_not_set",
+			attr:        "automatic_backups",
+			configured:  false,
+			expectError: false,
+		},
+		{
+			name:          "automatic_backups_set_on_classic",
+			attr:          "automatic_backups",
+			configured:    true,
+			expectError:   true,
+			errorContains: "automatic_backups",
+		},
 	}
 
 	for _, tt := range tests {

@@ -855,6 +855,10 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Accepted but ignored. Gen2 instances do not have a default admin user. Use the `ibm_resource_key` resource to create service credentials for database access.
 
+- `automatic_backups` - (Optional, List) Controls the daily automatic backup configuration for the instance. **Applicable to Gen2 plans.**
+  - Nested scheme for `automatic_backups`:
+    - `enabled` - (Optional, Boolean) Whether to enable or disable daily automatic backups. Default is `true`. If set to `false`, daily automatic backups are not created, making backups optional. The update to this configuration applies only to new backups created thereafter. Disabling the automatic backups does not delete any existing backups.
+
 - `auto_scaling` (List, Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
   **Gen2:** Accepted but ignored. Auto-scaling policies are not available in Gen2. Monitor your database and manually adjust scaling as needed.
@@ -1087,7 +1091,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
-| Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
+| Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization when enabled) |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
@@ -1141,7 +1145,7 @@ If this authorization is missing or incomplete, Terraform emits a **non-blocking
 ╵
 ```
 
-The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans, Gen2 instances not enrolled in Independent Backups, and when automatic backups are disabled (`enabled = false`).
 
 To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 
