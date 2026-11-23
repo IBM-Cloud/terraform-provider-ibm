@@ -293,7 +293,7 @@ func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
 
 func TestDbConfigToMap_membersExcludedAndShardsIncludedForMongodbees(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
-	config := DBConfig{Members: 3, Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+	config := DBConfig{Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
 
 	result := g.dbConfigToMap(config, "mongodbees")
 
