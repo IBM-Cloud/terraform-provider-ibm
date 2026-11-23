@@ -125,3 +125,19 @@ func TestFilterGen2BackupsByDeployment_AcrossPages(t *testing.T) {
 		require.Equal(t, deploymentA, backup["deployment_id"])
 	}
 }
+
+// TestDataSourceIBMDatabaseBackups_EmptyBackups verifies that setting an empty backups
+// list on the data source succeeds and exposes an empty list in state.
+func TestDataSourceIBMDatabaseBackups_EmptyBackups(t *testing.T) {
+	d := DataSourceIBMDatabaseBackups().TestResourceData()
+	emptyBackups := []map[string]interface{}{}
+
+	err := d.Set("backups", emptyBackups)
+	require.NoError(t, err)
+
+	backupsRaw := d.Get("backups")
+	require.NotNil(t, backupsRaw)
+	backupsList, ok := backupsRaw.([]interface{})
+	require.True(t, ok)
+	require.Empty(t, backupsList)
+}
