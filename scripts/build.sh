@@ -61,6 +61,22 @@ gox \
     -output "pkg/{{.OS}}_{{.Arch}}/terraform-provider-ibm" \
     .
 
+# Resolve the path to the bundled native KMS crypto library.
+# The upstream keyprotect-go-client module ships pre-built shared libraries
+# under dedicated/internal/lib/{os}-{arch}/.  We copy the correct one next
+# to the provider binary so the runtime search in getLibraryPath() finds it.
+KP_MODULE_DIR="$(go env GOPATH)/pkg/mod/github.com/!i!b!m/keyprotect-go-client@v0.17.2/dedicated/internal/lib"
+
+copy_kms_lib() {
+    local os_arch="$1"   # e.g. linux_amd64
+    local dest_dir="$2"
+    # Convert go os_arch (underscore) to module dir style (hyphen)
+    local lib_dir="${KP_MODULE_DIR}/${os_arch/_/-}"
+    if [[ -d "$lib_dir" ]]; then
+        cp "$lib_dir"/ibmkmscrypto* "$dest_dir"/ 2>/dev/null || true
+    fi
+}
+
 # Move all the compiled things to the $GOPATH/bin
 GOPATH=${GOPATH:-$(go env GOPATH)}
 case $(uname) in
@@ -78,21 +94,25 @@ if [ ! -d $MAIN_GOPATH/bin ]; then
     mkdir -p $MAIN_GOPATH/bin
 fi
 
-# Copy our OS/Arch to the bin/ directory
+# Copy our OS/Arch binary and native lib to the bin/ directory
 DEV_PLATFORM="./pkg/$(go env GOOS)_$(go env GOARCH)"
 if [[ -d "${DEV_PLATFORM}" ]]; then
     for F in $(find ${DEV_PLATFORM} -mindepth 1 -maxdepth 1 -type f); do
         cp ${F} bin/
         cp ${F} ${MAIN_GOPATH}/bin/
     done
+    copy_kms_lib "$(go env GOOS)_$(go env GOARCH)" bin/
+    copy_kms_lib "$(go env GOOS)_$(go env GOARCH)" ${MAIN_GOPATH}/bin/
 fi
 
 if [ "${TF_DEV}x" = "x" ]; then
-    # Zip and copy to the dist dir
+    # Zip and copy to the dist dir (include native lib in each platform archive)
     echo "==> Packaging..."
     for PLATFORM in $(find ./pkg -mindepth 1 -maxdepth 1 -type d); do
         OSARCH=$(basename ${PLATFORM})
         echo "--> ${OSARCH}"
+
+        copy_kms_lib "${OSARCH}" "${PLATFORM}"
 
         pushd $PLATFORM >/dev/null 2>&1
         zip ../${OSARCH}.zip ./*

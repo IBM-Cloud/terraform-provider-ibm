@@ -39,6 +39,12 @@ archives:
     - NOTICE
     - src: metadata/provider_metadata.json
       strip_parent: true
+    # Bundle the native KMS crypto library so the provider binary can load it
+    # at runtime without any extra installation step on the target host.
+    # The upstream module ships the pre-built .so/.dylib/.dll under
+    # dedicated/internal/lib/{os}-{arch}/.
+    - src: '{{ .Env.GOPATH }}/pkg/mod/github.com/!i!b!m/keyprotect-go-client@v0.17.2/dedicated/internal/lib/{{ .Os }}-{{ .Arch }}/ibmkmscrypto*'
+      strip_parent: true
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
