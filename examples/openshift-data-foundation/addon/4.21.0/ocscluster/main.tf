@@ -64,7 +64,8 @@ resource "kubernetes_manifest" "ocscluster_ocscluster_auto" {
       "clusterExpansionLimit" = var. clusterExpansionLimit,
       "enableAutomaticBackup" = var.enableAutomaticBackup,
       "backupFrequency" = var.backupFrequency,
-      "numOfBackupCopies" = var.numOfBackupCopies
+      "numOfBackupCopies" = var.numOfBackupCopies,
+      "autoDetectFlexibleScaling" = var.autoDetectFlexibleScaling
     }
   }
 
