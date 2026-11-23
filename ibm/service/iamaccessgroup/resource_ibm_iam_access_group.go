@@ -6,9 +6,11 @@ package iamaccessgroup
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,7 +62,9 @@ func ResourceIBMIAMAccessGroup() *schema.Resource {
 func resourceIBMIAMAccessGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
@@ -74,12 +78,14 @@ func resourceIBMIAMAccessGroupCreate(context context.Context, d *schema.Resource
 		description := des.(string)
 		creatAccessGroupOptions.Description = &description
 	}
-	agrp, detailedResponse, err := iamAccessGroupsClient.CreateAccessGroup(creatAccessGroupOptions)
-	if err != nil || agrp == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating access group: %s. API Response: %s", err, detailedResponse))
+	group, _, err := iamAccessGroupsClient.CreateAccessGroupWithContext(context, creatAccessGroupOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateAccessGroupWithContext failed: %s", err.Error()), "ibm_iam_access_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(*agrp.ID)
+	d.SetId(*group.ID)
 
 	return resourceIBMIAMAccessGroupRead(context, d, meta)
 }
@@ -87,7 +93,9 @@ func resourceIBMIAMAccessGroupCreate(context context.Context, d *schema.Resource
 func resourceIBMIAMAccessGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	agrpID := d.Id()
 	getAccessGroupOptions := iamAccessGroupsClient.NewGetAccessGroupOptions(agrpID)
@@ -106,14 +114,17 @@ func resourceIBMIAMAccessGroupRead(context context.Context, d *schema.ResourceDa
 	})
 
 	if conns.IsResourceTimeoutError(err) {
-		agrp, detailedResponse, err = iamAccessGroupsClient.GetAccessGroup(getAccessGroupOptions)
+		agrp, detailedResponse, err = iamAccessGroupsClient.GetAccessGroupWithContext(context, getAccessGroupOptions)
+
 	}
 	if err != nil || agrp == nil {
 		if detailedResponse != nil && detailedResponse.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group: %s. API Response: %s", err, detailedResponse))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAccessGroupWithContext failed: %s", err.Error()), "ibm_iam_access_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	version := detailedResponse.GetHeaders().Get("etag")
 	d.Set("name", agrp.Name)
@@ -126,7 +137,9 @@ func resourceIBMIAMAccessGroupRead(context context.Context, d *schema.ResourceDa
 func resourceIBMIAMAccessGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	agrpID := d.Id()
 
@@ -147,9 +160,11 @@ func resourceIBMIAMAccessGroupUpdate(context context.Context, d *schema.Resource
 	}
 
 	if hasChange {
-		agrp, detailedResponse, err := iamAccessGroupsClient.UpdateAccessGroup(updateAccessGroupOptions)
-		if err != nil || agrp == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating access group: %s. API Response: %s", err, detailedResponse))
+		_, _, err = iamAccessGroupsClient.UpdateAccessGroupWithContext(context, updateAccessGroupOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAccessGroupWithContext failed: %s", err.Error()), "ibm_iam_access_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -160,18 +175,22 @@ func resourceIBMIAMAccessGroupUpdate(context context.Context, d *schema.Resource
 func resourceIBMIAMAccessGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	agID := d.Id()
 	force := true
 	deleteAccessGroupOptions := iamAccessGroupsClient.NewDeleteAccessGroupOptions(agID)
 	deleteAccessGroupOptions.SetForce(force)
-	detailedResponse, err := iamAccessGroupsClient.DeleteAccessGroup(deleteAccessGroupOptions)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting access group: %s, API Response: %s", err, detailedResponse))
-	}
 
+	_, err = iamAccessGroupsClient.DeleteAccessGroupWithContext(context, deleteAccessGroupOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAccessGroupWithContext failed: %s", err.Error()), "ibm_iam_access_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 	d.SetId("")
 
 	return nil
