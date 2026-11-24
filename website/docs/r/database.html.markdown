@@ -927,11 +927,9 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `members`:
         - `allocation_count` - (Optional, Integer) Allocated number of members. **Gen2: Supported.** On Gen2, `allocation_count = 1` deploys a single-node database, which is **Beta**.
         - `member_zones` - (Optional, List of Strings) (**Beta**) Availability zones for the members. **Gen2 only.** Can only be set when `allocation_count` is `1`. Must contain exactly one zone entry (e.g. `["us-east-1"]`). Create-only. Cannot be changed after provisioning. To scale up, remove `member_zones` and increase `allocation_count` to N. Scale-down is not supported.
-
+          - For list of supported services and regions, please refer to the IBM Cloud [documentation](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-single-node).
+        
         NOTE: For `databases-for-mongodb` (`enterprise-sharding-gen2`) if `allocation_count` is set to `1`, then the value of `shards` is `1` by default and can't be set to a value greater than 1.
-
-          - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
-          - Supported regions: `eu-de`, `eu-fr2`.
 
     - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
       - Nested scheme for `memory`:
@@ -970,9 +968,8 @@ Review the argument reference that you can specify for your resource.
           - `bxf.4x16`
           - `bxf.8x32`
 
-- `maintenance` - (Optional, List) Maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
-  - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
-  - Supported regions: `eu-de`, `eu-fr2`.
+- `maintenance` - (Optional, List) Customer-defined maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
+  - For list of supported services and regions, please refer to the IBM Cloud [documentation](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-maintenance-windows&interface=ui#maintenance-windows-availability).
 
   Nested scheme for `maintenance`:
   - `window` - (Optional, List) Maintenance window schedule.
@@ -1110,7 +1107,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
 | In-place version upgrades | ✅ Supported | ❌ Updates fail with error |
 | Deletion protection | ✅ Supported | ✅ Supported |
-| Maintenance window (`maintenance`) | ❌ Plan fails if set | ✅ Supported |
+| Customer-defined maintenance window (`maintenance`) | ❌ Plan fails if set | ✅ Supported |
 
 ### Gen2 Validation Behavior
 
