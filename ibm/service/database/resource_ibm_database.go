@@ -415,6 +415,23 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"backups": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Backup configuration for the database. Gen2 only: plan fails if set on a Classic plan.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"retention": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The number of days backups are retained before they can be deleted in the format <number>d (e.g., 30d).",
+						},
+					},
+				},
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,

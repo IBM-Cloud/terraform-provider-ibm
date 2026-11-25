@@ -134,6 +134,20 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"backups": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Backup configuration for the database. Gen2 only: empty for Classic instances.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"retention": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The number of days backups are retained before they can be deleted in the format <number>d (e.g., 30d).",
+						},
+					},
+				},
+			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,

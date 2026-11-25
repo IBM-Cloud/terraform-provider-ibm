@@ -1022,6 +1022,66 @@ func isTruthy(v interface{}) bool {
 	return false
 }
 
+const backupsRetentionKey = "backups.0.retention"
+
+// parseBackupsRetention converts an API retention value to a string format (e.g. "30d").
+// It accepts a duration string such as "45d" or a plain number (JSON numbers decode as float64).
+func parseBackupsRetention(v interface{}) (string, bool) {
+	switch val := v.(type) {
+	case string:
+		if val != "" {
+			return val, true
+		}
+	case float64:
+		return fmt.Sprintf("%dd", int(val)), true
+	case int:
+		return fmt.Sprintf("%dd", val), true
+	}
+	return "", false
+}
+
+// flattenBackupsRetentionFromExtensions maps the retention field from instance extensions
+// into the backups schema block.
+func flattenBackupsRetentionFromExtensions(extensions map[string]interface{}) []interface{} {
+	if extensions == nil {
+		return nil
+	}
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	backups, ok := dataservices["backups"].(map[string]interface{})
+	if !ok || backups == nil {
+		return nil
+	}
+
+	result := map[string]interface{}{}
+	if ret, ok := parseBackupsRetention(backups["retention"]); ok {
+		result["retention"] = ret
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+	return []interface{}{result}
+}
+
+// buildBackupsRetentionConfig builds the backups retention payload for create/update.
+func buildBackupsRetentionConfig(d *schema.ResourceData, onlyChanged bool) map[string]interface{} {
+	list, ok := d.Get("backups").([]interface{})
+	if !ok || len(list) == 0 {
+		return nil
+	}
+	if onlyChanged && !d.HasChange(backupsRetentionKey) {
+		return nil
+	}
+	v, ok := d.GetOk(backupsRetentionKey)
+	if !ok {
+		return nil
+	}
+	return map[string]interface{}{"retention": v.(string)}
+}
+
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
 // in a paginated Resource Controller list response's NextURL field, so it can be
 // used as the "start" token for the next page request. Returns an empty string,
