@@ -162,8 +162,7 @@ resource "ibm_database" "postgres_gen2_backups" {
   resource_group_id = data.ibm_resource_group.group.id
 
   backups {
-    preserve  = true # cannot be set back to false once enabled
-    retention = "45d"   # number of days, 
+    preserve = true # cannot be set back to false once enabled
 
     automatic_backups {
       copy {
@@ -941,7 +940,6 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `backups`:
   - `preserve` - (Optional, Boolean) Set to `true` to keep independent backups, except for on-demand backup copies, after the database instance is hard deleted. The default is `false`. This option can be enabled but it cannot be disabled after it is enabled; `terraform plan` fails if you change it from `true` to `false`. It cannot be enabled for `databases-for-mysql`.
-  - `retention` - (Optional, String) The number of days backups are retained. Automatic backups are deleted automatically after the retention duration expires. On-demand backups can be deleted manually after the retention duration expires. For valid retention values please refer [API docs](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=terraform#configuring-instance).
 
   - `automatic_backups` - (Optional, List, Max: 1) Settings for automatic backups.
 
@@ -949,7 +947,7 @@ Review the argument reference that you can specify for your resource.
     - `copy` - (Optional, List, Max: 1) Settings for cross-regional copies of automatic backups.
 
       Nested scheme for `copy`:
-      - `enabled` - (Optional, Boolean) Whether automatic copies of automatic backups are created. The default is `true`. When set to `false`, cross-regional copies are no longer created; copies created earlier remain until the retention duration expires. `terraform plan` fails if this is `false` and `target` blocks are configured.
+      - `enabled` - (Optional, Boolean) Whether automatic copies of automatic backups are created. The default is `true`. When set to `false`, cross-regional copies are no longer created. `terraform plan` fails if this is `false` and `target` blocks are configured.
       - `target` - (Optional, List of Object) A region to create the automatic backup copy in. Repeat the block for each region. The order of `target` blocks is not significant. The supported regions are validated by the service when the change is applied, not at plan time. Example:
         ```terraform
         target = [
@@ -1162,7 +1160,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
-| Backup configuration (`backups` block: preserve, retention, automatic backup copy) | ❌ Plan fails if set | ✅ Supported |
+| Backup configuration (`backups` block: preserve, automatic backup copy) | ❌ Plan fails if set | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
