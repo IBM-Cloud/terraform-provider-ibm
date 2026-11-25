@@ -41,13 +41,6 @@ func TestBuildBackupsConfig(t *testing.T) {
 			want:    nil,
 		},
 		{
-			name: "retention only",
-			backups: []interface{}{map[string]interface{}{
-				"retention": "45d",
-			}},
-			want: map[string]interface{}{"retention": "45d"},
-		},
-		{
 			name: "preserve true",
 			backups: []interface{}{map[string]interface{}{
 				"preserve": true,
@@ -72,8 +65,7 @@ func TestBuildBackupsConfig(t *testing.T) {
 		{
 			name: "all attributes with two targets",
 			backups: []interface{}{map[string]interface{}{
-				"preserve":  true,
-				"retention": "60d",
+				"preserve": true,
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": true,
@@ -85,8 +77,7 @@ func TestBuildBackupsConfig(t *testing.T) {
 				}},
 			}},
 			want: map[string]interface{}{
-				"preserve":  true,
-				"retention": "60d",
+				"preserve": true,
 				"automatic_backups": map[string]interface{}{
 					"copy": map[string]interface{}{
 						"enabled": true,
@@ -154,14 +145,12 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 							"enabled": true,
 							"window":  map[string]interface{}{"start_time": "14:32Z"},
 						},
-						"preserve":  true,
-						"retention": "31d",
+						"preserve": true,
 					},
 				},
 			},
 			want: []interface{}{map[string]interface{}{
-				"preserve":  true,
-				"retention": "31d",
+				"preserve": true,
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": true,
@@ -180,43 +169,18 @@ func TestFlattenBackupsFromExtensions(t *testing.T) {
 						"automatic_backups": map[string]interface{}{
 							"copy": map[string]interface{}{"enabled": false},
 						},
-						"preserve":  false,
-						"retention": "30d",
+						"preserve": false,
 					},
 				},
 			},
 			want: []interface{}{map[string]interface{}{
-				"preserve":  false,
-				"retention": "30d",
+				"preserve": false,
 				"automatic_backups": []interface{}{map[string]interface{}{
 					"copy": []interface{}{map[string]interface{}{
 						"enabled": false,
 						"target":  []interface{}{},
 					}},
 				}},
-			}},
-		},
-		{
-			name: "numeric retention is accepted",
-			extensions: map[string]interface{}{
-				"dataservices": map[string]interface{}{
-					"backups": map[string]interface{}{"retention": float64(45)},
-				},
-			},
-			want: []interface{}{map[string]interface{}{"retention": "45d"}},
-		},
-		{
-			name: "unparseable retention is skipped without panic",
-			extensions: map[string]interface{}{
-				"dataservices": map[string]interface{}{
-					"backups": map[string]interface{}{
-						"preserve":  false,
-						"retention": true,
-					},
-				},
-			},
-			want: []interface{}{map[string]interface{}{
-				"preserve": false,
 			}},
 		},
 		{

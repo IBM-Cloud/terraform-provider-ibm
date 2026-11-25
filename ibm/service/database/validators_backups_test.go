@@ -108,7 +108,6 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 	autoType := cty.Object(map[string]cty.Type{"copy": cty.List(copyType)})
 	backupsType := cty.Object(map[string]cty.Type{
 		"preserve":          cty.Bool,
-		"retention":         cty.String,
 		"automatic_backups": cty.List(autoType),
 	})
 	t.Run("no backups attribute in config", func(t *testing.T) {
@@ -126,10 +125,9 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 		require.False(t, got.configured)
 	})
 
-	t.Run("backups block with only retention", func(t *testing.T) {
+	t.Run("backups block with only preserve", func(t *testing.T) {
 		block := cty.ObjectVal(map[string]cty.Value{
 			"preserve":          cty.NullVal(cty.Bool),
-			"retention":         cty.StringVal("45d"),
 			"automatic_backups": cty.NullVal(cty.List(autoType)),
 		})
 		raw := cty.ObjectVal(map[string]cty.Value{"backups": cty.ListVal([]cty.Value{block})})
@@ -149,7 +147,6 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 		auto := cty.ObjectVal(map[string]cty.Value{"copy": cty.ListVal([]cty.Value{cp})})
 		block := cty.ObjectVal(map[string]cty.Value{
 			"preserve":          cty.True,
-			"retention":         cty.StringVal("60d"),
 			"automatic_backups": cty.ListVal([]cty.Value{auto}),
 		})
 		raw := cty.ObjectVal(map[string]cty.Value{"backups": cty.ListVal([]cty.Value{block})})
@@ -165,7 +162,6 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 	t.Run("unknown preserve is treated as not set", func(t *testing.T) {
 		block := cty.ObjectVal(map[string]cty.Value{
 			"preserve":          cty.UnknownVal(cty.Bool),
-			"retention":         cty.NullVal(cty.String),
 			"automatic_backups": cty.NullVal(cty.List(autoType)),
 		})
 		raw := cty.ObjectVal(map[string]cty.Value{"backups": cty.ListVal([]cty.Value{block})})

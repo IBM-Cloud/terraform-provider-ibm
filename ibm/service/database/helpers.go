@@ -1025,7 +1025,6 @@ func isTruthy(v interface{}) bool {
 
 const (
 	backupsPreservePath = "backups.0.preserve"
-	backupsRetentionKey = "backups.0.retention"
 	backupsCopyPath     = "backups.0.automatic_backups.0.copy.0"
 )
 
@@ -1049,10 +1048,6 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 
 	if v, ok := d.GetOkExists(backupsPreservePath); ok && include(backupsPreservePath) {
 		backups["preserve"] = v.(bool)
-	}
-
-	if v, ok := d.GetOk(backupsRetentionKey); ok && include(backupsRetentionKey) {
-		backups["retention"] = v.(string)
 	}
 
 	copyCfg := map[string]interface{}{}
@@ -1092,22 +1087,6 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	return backups
 }
 
-// parseBackupsRetention converts an API retention value to a string format (e.g. "30d").
-// It accepts a duration string such as "45d" or a plain number (JSON numbers decode as float64).
-func parseBackupsRetention(v interface{}) (string, bool) {
-	switch val := v.(type) {
-	case string:
-		if val != "" {
-			return val, true
-		}
-	case float64:
-		return fmt.Sprintf("%dd", int(val)), true
-	case int:
-		return fmt.Sprintf("%dd", val), true
-	}
-	return "", false
-}
-
 // flattenBackupsFromExtensions maps the backups object from instance extensions into the backups schema block.
 func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface{} {
 	if extensions == nil {
@@ -1126,10 +1105,6 @@ func flattenBackupsFromExtensions(extensions map[string]interface{}) []interface
 
 	if v, exists := backups["preserve"]; exists && v != nil {
 		result["preserve"] = isTruthy(v)
-	}
-
-	if ret, ok := parseBackupsRetention(backups["retention"]); ok {
-		result["retention"] = ret
 	}
 
 	if auto, ok := backups["automatic_backups"].(map[string]interface{}); ok {

@@ -430,12 +430,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Whether independent backups, except for on-demand backup copies, persist after the database instance is hard deleted. Defaults to false. Once enabled it cannot be disabled. Cannot be enabled for databases-for-mysql.",
 						},
-						"retention": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The number of days backups are retained before they can be deleted in the format <number>d (e.g., 30d)",
-						},
 						"automatic_backups": {
 							Type:        schema.TypeList,
 							Optional:    true,
