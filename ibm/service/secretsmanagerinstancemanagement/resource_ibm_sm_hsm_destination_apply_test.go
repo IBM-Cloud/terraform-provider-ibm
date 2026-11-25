@@ -17,6 +17,11 @@ import (
 )
 
 func TestAccIbmSmHsmDestinationApplyBasic(t *testing.T) {
+	// Apply needs a destination with at least one completed path, and a path only
+	// completes after its VPE connection is approved by hand in the IBM Cloud console.
+	// TestAccIbmSmHsmLifecycleStep11DestinationApply covers apply after that approval.
+	t.Skip("ibm_sm_hsm_destination_apply needs a completed path; covered by TestAccIbmSmHsmLifecycleStep11DestinationApply")
+
 	var conf secretsmanagerinstancemanagementv2.DestinationHealthSnapshot
 	instanceID := hsmInstanceID(t, "SM_HSM_PPS_GATEWAY_CRN", "SM_HSM_SERVER_CA_PEM_PATH")
 
@@ -28,14 +33,14 @@ func TestAccIbmSmHsmDestinationApplyBasic(t *testing.T) {
 			resource.TestStep{
 				Config: hsmDestinationConfig(instanceID) + fmt.Sprintf(`
 					resource "ibm_sm_hsm_destination_apply" "test" {
-						instance_id = ibm_sm_hsm_destination.test.instance_id
-						destination_id = ibm_sm_hsm_destination.test.destination_id
+						instance_id = ibm_sm_hsm_destination.parent.instance_id
+						destination_id = ibm_sm_hsm_destination.parent.destination_id
 					}
 				`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmHsmDestinationApplyExists("ibm_sm_hsm_destination_apply.test", conf),
-					resource.TestCheckResourceAttrPair("ibm_sm_hsm_destination_apply.test", "instance_id", "ibm_sm_hsm_destination.test", "instance_id"),
-					resource.TestCheckResourceAttrPair("ibm_sm_hsm_destination_apply.test", "destination_id", "ibm_sm_hsm_destination.test", "destination_id"),
+					resource.TestCheckResourceAttrPair("ibm_sm_hsm_destination_apply.test", "instance_id", "ibm_sm_hsm_destination.parent", "instance_id"),
+					resource.TestCheckResourceAttrPair("ibm_sm_hsm_destination_apply.test", "destination_id", "ibm_sm_hsm_destination.parent", "destination_id"),
 					resource.TestCheckResourceAttrSet("ibm_sm_hsm_destination_apply.test", "health_state"),
 				),
 			},
