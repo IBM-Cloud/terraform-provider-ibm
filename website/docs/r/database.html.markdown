@@ -134,6 +134,19 @@ resource "ibm_database" "postgres_gen2" {
   tags = ["env:production", "app:myapp"]
 }
 
+# Configure retention for independent backups (Gen2 only)
+resource "ibm_database" "postgres_gen2_backups" {
+  name              = "my-postgres-gen2-backups"
+  plan              = "standard-gen2"
+  location          = "in-che"
+  service           = "databases-for-postgresql"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  backups {
+    retention = "45d"  # number of days backups are retained
+  }
+}
+
 # Credentials via resource key
 resource "ibm_resource_key" "db_credentials" {
   name                 = "db-credentials"
@@ -891,6 +904,11 @@ Review the argument reference that you can specify for your resource.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
   **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
+- `backups` - (Optional, List, Max: 1) Configures backups for the database. **Gen2 only:** `terraform plan` fails if this block is set on a Classic plan. Attributes you do not set keep the value the service assigned. Removing the block or an attribute stops Terraform managing it but does not reset it on the instance.
+
+  Nested scheme for `backups`:
+  - `retention` - (Optional, String) The number of days backups are retained before they can be deleted, in the format `<number>d` (e.g., `30d`). Automatic backups are deleted automatically after the retention duration expires. On-demand backups can be deleted manually after the retention duration expires. For valid values refer to the [API docs](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=terraform#configuring-instance).
+
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`, and `messages-for-rabbitmq`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
@@ -1088,6 +1106,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
+| Backup retention (`backups.retention`) | ❌ Plan fails if set | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
