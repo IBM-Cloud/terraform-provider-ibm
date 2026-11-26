@@ -15,8 +15,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 const AdminTokenResourceName = "ibm_sm_admin_token"
@@ -35,6 +33,13 @@ func ResourceIbmSmAdminToken() *schema.Resource {
 				Required:    true,
 				Description: "The service instance ID.",
 				ForceNew:    true,
+			},
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region of the Secrets Manager instance.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -65,7 +70,7 @@ func ResourceIbmSmAdminToken() *schema.Resource {
 }
 
 func generateSmAdminToken(context context.Context, d *schema.ResourceData, meta interface{}, operation string) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), AdminTokenResourceName, operation, "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -106,11 +111,25 @@ func resourceIbmSmAdminTokenUniqueId(d *schema.ResourceData) string {
 }
 
 func resourceIbmSmAdminTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	err := generateSmAdminToken(context, d, meta, "create")
-	if err == nil {
-		d.SetId(resourceIbmSmAdminTokenUniqueId(d))
+	if errToken := generateSmAdminToken(context, d, meta, "create"); errToken != nil {
+		return errToken
 	}
-	return err
+
+	d.SetId(resourceIbmSmAdminTokenUniqueId(d))
+
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), AdminTokenResourceName, "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), AdminTokenResourceName, "create")
+		return tfErr.GetDiag()
+	}
+
+	return nil
 }
 
 func resourceIbmSmAdminTokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

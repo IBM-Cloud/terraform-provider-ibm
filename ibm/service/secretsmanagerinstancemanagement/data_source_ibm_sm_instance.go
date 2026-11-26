@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
@@ -30,6 +29,12 @@ func DataSourceIbmSmInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Secrets Manager instance ID.",
+			},
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The region of the Secrets Manager instance.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -146,7 +151,7 @@ func DataSourceIbmSmInstance() *schema.Resource {
 }
 
 func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_sm_instance", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -165,6 +170,11 @@ func dataSourceIbmSmInstanceRead(context context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(string(*instance.ID))
+
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting name: %s", err), "(Data) ibm_sm_instance", "read", "set-region").GetDiag()
+	}
 
 	if err = d.Set("name", instance.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("error setting name: %s", err), "(Data) ibm_sm_instance", "read", "set-name").GetDiag()

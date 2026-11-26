@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
@@ -35,6 +34,13 @@ func ResourceIbmSmHsmDestinationApply() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The region of the Secrets Manager instance.",
+			},
 			"instance_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -91,10 +97,16 @@ func ResourceIbmSmHsmDestinationApplyValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmSmHsmDestinationApplyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_destination_apply", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), "ibm_sm_hsm_destination_apply", "create")
 		return tfErr.GetDiag()
 	}
 
@@ -122,7 +134,7 @@ func resourceIbmSmHsmDestinationApplyCreate(context context.Context, d *schema.R
 }
 
 func waitForHsmDestinationApply(ctx context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		return false, err
 	}
@@ -173,7 +185,7 @@ func waitForHsmDestinationApply(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceIbmSmHsmDestinationApplyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_destination_apply", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

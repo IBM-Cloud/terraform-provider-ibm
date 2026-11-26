@@ -33,6 +33,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$/`.
 * `vendor` - (Required, Forces new resource, String) HSM vendor. Immutable after creation.
   * Constraints: Allowable values are: `thales_luna`.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 
 ## Attribute Reference
 

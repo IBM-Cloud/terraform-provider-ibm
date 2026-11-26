@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -33,6 +32,13 @@ func ResourceIbmSmHsmPath() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The region of the Secrets Manager instance.",
+			},
 			"instance_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -170,10 +176,16 @@ func ResourceIbmSmHsmPathValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmSmHsmPathCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_path", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), "ibm_sm_hsm_path", "create")
 		return tfErr.GetDiag()
 	}
 
@@ -200,7 +212,7 @@ func resourceIbmSmHsmPathCreate(context context.Context, d *schema.ResourceData,
 }
 
 func resourceIbmSmHsmPathRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_path", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -300,7 +312,7 @@ func resourceIbmSmHsmPathRead(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIbmSmHsmPathUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_path", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -360,7 +372,7 @@ func resourceIbmSmHsmPathUpdate(context context.Context, d *schema.ResourceData,
 }
 
 func resourceIbmSmHsmPathDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_hsm_path", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -397,7 +409,7 @@ func resourceIbmSmHsmPathDelete(context context.Context, d *schema.ResourceData,
 }
 
 func waitForIbmSmHsmPathDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		return false, err
 	}

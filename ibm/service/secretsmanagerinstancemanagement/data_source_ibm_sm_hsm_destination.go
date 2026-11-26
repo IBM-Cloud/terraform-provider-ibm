@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
@@ -26,6 +25,12 @@ func DataSourceIbmSmHsmDestination() *schema.Resource {
 		ReadContext: dataSourceIbmSmHsmDestinationRead,
 
 		Schema: map[string]*schema.Schema{
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The region of the Secrets Manager instance.",
+			},
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -101,10 +106,16 @@ func DataSourceIbmSmHsmDestination() *schema.Resource {
 }
 
 func dataSourceIbmSmHsmDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_sm_hsm_destination", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), "(Data) ibm_sm_hsm_destination", "read")
 		return tfErr.GetDiag()
 	}
 
