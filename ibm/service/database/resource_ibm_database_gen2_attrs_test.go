@@ -291,14 +291,16 @@ func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
 	}
 }
 
-func TestDbConfigToMap_membersExcludedAndShardsIncludedForMongodbees(t *testing.T) {
+// For mongodbees both members and shards can be set. With members (allocation_count) = 1,
+// shards defaults to 1 and cannot exceed 1
+func TestDbConfigToMap_membersAndShardsIncludedForMongodbees(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
-	config := DBConfig{Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+	config := DBConfig{Members: 3, Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
 
 	result := g.dbConfigToMap(config, "mongodbees")
 
-	if _, ok := result["members"]; ok {
-		t.Fatalf("expected 'members' to be absent for dbType 'mongodbees', got %v", result["members"])
+	if result["members"] != 3 {
+		t.Fatalf("expected members=3 for dbType 'mongodbees', got %v", result["members"])
 	}
 	if result["shards"] != 2 {
 		t.Fatalf("expected shards=2, got %v", result["shards"])
@@ -595,6 +597,8 @@ func TestIsShardAttrConfigured(t *testing.T) {
 // TestMongodbeesSingleMemberUsecases verifies the payload built by buildDBConfig for all
 // single-member / multi-member / sharding combinations for mongodbees.
 // UC2 (members=2) and UC6 (member_zones + shards>1) are rejected by the DB API, not Terraform.
+// NOTE: For databases-for-mongodb (enterprise-sharding-gen2), if allocation_count is 1, shards is 1 by default
+// and can't be set to a value greater than 1 (UC5 and UC6).
 func TestMongodbeesSingleMemberUsecases(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 	resourceSchema := ResourceIBMDatabaseInstance().Schema
@@ -702,7 +706,7 @@ func TestMongodbeesSingleMemberUsecases(t *testing.T) {
 		}
 	})
 
-	// UC5: members=1, member_zones=["us-east-1"], shards=1 — should pass.
+	// UC5: members=1, member_zones=["us-east-1"], shards=1 — should pass (shards is 1 by default when allocation_count=1).
 	t.Run("UC5: members=1 with member_zones and shards=1", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
@@ -726,7 +730,8 @@ func TestMongodbeesSingleMemberUsecases(t *testing.T) {
 		}
 	})
 
-	// UC6: members=1, member_zones=["us-east-1"], shards=2 — rejected by API. Terraform passes through.
+	// UC6: members=1, member_zones=["us-east-1"], shards=2 — rejected by API (shards can't exceed 1 when
+	// allocation_count=1). Terraform passes through.
 	t.Run("UC6: members=1 with member_zones and shards=2 passes through to API (API rejects)", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
