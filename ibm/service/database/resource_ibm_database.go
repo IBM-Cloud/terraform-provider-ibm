@@ -245,6 +245,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateBackendSpecificMaintenanceWindowDiff,
 			validateShardsDiff,
 			validateBackendSpecificServiceEndpointsDiff,
+			validateBackupsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{
