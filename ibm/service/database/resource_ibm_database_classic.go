@@ -13,6 +13,7 @@ import (
 var classicUnsupportedAttrs = []string{
 	"shards",
 	"maintenance",
+	"backups",
 }
 
 type resourceIBMDatabaseClassicBackend struct{}
