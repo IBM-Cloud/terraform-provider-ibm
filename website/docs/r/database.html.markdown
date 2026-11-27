@@ -948,7 +948,7 @@ Review the argument reference that you can specify for your resource.
 
       Nested scheme for `copy`:
       - `enabled` - (Optional, Boolean) Whether automatic copies of automatic backups are created. The default is `true`. When set to `false`, cross-regional copies are no longer created. `terraform plan` fails if this is `false` and `target` blocks are configured.
-      - `target` - (Optional, List of Object) A region to create the automatic backup copy in. Repeat the block for each region. The order of `target` blocks is not significant. The supported regions are validated by the service when the change is applied, not at plan time. Example:
+      - `target` - (Optional, Set of Object) A region to create the automatic backup copy in. Repeat the block for each region. The order of `target` blocks is not significant. The supported regions are validated by the service when the change is applied, not at plan time. Example:
         ```terraform
         target = [
           { region = "in-che" },

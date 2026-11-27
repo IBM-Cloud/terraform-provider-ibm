@@ -163,7 +163,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 													Description: "Whether cross-regional copies of automatic backups are created.",
 												},
 												"target": {
-													Type:        schema.TypeList,
+													Type:        schema.TypeSet,
 													Computed:    true,
 													ConfigMode:  schema.SchemaConfigModeAttr,
 													Description: "The regions that automatic backup copies are created in.",

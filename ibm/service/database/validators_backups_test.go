@@ -103,7 +103,7 @@ func TestValidateBackupsRules(t *testing.T) {
 func TestBackupsIntentFromRawConfig(t *testing.T) {
 	copyType := cty.Object(map[string]cty.Type{
 		"enabled": cty.Bool,
-		"target":  cty.List(cty.Object(map[string]cty.Type{"region": cty.String})),
+		"target":  cty.Set(cty.Object(map[string]cty.Type{"region": cty.String})),
 	})
 	autoType := cty.Object(map[string]cty.Type{"copy": cty.List(copyType)})
 	backupsType := cty.Object(map[string]cty.Type{
@@ -140,9 +140,10 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 
 	t.Run("full block", func(t *testing.T) {
 		target := cty.ObjectVal(map[string]cty.Value{"region": cty.StringVal("ca-mon")})
+		target2 := cty.ObjectVal(map[string]cty.Value{"region": cty.StringVal("eu-de")})
 		cp := cty.ObjectVal(map[string]cty.Value{
 			"enabled": cty.False,
-			"target":  cty.ListVal([]cty.Value{target, target}),
+			"target":  cty.SetVal([]cty.Value{target, target2}),
 		})
 		auto := cty.ObjectVal(map[string]cty.Value{"copy": cty.ListVal([]cty.Value{cp})})
 		block := cty.ObjectVal(map[string]cty.Value{

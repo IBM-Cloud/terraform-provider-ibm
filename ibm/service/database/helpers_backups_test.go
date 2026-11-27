@@ -99,6 +99,24 @@ func TestBuildBackupsConfig(t *testing.T) {
 	}
 }
 
+// TestBuildBackupsConfig_TargetOrderIndependent verifies that the order in which
+// target regions are written does not change the payload (target is a set).
+func TestBuildBackupsConfig_TargetOrderIndependent(t *testing.T) {
+	build := func(regions ...string) map[string]interface{} {
+		var targets []interface{}
+		for _, r := range regions {
+			targets = append(targets, map[string]interface{}{"region": r})
+		}
+		d := backupsTestResourceData(t, []interface{}{map[string]interface{}{
+			"automatic_backups": []interface{}{map[string]interface{}{
+				"copy": []interface{}{map[string]interface{}{"target": targets}},
+			}},
+		}})
+		return buildBackupsConfig(d, false)
+	}
+	require.Equal(t, build("ca-mon", "eu-de", "us-south"), build("us-south", "ca-mon", "eu-de"))
+}
+
 func TestFlattenBackupsFromExtensions(t *testing.T) {
 	cases := []struct {
 		name       string

@@ -1062,14 +1062,14 @@ func buildBackupsConfig(d *schema.ResourceData, onlyChanged bool) map[string]int
 	// must not be sent when copies are disabled.
 	if v, ok := d.GetOk(backupsCopyPath + ".target"); ok && copyEnabled && include(backupsCopyPath+".target") {
 		var targets []interface{}
-		for _, raw := range v.([]interface{}) {
+		for _, raw := range v.(*schema.Set).List() {
 			if target, ok := raw.(map[string]interface{}); ok {
 				if region, _ := target["region"].(string); region != "" {
 					targets = append(targets, map[string]interface{}{"region": region})
 				}
 			}
 		}
-		// Sort so the payload is deterministic regardless of config order.
+		// A set has no stable order, so sort to keep the payload deterministic.
 		sort.Slice(targets, func(i, j int) bool {
 			return targets[i].(map[string]interface{})["region"].(string) < targets[j].(map[string]interface{})["region"].(string)
 		})
