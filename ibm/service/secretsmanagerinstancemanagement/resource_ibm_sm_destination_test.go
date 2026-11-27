@@ -95,9 +95,10 @@ func TestAccIbmSmDestinationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_sm_destination.sm_destination_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_sm_destination.sm_destination_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"region"}, // set on create, not readable on import
 			},
 		},
 	})

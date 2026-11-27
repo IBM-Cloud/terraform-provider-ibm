@@ -26,6 +26,7 @@ You can specify the following arguments for this data source.
   * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `state` - (Optional, String) Filter by destination state.
   * Constraints: Allowable values are: `not_started`, `provisioning`, `succeeded`, `failed`, `deleting`.
+* `region` - (Optional, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 
 ## Attribute Reference
 

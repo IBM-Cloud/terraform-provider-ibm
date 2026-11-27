@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -41,6 +40,13 @@ func ResourceIbmSmDestination() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_destination", "instance_id"),
 				Description:  "Secrets Manager instance ID.",
+			},
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The region of the Secrets Manager instance.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -160,10 +166,16 @@ func ResourceIbmSmDestinationValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmSmDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_destination", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	region := getRegion(secretsManagerInstanceManagementClient, d)
+	if err = d.Set("region", region); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), "ibm_sm_destination", "create")
 		return tfErr.GetDiag()
 	}
 
@@ -202,7 +214,7 @@ func resourceIbmSmDestinationCreate(context context.Context, d *schema.ResourceD
 }
 
 func waitForIbmSmDestinationCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		return false, err
 	}
@@ -250,7 +262,7 @@ func waitForIbmSmDestinationCreate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func resourceIbmSmDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_destination", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -340,7 +352,7 @@ func resourceIbmSmDestinationRead(context context.Context, d *schema.ResourceDat
 }
 
 func resourceIbmSmDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_destination", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -394,7 +406,7 @@ func resourceIbmSmDestinationUpdate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIbmSmDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_sm_destination", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -430,7 +442,7 @@ func resourceIbmSmDestinationDelete(context context.Context, d *schema.ResourceD
 }
 
 func waitForIbmSmDestinationDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	secretsManagerInstanceManagementClient, err := meta.(conns.ClientSession).SecretsManagerInstanceManagementV2()
+	secretsManagerInstanceManagementClient, err := getInstanceManagementClient(d, meta)
 	if err != nil {
 		return false, err
 	}
