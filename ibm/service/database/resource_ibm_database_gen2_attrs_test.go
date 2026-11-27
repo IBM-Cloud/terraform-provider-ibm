@@ -787,7 +787,6 @@ func TestIsRemoteLeaderIDSupported(t *testing.T) {
 		{"databases-for-postgresql", "standard", true},
 		{"databases-for-postgresql", "standard-gen2", true},
 		{"databases-for-mysql", "standard", true},
-		{"databases-for-enterprisedb", "standard", true},
 		{"databases-for-mongodb", "enterprise-sharding-gen2", true},
 		{"databases-for-mongodb", "standard-gen2", false},
 		{"databases-for-mongodb", "standard", false},

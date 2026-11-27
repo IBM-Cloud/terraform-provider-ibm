@@ -312,7 +312,7 @@ func TestTransformGen2ConnectionToSchema_Elasticsearch_HTTPS(t *testing.T) {
 	assert.Equal(t, "https", result["scheme"])
 }
 
-// TestTransformGen2ConnectionToSchema_GRPC tests gRPC connection (etcd, Elasticsearch)
+// TestTransformGen2ConnectionToSchema_GRPC tests gRPC connection (Elasticsearch)
 func TestTransformGen2ConnectionToSchema_GRPC(t *testing.T) {
 	input := map[string]interface{}{
 		"type":   "uri",

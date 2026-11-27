@@ -1082,7 +1082,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1266,8 +1266,6 @@ func validateConfigurationForService(service, plan, configJSON string) error {
 
 	switch service {
 	case "databases-for-postgresql":
-		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-	case "databases-for-enterprisedb":
 		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
 	case "databases-for-redis":
 		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
@@ -2010,7 +2008,7 @@ func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData
 	}
 	users = append(users, user)
 
-	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
+	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err))
@@ -3507,7 +3505,7 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 	plan := diff.Get("plan").(string)
 
 	if remoteLeaderIdOk && !isRemoteLeaderIDSupported(service, plan) {
-		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb, databases-for-mysql and databases-for-mongodb with plan enterprise-sharding-gen2")
+		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-mysql and databases-for-mongodb with plan enterprise-sharding-gen2")
 	}
 
 	return nil
@@ -3517,7 +3515,7 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 // For databases-for-mongodb only enterprise-sharding-gen2 is supported (MongoSync migration).
 func isRemoteLeaderIDSupported(service, plan string) bool {
 	switch service {
-	case "databases-for-postgresql", "databases-for-mysql", "databases-for-enterprisedb":
+	case "databases-for-postgresql", "databases-for-mysql":
 		return true
 	case "databases-for-mongodb":
 		return plan == "enterprise-sharding-gen2"
