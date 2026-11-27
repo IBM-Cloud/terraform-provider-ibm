@@ -402,6 +402,9 @@ var (
 	CdSaucelabsUsername              string
 	CdBitbucketRepoUrl               string
 	CdGithubConsolidatedRepoUrl      string
+	CdGithubConsolidatedGitId        string
+	CdGithubConsolidatedAppId        string
+	CdGithubConsolidatedAppKey       string
 	CdGitlabRepoUrl                  string
 	CdHostedGitRepoUrl               string
 	CdEventNotificationsInstanceName string
@@ -2088,6 +2091,13 @@ func init() {
 	if CdGithubConsolidatedRepoUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_GITHUB_CONSOLIDATED_REPO_URL for testing CD resources, CD tests will fail if this is not set")
 	}
+
+	// Optional: 'github' (default). When unset, git_id is omitted from the test config.
+	CdGithubConsolidatedGitId = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_GIT_ID")
+
+	// Optional: custom GitHub App credentials. When unset, the custom GitHub App auth tests are skipped.
+	CdGithubConsolidatedAppId = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_APP_ID")
+	CdGithubConsolidatedAppKey = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_APP_PRIVATE_KEY")
 
 	CdGitlabRepoUrl = os.Getenv("IBM_CD_GITLAB_REPO_URL")
 	if CdGitlabRepoUrl == "" {
