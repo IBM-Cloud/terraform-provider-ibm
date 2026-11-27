@@ -927,6 +927,9 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `members`:
         - `allocation_count` - (Optional, Integer) Allocated number of members. **Gen2: Supported.** On Gen2, `allocation_count = 1` deploys a single-node database, which is **Beta**.
         - `member_zones` - (Optional, List of Strings) (**Beta**) Availability zones for the members. **Gen2 only.** Can only be set when `allocation_count` is `1`. Must contain exactly one zone entry (e.g. `["us-east-1"]`). Create-only. Cannot be changed after provisioning. To scale up, remove `member_zones` and increase `allocation_count` to N. Scale-down is not supported.
+
+        NOTE: For `databases-for-mongodb` (`enterprise-sharding-gen2`) if `allocation_count` is set to `1`, then the value of `shards` is `1` by default and can't be set to a value greater than 1.
+
           - Supported services: `databases-for-postgresql` (`standard-gen2`) and `databases-for-mongodb` (`enterprise-sharding-gen2`).
           - Supported regions: `eu-de`, `eu-fr2`.
 
