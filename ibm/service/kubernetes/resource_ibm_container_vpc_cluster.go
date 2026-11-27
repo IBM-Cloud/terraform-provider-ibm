@@ -332,6 +332,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Force the removal of a cluster and its persistent storage. Deleted data cannot be recovered",
 			},
 
+			"delete_openshift_registry_cos_bucket": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Remove the COS bucket and the associated service key that holds the OpenShift registry backups on ROKS clusters",
+			},
+
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -956,6 +963,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		d.Set("force_delete_storage", forceDeleteStorage)
 	}
 
+	if d.HasChange("delete_openshift_registry_cos_bucket") {
+		var deleteRegistryBucket bool
+		if v, ok := d.GetOk("delete_openshift_registry_cos_bucket"); ok {
+			deleteRegistryBucket = v.(bool)
+		}
+		d.Set("delete_openshift_registry_cos_bucket", deleteRegistryBucket)
+	}
+
 	if d.HasChange("image_security_enforcement") && !d.IsNewResource() {
 		var imageSecurity bool
 		if v, ok := d.GetOk("image_security_enforcement"); ok {
@@ -1073,7 +1088,8 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	}
 
 	forceDeleteStorage := d.Get("force_delete_storage").(bool)
-	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage)
+	deleteRegistryBucket := d.Get("delete_openshift_registry_cos_bucket").(bool)
+	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage, deleteRegistryBucket)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error deleting cluster: %s", err)
 	}

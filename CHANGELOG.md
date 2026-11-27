@@ -1,3 +1,38 @@
+# 2.10.0 (November 19, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* omit datamover_hostport_number when unset for kubernetes source registration ([7118](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7118))
+
+## Enhancements
+
+### CD Toolchain
+* add support for github app auth ([7113](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7113))
+
+### Kubernetes
+* Add a new `delete-openshift-registry-cos-bucket` attribute to cluster deletion ([7101](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7101))
+
+
+# 2.10.0-beta0 (November 16, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* add correctly spelled auto_protection_group_id on backup recovery source registration ([7105](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7105))
+
+### VPC Infrastructure
+* stable network_attachments on ibm_is_bare_metal_server ([7100](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7100))
+
+## Enhancements
+
+### Backup/Recovery
+* enable TLS verification for connector client by default ([7098](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7098))
+
+### General
+* bump go.opentelemetry.io/otel/trace from 1.44.0 to 1.47.0 ([7111](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7111))
+
+
 # 2.9.0 (November 5, 2026)
 
 ## Bug Fixes
