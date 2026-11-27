@@ -82,8 +82,8 @@ func TestAccIBMDatabaseGen2BackupsCopyDisabled(t *testing.T) {
 }
 
 // testAccIBMDatabaseGen2BackupsConfigBasic creates a Gen2 PostgreSQL instance with copy enabled.
-// Uses in-che which supports automatic backup copy. The service requires at least one target
-// region when copy is enabled, so the copy is sent to ca-mon.
+// Uses eu-fr2, which can copy automatic backups to eu-de. The service requires at least one
+// target region when copy is enabled, so the copy is sent to eu-de.
 func testAccIBMDatabaseGen2BackupsConfigBasic(name string) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "test_acc" {
@@ -95,7 +95,7 @@ resource "ibm_database" "gen2_backups" {
   name              = %[1]q
   service           = "databases-for-postgresql"
   plan              = "standard-gen2"
-  location          = "in-che"
+  location          = "eu-fr2"
   service_endpoints = "private"
 
   group {
@@ -117,7 +117,7 @@ resource "ibm_database" "gen2_backups" {
     automatic_backups {
       copy {
         enabled = true
-        target  = [{ region = "ca-mon" }]
+        target  = [{ region = "eu-de" }]
       }
     }
   }
