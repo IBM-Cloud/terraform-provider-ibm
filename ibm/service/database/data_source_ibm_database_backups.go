@@ -186,10 +186,6 @@ func (c *dataSourceIBMDatabaseBackupsClassicBackend) Read(context context.Contex
 	backups.Backups = matchBackups
 
 	if suppliedFilter {
-		if len(backups.Backups) == 0 {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("no Backups found with deploymentID %s", deploymentID), "(Data) ibm_database_backups", "read")
-			return tfErr.GetDiag()
-		}
 		d.SetId(deploymentID)
 	} else {
 		d.SetId(DataSourceIBMDatabaseBackupsID(d))
