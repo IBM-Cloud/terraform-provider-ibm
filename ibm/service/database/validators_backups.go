@@ -21,6 +21,8 @@ type backupsConfigIntent struct {
 	preserve    *bool
 	copyEnabled *bool
 	targetCount int
+	// targetEmpty is true only when the user wrote `target = []`; an omitted target is false.
+	targetEmpty bool
 }
 
 // ctyFirstElem returns the first element of a known, non-null, non-empty list.
@@ -74,6 +76,7 @@ func backupsIntentFromRawConfig(raw cty.Value) backupsConfigIntent {
 	targets := cp.GetAttr("target")
 	if !targets.IsNull() && targets.IsKnown() && targets.CanIterateElements() {
 		intent.targetCount = targets.LengthInt()
+		intent.targetEmpty = intent.targetCount == 0
 	}
 	return intent
 }
@@ -110,6 +113,12 @@ func validateBackupsRules(in backupsRuleInput) error {
 
 	if in.intent.copyEnabled != nil && !*in.intent.copyEnabled && in.intent.targetCount > 0 {
 		return fmt.Errorf("[ERROR] `backups.automatic_backups.copy.target` cannot be set when `backups.automatic_backups.copy.enabled` is false")
+	}
+
+	// `target = []` is only meaningful when copies are turned off; with copies enabled
+	// it would plan a change that is never sent to the service.
+	if in.intent.targetEmpty && (in.intent.copyEnabled == nil || *in.intent.copyEnabled) {
+		return fmt.Errorf("[ERROR] `backups.automatic_backups.copy.target` cannot be empty unless `backups.automatic_backups.copy.enabled` is set to false. Set `enabled = false` to stop cross-regional copies, or remove `target` to keep the current regions")
 	}
 
 	return nil

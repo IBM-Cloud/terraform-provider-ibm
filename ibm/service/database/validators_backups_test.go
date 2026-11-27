@@ -16,6 +16,10 @@ func TestValidateBackupsRules(t *testing.T) {
 	configured := func(preserve, copyEnabled *bool, targets int) backupsConfigIntent {
 		return backupsConfigIntent{configured: true, preserve: preserve, copyEnabled: copyEnabled, targetCount: targets}
 	}
+	// emptyTarget is the intent for `target = []` written explicitly in the config.
+	emptyTarget := func(copyEnabled *bool) backupsConfigIntent {
+		return backupsConfigIntent{configured: true, copyEnabled: copyEnabled, targetEmpty: true}
+	}
 
 	cases := []struct {
 		name    string
@@ -84,6 +88,20 @@ func TestValidateBackupsRules(t *testing.T) {
 		{
 			name: "copy enabled omitted with target is valid",
 			in:   backupsRuleInput{gen2: true, service: "databases-for-postgresql", intent: configured(nil, nil, 2)},
+		},
+		{
+			name:    "empty target with copy enabled is rejected",
+			in:      backupsRuleInput{gen2: true, service: "databases-for-postgresql", intent: emptyTarget(boolPtr(true))},
+			wantErr: "cannot be empty unless",
+		},
+		{
+			name:    "empty target with copy enabled omitted is rejected",
+			in:      backupsRuleInput{gen2: true, service: "databases-for-postgresql", intent: emptyTarget(nil)},
+			wantErr: "cannot be empty unless",
+		},
+		{
+			name: "empty target with copy disabled is valid",
+			in:   backupsRuleInput{gen2: true, service: "databases-for-postgresql", intent: emptyTarget(boolPtr(false))},
 		},
 	}
 
@@ -158,6 +176,29 @@ func TestBackupsIntentFromRawConfig(t *testing.T) {
 		require.NotNil(t, got.copyEnabled)
 		require.False(t, *got.copyEnabled)
 		require.Equal(t, 2, got.targetCount)
+	})
+
+	t.Run("explicit empty target is distinguished from omitted target", func(t *testing.T) {
+		build := func(targets cty.Value) backupsConfigIntent {
+			cp := cty.ObjectVal(map[string]cty.Value{"enabled": cty.NullVal(cty.Bool), "target": targets})
+			auto := cty.ObjectVal(map[string]cty.Value{"copy": cty.ListVal([]cty.Value{cp})})
+			block := cty.ObjectVal(map[string]cty.Value{
+				"preserve":          cty.NullVal(cty.Bool),
+				"automatic_backups": cty.ListVal([]cty.Value{auto}),
+			})
+			return backupsIntentFromRawConfig(cty.ObjectVal(map[string]cty.Value{"backups": cty.ListVal([]cty.Value{block})}))
+		}
+		targetType := cty.Object(map[string]cty.Type{"region": cty.String})
+
+		empty := build(cty.SetValEmpty(targetType))
+		require.True(t, empty.targetEmpty)
+		require.Equal(t, 0, empty.targetCount)
+
+		omitted := build(cty.NullVal(cty.Set(targetType)))
+		require.False(t, omitted.targetEmpty)
+
+		one := build(cty.SetVal([]cty.Value{cty.ObjectVal(map[string]cty.Value{"region": cty.StringVal("ca-mon")})}))
+		require.False(t, one.targetEmpty)
 	})
 
 	t.Run("unknown preserve is treated as not set", func(t *testing.T) {
