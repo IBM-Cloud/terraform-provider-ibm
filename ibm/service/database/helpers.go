@@ -44,6 +44,12 @@ const (
 	databaseInstanceFailStatus         = "failed"
 	databaseInstanceRemovedStatus      = "removed"
 
+	// Gen2 LastOperation.State constants (rc.ResourceInstanceLastOperation.State)
+	// These are the SDK-defined values from ResourceInstanceLastOperationState*Const.
+	gen2LastOperationSucceeded  = "succeeded"
+	gen2LastOperationInProgress = "in progress"
+	gen2LastOperationFailed     = "failed"
+
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
 	dataservicesKey    = "dataservices"

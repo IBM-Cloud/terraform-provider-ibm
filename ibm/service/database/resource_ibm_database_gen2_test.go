@@ -7,8 +7,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/go-sdk-core/v5/core"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
@@ -3960,4 +3967,137 @@ func TestGen2ElasticsearchStandardGen2ResourceDataValid(t *testing.T) {
 	assert.Equal(t, "databases-for-elasticsearch", d.Get("service").(string))
 	assert.True(t, isGen2Plan(d.Get("plan").(string)),
 		"standard-gen2 plan should be routed to the Gen2 backend")
+}
+
+// mockResourceControllerSession implements conns.ClientSession, overriding only
+// ResourceControllerV2API. Any other method call panics via the nil embedded interface.
+type mockResourceControllerSession struct {
+	conns.ClientSession
+	rcClient *rc.ResourceControllerV2
+	rcErr    error
+}
+
+func (m *mockResourceControllerSession) ResourceControllerV2API() (*rc.ResourceControllerV2, error) {
+	return m.rcClient, m.rcErr
+}
+
+// newMockResourceControllerSession starts an httptest server standing in for
+// GET /v2/resource_instances/{id}. It replies with the given raw JSON bodies in
+// order (the last one repeats), or with status if it is not 200. calls counts requests.
+func newMockResourceControllerSession(t *testing.T, status int, bodies []string, calls *int32) *mockResourceControllerSession {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := int(atomic.AddInt32(calls, 1))
+		if r.URL.Path != "/v2/resource_instances/test-instance-id" {
+			t.Errorf("unexpected request path %s", r.URL.Path) // Errorf is safe off the test goroutine
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if status != http.StatusOK {
+			w.WriteHeader(status)
+			_, _ = w.Write([]byte(`{"message":"mock server error"}`))
+			return
+		}
+		_, _ = w.Write([]byte(bodies[min(n, len(bodies))-1]))
+	}))
+	t.Cleanup(server.Close)
+
+	client, err := rc.NewResourceControllerV2(&rc.ResourceControllerV2Options{
+		URL:           server.URL,
+		Authenticator: &core.NoAuthAuthenticator{},
+	})
+	if err != nil {
+		t.Fatalf("failed to create Resource Controller client: %v", err)
+	}
+	return &mockResourceControllerSession{rcClient: client}
+}
+
+// TestGen2WaitForInstanceUpdate tests waitForGen2InstanceUpdate, which polls
+// last_operation.state (not instance.state), fails fast on a failed instance or
+// operation, and treats a missing last_operation as still in progress.
+func TestGen2WaitForInstanceUpdate(t *testing.T) {
+	// Shorten the 10s production poll interval so the test runs in about a second.
+	origInterval := gen2UpdatePollInterval
+	gen2UpdatePollInterval = 50 * time.Millisecond
+	t.Cleanup(func() { gen2UpdatePollInterval = origInterval })
+
+	const (
+		succeeded  = `{"state":"active","last_operation":{"state":"succeeded"}}`
+		inProgress = `{"state":"active","last_operation":{"state":"in progress"}}`
+		noOp       = `{"state":"active"}`
+		noOpState  = `{"state":"active","last_operation":{"type":"update"}}`
+		opFailed   = `{"state":"active","last_operation":{"state":"failed","description":"disk resize failed"}}`
+		opFailedNo = `{"state":"active","last_operation":{"state":"failed"}}`
+		instFailed = `{"state":"failed"}`
+		timedOut   = "timeout while waiting for state to become 'succeeded' (last state: 'in progress'"
+	)
+
+	tests := []struct {
+		name    string
+		bodies  []string
+		status  int           // 0 means 200
+		timeout time.Duration // 0 means 10s
+		calls   int32         // expected API calls; 0 skips the check
+		wantErr string        // substring of the expected error; empty means success
+	}{
+		{name: "succeeds_immediately", bodies: []string{succeeded}, calls: 1},
+		{name: "in_progress_then_succeeded", bodies: []string{inProgress, succeeded}, calls: 2},
+		{name: "missing_last_operation_then_succeeded", bodies: []string{noOp, succeeded}, calls: 2},
+		{name: "last_operation_without_state_then_succeeded", bodies: []string{noOpState, succeeded}, calls: 2},
+		{name: "in_progress_forever_times_out", bodies: []string{inProgress}, timeout: 500 * time.Millisecond, wantErr: timedOut},
+		{name: "missing_last_operation_forever_times_out", bodies: []string{noOp}, timeout: 500 * time.Millisecond, wantErr: timedOut},
+		{name: "last_operation_failed_with_description", bodies: []string{opFailed}, calls: 1, wantErr: "test-instance-id update failed: disk resize failed"},
+		{name: "last_operation_failed_without_description", bodies: []string{opFailedNo}, calls: 1, wantErr: "test-instance-id update failed: "},
+		{name: "instance_failed", bodies: []string{instFailed}, calls: 1, wantErr: "The resource instance test-instance-id failed"},
+		{name: "get_resource_instance_error", status: http.StatusInternalServerError, calls: 1, wantErr: "GetResourceInstance on test-instance-id failed"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, timeout := tt.status, tt.timeout
+			if status == 0 {
+				status = http.StatusOK
+			}
+			if timeout == 0 {
+				timeout = 10 * time.Second
+			}
+
+			var calls int32
+			meta := newMockResourceControllerSession(t, status, tt.bodies, &calls)
+			d := (&schema.Resource{
+				Schema:   map[string]*schema.Schema{},
+				Timeouts: &schema.ResourceTimeout{Update: &timeout},
+			}).Data(nil)
+			d.SetId("test-instance-id")
+
+			result, err := (&resourceIBMDatabaseGen2Backend{}).waitForGen2InstanceUpdate(d, meta)
+
+			if tt.calls > 0 {
+				assert.Equal(t, tt.calls, atomic.LoadInt32(&calls), "unexpected number of Resource Controller calls")
+			}
+			if tt.wantErr != "" {
+				if assert.Error(t, err) {
+					assert.Contains(t, err.Error(), tt.wantErr)
+				}
+				return
+			}
+			assert.NoError(t, err)
+			got, ok := result.(rc.ResourceInstance)
+			if assert.True(t, ok, "expected rc.ResourceInstance result, got %T", result) && assert.NotNil(t, got.LastOperation) {
+				assert.Equal(t, gen2LastOperationSucceeded, *got.LastOperation.State)
+			}
+		})
+	}
+}
+
+// TestGen2WaitForInstanceUpdateClientError verifies a Resource Controller client
+// error is returned immediately, without any polling.
+func TestGen2WaitForInstanceUpdateClientError(t *testing.T) {
+	meta := &mockResourceControllerSession{rcErr: errors.New("rc client unavailable")}
+	d := (&schema.Resource{Schema: map[string]*schema.Schema{}}).Data(nil)
+	d.SetId("test-instance-id")
+
+	result, err := (&resourceIBMDatabaseGen2Backend{}).waitForGen2InstanceUpdate(d, meta)
+
+	assert.EqualError(t, err, "rc client unavailable")
+	assert.Equal(t, false, result)
 }
