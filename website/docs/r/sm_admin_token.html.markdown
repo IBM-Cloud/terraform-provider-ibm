@@ -24,6 +24,7 @@ You can specify the following arguments for this resource.
 
 * `instance_id` - (Required, Forces new resource, String) The service instance ID.
   * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `response_wrapping` - (Optional, Forces new resource, Boolean) If `true`, the admin token is returned as a Vault response-wrapped token in `wrapped_token` instead of `token`.
 
 ## Attribute Reference

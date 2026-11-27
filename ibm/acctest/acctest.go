@@ -219,6 +219,11 @@ var (
 	SecretsManagerCodeEngineJobName                                                 string
 	SecretsManagerServiceIdForCustomCredentials                                     string
 	SecretsManagerDedicatedInstanceID                                               string
+	SecretsManagerHsmPpsGatewayCrn                                                  string
+	SecretsManagerHsmServerCaPemPath                                                string
+	SecretsManagerHsmClientCaCertPath                                               string
+	SecretsManagerHsmClientCaKeyPath                                                string
+	SecretsManagerHsmMemberSerials                                                  string
 )
 
 var (
@@ -1857,6 +1862,34 @@ func init() {
 	SecretsManagerDedicatedInstanceID = os.Getenv("SECRETS_MANAGER_DEDICATED_INSTANCE_ID")
 	if SecretsManagerDedicatedInstanceID == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_DEDICATED_INSTANCE_ID for testing Secrets Manager's tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerHsmPpsGatewayCrn = os.Getenv("SM_HSM_PPS_GATEWAY_CRN")
+	if SecretsManagerHsmPpsGatewayCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SM_HSM_PPS_GATEWAY_CRN for testing Secrets Manager HSM paths and server CAs, else those tests are skipped")
+	}
+
+	SecretsManagerHsmServerCaPemPath = os.Getenv("SM_HSM_SERVER_CA_PEM_PATH")
+	if SecretsManagerHsmServerCaPemPath == "" {
+		fmt.Println("[INFO] Set the environment variable SM_HSM_SERVER_CA_PEM_PATH for testing Secrets Manager HSM server CAs, else those tests are skipped")
+	}
+
+	SecretsManagerHsmClientCaCertPath = os.Getenv("SM_HSM_CLIENT_CA_CERT_PATH")
+	if SecretsManagerHsmClientCaCertPath == "" {
+		fmt.Println("[INFO] Set the environment variable SM_HSM_CLIENT_CA_CERT_PATH for testing Secrets Manager HSM client certificates, else those tests are skipped")
+	}
+
+	SecretsManagerHsmClientCaKeyPath = os.Getenv("SM_HSM_CLIENT_CA_KEY_PATH")
+	if SecretsManagerHsmClientCaKeyPath == "" {
+		fmt.Println("[INFO] Set the environment variable SM_HSM_CLIENT_CA_KEY_PATH for testing Secrets Manager HSM client certificates, else those tests are skipped")
+	}
+
+	SecretsManagerHsmMemberSerials = os.Getenv("SM_HSM_MEMBER_SERIALS")
+	if SecretsManagerHsmMemberSerials == "" {
+		SecretsManagerHsmMemberSerials = os.Getenv("SM_HSM_HA_GROUP_MEMBER_SERIALS")
+	}
+	if SecretsManagerHsmMemberSerials == "" {
+		fmt.Println("[INFO] Set the environment variable SM_HSM_MEMBER_SERIALS (comma-separated) for testing Secrets Manager HSM HA groups, else those tests are skipped")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
