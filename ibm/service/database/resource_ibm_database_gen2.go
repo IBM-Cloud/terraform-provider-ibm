@@ -882,8 +882,12 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationUpdate(configCtx *ins
 	return nil
 }
 
+// gen2UpdatePollInterval is the initial delay and poll interval used when waiting
+// for a Gen2 instance update. It is a variable so unit tests can shorten it.
+var gen2UpdatePollInterval = 10 * time.Second
+
 // waitForGen2InstanceUpdate waits for a Gen2 database instance update to complete.
-// It polls last_operation.state every 10 seconds rather than instance.state, because
+// It polls last_operation.state every gen2UpdatePollInterval (default 10 seconds) rather than instance.state, because
 // instance.state flips to "active" as soon as RC accepts the request — well before the
 // underlying database operation (disk resize, shard add, host-flavor change) finishes.
 // last_operation.state reflects the actual operation result:
@@ -939,8 +943,8 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 			return *instance, lastOpState, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Delay:      gen2UpdatePollInterval,
+		MinTimeout: gen2UpdatePollInterval,
 	}
 
 	return stateConf.WaitForState()
