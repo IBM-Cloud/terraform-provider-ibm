@@ -33,6 +33,7 @@ type hsmResourceSpec struct {
 	// extraChecks are attribute checks on the resource besides instance_id, name and description.
 	extraChecks []resource.TestCheckFunc
 	// importIgnore lists attributes that Read does not set because they only exist in the resource ID.
+	// region is always ignored, because it is set on create and cannot be read back on import.
 	importIgnore []string
 	// get reads the resource by the parts of its ID. It returns the HTTP response for the 404 check.
 	get func(client *secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2, parts []string) (*core.DetailedResponse, error)
@@ -238,7 +239,7 @@ func testAccHsmResource(t *testing.T, spec hsmResourceSpec, withDescription bool
 			ResourceName:            addr,
 			ImportState:             true,
 			ImportStateVerify:       true,
-			ImportStateVerifyIgnore: spec.importIgnore,
+			ImportStateVerifyIgnore: append([]string{"region"}, spec.importIgnore...),
 		})
 	}
 	resource.Test(t, resource.TestCase{
