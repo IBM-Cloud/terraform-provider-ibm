@@ -362,6 +362,13 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Send retention only on create; updates are handled by applyBackupsRetentionWithDiagnostics.
+	if d.Id() == "" {
+		if backups := buildBackupsRetentionConfig(d, false); backups != nil {
+			dataservices["backups"] = backups
+		}
+	}
+
 	// Handle maintenance window
 	g.addMaintenanceConfig(d, dataservices)
 
@@ -1012,6 +1019,10 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	if err := d.Set("backups", flattenBackupsRetentionFromExtensions(instance.Extensions)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting backups: %w", err))
+	}
+
 	// Set maintenance window from instance extensions.
 	if ext := instance.Extensions; ext != nil {
 		if flat := flattenMaintenance(ext); flat != nil {
@@ -1222,6 +1233,27 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// applyBackupsRetentionWithDiagnostics sends only the retention field if it changed on update.
+func (g *resourceIBMDatabaseGen2Backend) applyBackupsRetentionWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("backups") {
+		return nil
+	}
+	backups := buildBackupsRetentionConfig(d, true)
+	if backups == nil {
+		return nil
+	}
+	params := map[string]interface{}{
+		"dataservices": map[string]interface{}{"backups": backups},
+	}
+	if err := g.updateResourceInstanceParameters(rsConClient, d.Id(), params); err != nil {
+		return diagError("error applying backups retention update: %s", err)
+	}
+	if _, err := g.waitForGen2InstanceUpdate(d, meta); err != nil {
+		return diagError("error waiting for backups retention update to complete: %s", err)
+	}
+	return nil
+}
+
 // buildPromoteParameters builds the PATCH parameters that promote a read replica, or commit a MongoSync migration for mongodbees.
 func buildPromoteParameters(dbType string) map[string]interface{} {
 	dbParams := map[string]interface{}{
@@ -1328,6 +1360,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.applyBackupsRetentionWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 

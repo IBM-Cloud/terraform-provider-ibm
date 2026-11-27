@@ -74,6 +74,11 @@ In addition to all argument references list, you can access the following attrib
    - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
    - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
    
+- `backups` - (List) The backup configuration of the instance. Only populated for Gen2 plans; empty for Classic instances.
+
+  Nested scheme for `backups`:
+  - `retention` - (String) The number of days backups are retained before they can be deleted, in the format `<number>d` (e.g., `30d`).
+
 - `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
   Nested scheme for `auto_scaling`:
