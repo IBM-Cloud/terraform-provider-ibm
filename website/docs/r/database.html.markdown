@@ -151,7 +151,7 @@ output "db_connection" {
 
 ### Gen2 database instance with backup configuration
 
-The `backups` block is available for Gen2 plans only. It configures whether backups are preserved after the instance is deleted, how long they are retained, and whether automatic backups are copied to another region. Independent backups require a service-to-service authorization (see [Gen2 Independent Backups and S2S Authorization](#gen2-independent-backups-and-s2s-authorization)).
+The `backups` block is available for Gen2 plans only. It configures whether backups are preserved after the instance is deleted, and whether automatic backups are copied to another region. Independent backups require a service-to-service authorization (see [Gen2 Independent Backups and S2S Authorization](#gen2-independent-backups-and-s2s-authorization)).
 
 ```terraform
 resource "ibm_database" "postgres_gen2_backups" {
